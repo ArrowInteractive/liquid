@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(vendor/glfw)
+add_subdirectory(vendor/ffmpeg)
 
 add_executable(liquid src/liquid.cpp)
 
