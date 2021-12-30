@@ -1,5 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
 using namespace std;
 
 int main(int argc, const char** argv)
