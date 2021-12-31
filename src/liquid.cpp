@@ -1,4 +1,4 @@
-#include <GLFW/glfw3.h>
+#include "window.hpp"
 #include <iostream>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
@@ -6,26 +6,15 @@ using namespace std;
 
 int main(int argc, const char** argv)
 {
-    GLFWwindow* window;
+    window* gl_window = new window(1280, 720, "Liquid Media Player");
+    gl_window->initWindow();
 
-    if(!glfwInit())
+    while(gl_window->isWindowNotClosed())
     {
-        cout<<"Couldn't initialize GLFW!"<<endl;
-        return 1;
+        gl_window->updateWindow();
     }
-
-    window = glfwCreateWindow(640, 480, "Liquid Media Player", NULL, NULL);
-    if(!window)
-    {
-        cout<<"Couldn't create window!"<<endl;
-        return 1;
-    }
-
-    glfwMakeContextCurrent(window);
-    while(!glfwWindowShouldClose(window))
-    {
-        glfwWaitEvents();
-    }
+    gl_window->destroyWindow();
+    free(gl_window);
 
     return 0;
 }

@@ -5,10 +5,14 @@ project(Liquid)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+include_directories(include)
+
+FILE(GLOB SOURCES src/*.cpp)
+
 add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/ffmpeg)
 
-add_executable(liquid src/liquid.cpp)
+add_executable(liquid ${SOURCES})
 
 target_link_libraries(liquid
     glfw
