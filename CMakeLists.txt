@@ -9,11 +9,13 @@ include_directories(include)
 
 FILE(GLOB SOURCES src/*.cpp)
 
-add_subdirectory(vendor/glfw)
-add_subdirectory(vendor/ffmpeg)
-
 add_executable(liquid ${SOURCES})
+
+add_subdirectory(vendor/glfw)
+add_subdirectory(vendor/glad)
+add_subdirectory(vendor/ffmpeg)
 
 target_link_libraries(liquid
     glfw
+    glad
 )
