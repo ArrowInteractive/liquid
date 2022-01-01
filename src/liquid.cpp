@@ -14,7 +14,7 @@ int main(int argc, const char** argv)
         gl_window->updateWindow();
     }
     gl_window->destroyWindow();
-    free(gl_window);
+    delete(gl_window);
 
     return 0;
 }
