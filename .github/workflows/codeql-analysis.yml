@@ -69,11 +69,12 @@ jobs:
     - name: Setup FFmpeg
       # You may pin to the exact commit or the version.
       # uses: FedericoCarboni/setup-ffmpeg@102916131ac71e9c7ad6fa9d98fed2c9d86722e6
-      uses: FedericoCarboni/setup-ffmpeg@v1.1.0
-
+      uses: Iamshankhadeep/setup-ffmpeg@v1.1
+    
+    - name: Setup Environment
+        git submodule update --init --recursive
+    
     - run: |
-        rm -rf vendor/glfw
-        git clone https://github.com/glfw/glfw vendor/glfw
         mkdir binary
         cd binary
         cmake ..
