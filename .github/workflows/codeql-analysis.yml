@@ -66,12 +66,8 @@ jobs:
       # uses: RpxdYTX/install-glfw-deps@53cc2da615d9e1890414cf0662ab4939cd49f79f
       uses: RpxdYTX/install-glfw-deps@v2
     
-    - name: Setup FFmpeg
-      # You may pin to the exact commit or the version.
-      # uses: FedericoCarboni/setup-ffmpeg@102916131ac71e9c7ad6fa9d98fed2c9d86722e6
-      uses: Iamshankhadeep/setup-ffmpeg@v1.1
-    
     - run: |
+        sudo apt install ffmpeg
         git submodule update --init --recursive
         mkdir binary
         cd binary
