@@ -55,7 +55,6 @@ jobs:
     
     - run: |
         sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev 
-        git submodule update --init --recursive
         mkdir binary
         cd binary
         cmake ..
