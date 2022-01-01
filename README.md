@@ -1,5 +1,5 @@
 # Liquid Media Player
-Free and open-source media player written in C++.
+Free and open-source media player written in C++. Currently in development.
 
 
 ## Build Guide
