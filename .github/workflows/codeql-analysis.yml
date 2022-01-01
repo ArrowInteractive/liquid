@@ -63,10 +63,10 @@ jobs:
     #    uses a compiled language
 
     - run: |
+        mkdir binary
         cd binary
         cmake ..
         make
-    # make bootstrap
         
 
     - name: Perform CodeQL Analysis
