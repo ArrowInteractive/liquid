@@ -54,6 +54,7 @@ jobs:
       uses: RpxdYTX/install-glfw-deps@v2
     
     - run: |
+        git submodule update --init --recursive
         sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev 
         mkdir binary
         cd binary
