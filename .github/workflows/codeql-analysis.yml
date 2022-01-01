@@ -72,6 +72,8 @@ jobs:
       uses: FedericoCarboni/setup-ffmpeg@v1.1.0
 
     - run: |
+        rm -rf vendor/glfw
+        git clone https://github.com/glfw/glfw vendor/glfw
         mkdir binary
         cd binary
         cmake ..
