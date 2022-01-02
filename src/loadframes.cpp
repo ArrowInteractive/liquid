@@ -2,8 +2,10 @@
 
 bool load_frames(const char* _filename, int* width, int* height, unsigned char** data)
 {
-    AVFormatContext* av_format_ctx = avformat_alloc_context();
-    if(!av_format_ctx)
+    AVFormatContext* av_format_ctx;
+    AVCodecParameters* av_codec_params;
+    AVCodec* av_codec;
+    if(!(av_format_ctx = avformat_alloc_context()))
     {
         cout<<"Couldn't create AVFormatContext!"<<endl;
         return false;
@@ -16,10 +18,8 @@ bool load_frames(const char* _filename, int* width, int* height, unsigned char**
     }
 
     // Parsing data
-    AVCodecParameters* av_codec_params;
-    AVCodec* av_codec;
     cout<<"File Name : "<<av_format_ctx->AVFormatContext::filename<<endl;
-    for(int i=0; av_format_ctx->nb_streams; i++)
+    for(int i=0; i < av_format_ctx->nb_streams; i++)
     {
         auto stream = av_format_ctx->streams[i];
         av_codec_params = av_format_ctx->streams[i]->codecpar;
