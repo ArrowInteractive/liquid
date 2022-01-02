@@ -1,5 +1,5 @@
-#ifndef LOADFRAME
-#define LOADFRAME
+#ifndef LOADDATA
+#define LOADDATA
 
 #include <iostream>
 using namespace std;
@@ -11,6 +11,8 @@ extern "C"
     #include <inttypes.h>
 }
 
-bool load_frames(const char* _filename, int* width, int* height, unsigned char** data);
+// Functions
+bool init_ctx();
+bool open_input(char* _filename);
 
 #endif

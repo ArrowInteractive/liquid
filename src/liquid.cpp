@@ -1,25 +1,69 @@
 #include "window.hpp"
-#include "loadframes.hpp"
+#include "loaddata.hpp"
 #include <iostream>
+#include <filesystem>
 using namespace std;
+using std::filesystem::exists;
+using std::filesystem::is_directory;
+using std::filesystem::is_regular_file;
 
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
-    int frame_width, frame_height;
-    unsigned char* frame_data;
-    window* gl_window = new window(1280, 720, "Liquid Media Player");
-    gl_window->initWindow();
+    // Variables
+    int _frame_width, _frame_height;
+    unsigned char* _frame_data;
+    window* gl_window;
 
-    if(!load_frames("E:\\Projects\\liquid\\build\\sample.mp4", &frame_width, &frame_height, &frame_data))
+    // Check if args are provided
+    if(argc < 2)
     {
-        cout<<"Couldn't load media frames!"<<endl;
-        return 1;
+        gl_window = new window(1280, 720, "Liquid Media Player");
+    }
+    else
+    {
+        if(!exists(argv[1]))
+        {
+            cout<<"File doesn't exist."<<endl;
+            //Display some error
+        }
+
+        //Check if it is a file or a folder
+        if(!is_regular_file(argv[1]))
+        {
+            // Write some code to load files from that folder
+            // For now just display some error.
+            cout<<"Unable to open file!"<<endl;
+            return -1;
+        }
+
+        // Initializing AVFormatContext
+        if(!init_ctx())
+        {
+            cout<<"Couldn't allocate AVFormatContext!"<<endl;
+            return -1;
+        }
+
+        // Open Input
+        if(!open_input(argv[1]))
+        {
+            cout<<"Couldn't open source media!"<<endl;
+            return -1;
+        }
+
+        // New window
+        gl_window = new window(1280, 720, argv[1]);
     }
 
+    //Initialize the window
+    gl_window->initWindow();
+    
+    // Main loop
     while(gl_window->isWindowNotClosed())
     {
         gl_window->updateWindow();
     }
+
+    // Deallocate
     gl_window->destroyWindow();
     delete(gl_window);
 

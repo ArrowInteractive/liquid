@@ -1,7 +1,6 @@
 #include <window.hpp>
 
-window::window(int width, int height, const char* title) :
-    m_width(width), m_height(height), m_title(title)
+window::window(int width, int height, const char* title) : m_width(width), m_height(height), m_title(title)
 {
     m_width=width;
     m_height=height;
