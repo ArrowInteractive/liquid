@@ -15,8 +15,18 @@ bool load_frames(const char* _filename, int* width, int* height, unsigned char**
         return false;
     }
 
-    // Printing metadata
+    // Parsing data
+    AVCodecParameters* av_codec_params;
+    AVCodec* av_codec;
     cout<<"File Name : "<<av_format_ctx->AVFormatContext::filename<<endl;
-    cout<<"Duration  : "<<av_format_ctx->AVFormatContext::duration<<endl;
-    return false;
+    for(int i=0; av_format_ctx->nb_streams; i++)
+    {
+        auto stream = av_format_ctx->streams[i];
+        av_codec_params = av_format_ctx->streams[i]->codecpar;
+        av_codec = avcodec_find_decoder(av_codec_params->codec_id);
+        cout<<"Stream ID : "<<i<<endl;
+        cout<<"CODEC     : "<<av_codec->AVCodec::long_name<<endl;
+    }
+
+    return true;
 }
