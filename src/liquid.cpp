@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     unsigned char* _frame_data;
     window* gl_window;
 
-    // Check if args are provided
+    // Check for args
     if(argc < 2)
     {
         gl_window = new window(1280, 720, "Liquid Media Player");
