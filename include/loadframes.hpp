@@ -11,6 +11,6 @@ extern "C"
     #include <inttypes.h>
 }
 
-bool load_frames(const char* filename, int* width, int* height, unsigned char** data);
+bool load_frames(const char* _filename, int* width, int* height, unsigned char** data);
 
 #endif

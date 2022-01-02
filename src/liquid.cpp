@@ -10,7 +10,7 @@ int main(int argc, const char** argv)
     window* gl_window = new window(1280, 720, "Liquid Media Player");
     gl_window->initWindow();
 
-    if(!load_frames("E:\\Projects\\liquid\\binary\\sample.mp4", &frame_width, &frame_height, &frame_data))
+    if(!load_frames("E:\\Projects\\liquid\\build\\sample.mp4", &frame_width, &frame_height, &frame_data))
     {
         cout<<"Couldn't load media frames!"<<endl;
         return 1;
