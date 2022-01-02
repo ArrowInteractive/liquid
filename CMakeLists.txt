@@ -18,4 +18,5 @@ add_subdirectory(vendor/ffmpeg)
 target_link_libraries(liquid
     glfw
     glad
+    ffmpeg
 )

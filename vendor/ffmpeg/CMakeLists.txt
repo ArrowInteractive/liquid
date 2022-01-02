@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(FFmpeg)
+project(ffmpeg)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(AVCODEC     REQUIRED IMPORTED_TARGET libavcodec)
@@ -10,9 +10,9 @@ pkg_check_modules(AVUTIL      REQUIRED IMPORTED_TARGET libavutil)
 pkg_check_modules(SWRESAMPLE  REQUIRED IMPORTED_TARGET libswresample)
 pkg_check_modules(SWSCALE     REQUIRED IMPORTED_TARGET libswscale)
 
-add_library(FFmpeg INTERFACE IMPORTED GLOBAL)
+add_library(ffmpeg INTERFACE IMPORTED GLOBAL)
 
-target_link_libraries(FFmpeg INTERFACE
+target_link_libraries(ffmpeg INTERFACE
     PkgConfig::AVCODEC
     PkgConfig::AVFORMAT
     PkgConfig::AVFILTER

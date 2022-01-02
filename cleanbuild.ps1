@@ -1,7 +1,7 @@
-rm binary
-mkdir binary
+rm build
+mkdir build
 
-cd binary
+cd build
 cmake -G "MSYS Makefiles" ..
 make
 

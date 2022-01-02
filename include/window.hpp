@@ -18,4 +18,5 @@ class window
         GLFWwindow* getWindow();
         bool isWindowNotClosed();
 };
+
 #endif
