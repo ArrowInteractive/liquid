@@ -12,7 +12,6 @@ extern "C"
 }
 
 // Functions
-bool init_ctx();
-bool open_input(char* _filename);
+bool load_data(char* filename, AVFormatContext* av_format_ctx, AVCodecParameters* av_codec_params, AVCodec* av_codec);
 
 #endif

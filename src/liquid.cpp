@@ -10,6 +10,11 @@ using std::filesystem::is_regular_file;
 int main(int argc, char** argv)
 {
     // Variables
+    AVCodec* av_codec;
+    AVCodecContext* av_codec_ctx;
+    AVFormatContext* av_format_ctx;
+    AVCodecParameters* av_codec_params;
+    
     int _frame_width, _frame_height;
     unsigned char* _frame_data;
     window* gl_window;
@@ -32,23 +37,12 @@ int main(int argc, char** argv)
         {
             // Write some code to load files from that folder
             // For now just display some error.
-            cout<<"Unable to open file!"<<endl;
+            cout<<"Provided input is a folder."<<endl;
             return -1;
         }
 
         // Initializing AVFormatContext
-        if(!init_ctx())
-        {
-            cout<<"Couldn't allocate AVFormatContext!"<<endl;
-            return -1;
-        }
-
-        // Open Input
-        if(!open_input(argv[1]))
-        {
-            cout<<"Couldn't open source media!"<<endl;
-            return -1;
-        }
+        load_data(argv[1], av_format_ctx, av_codec_params, av_codec);
 
         // New window
         gl_window = new window(1280, 720, argv[1]);
