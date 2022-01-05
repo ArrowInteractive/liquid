@@ -1,12 +1,33 @@
 #include <loaddata.hpp>
 
-bool load_data(char* filename, AVFormatContext* av_format_ctx, AVCodecParameters* av_codec_params, AVCodec* av_codec)
+bool load_data( char* filename, 
+                AVFormatContext* av_format_ctx, 
+                AVCodecParameters* av_codec_params, 
+                AVCodec* av_codec, 
+                AVCodecContext* av_codec_ctx,
+                AVPacket* av_packet,
+                AVFrame* av_frame
+            )
 {
     // Variables
     int video_stream_index = -1;
     int audio_stream_index = -1;
+    
+    // Allocate AVPacket
+    if(!(av_packet = av_packet_alloc()))
+    {
+        cout<<"Couldn't allocate AVPacket!"<<endl;
+        return false;
+    }
 
-    // Initializing AVFormatContext
+    // Allocate AVFrame
+    if(!(av_frame = av_frame_alloc()))
+    {
+        cout<<"Couldn't allocate AVFrame!"<<endl;
+        return false;
+    }
+
+    // Allocating AVFormatContext
     if(!(av_format_ctx = avformat_alloc_context()))
     {
         cout<<"Couldn't initialize AVFormatContext!"<<endl;
@@ -48,9 +69,28 @@ bool load_data(char* filename, AVFormatContext* av_format_ctx, AVCodecParameters
         }
     }
 
+    // If no stream was found, exit
     if(video_stream_index == -1 && audio_stream_index == -1)
     {
         cout<<"Couldn't find any streams in the file!"<<endl;
+        return false;
+    }
+
+    if(!(av_codec_ctx = avcodec_alloc_context3(av_codec)))
+    {
+        cout<<"Couldn't setup AVCodecContext!"<<endl;
+        return false;
+    }
+
+    if(avcodec_parameters_to_context(av_codec_ctx, av_codec_params) < 0)
+    {
+        cout<<"Couldn't pass the parameters to AVCodecContext!"<<endl;
+        return false;
+    }
+
+    if(avcodec_open2(av_codec_ctx, av_codec, NULL) < 0)
+    {
+        cout<<"Couldn't open codec!"<<endl;
         return false;
     }
 

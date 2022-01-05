@@ -12,6 +12,12 @@ extern "C"
 }
 
 // Functions
-bool load_data(char* filename, AVFormatContext* av_format_ctx, AVCodecParameters* av_codec_params, AVCodec* av_codec);
-
+bool load_data( char* filename, 
+                AVFormatContext* av_format_ctx, 
+                AVCodecParameters* av_codec_params, 
+                AVCodec* av_codec, 
+                AVCodecContext* av_codec_ctx,
+                AVPacket* av_packet,
+                AVFrame* av_frame
+            );
 #endif
