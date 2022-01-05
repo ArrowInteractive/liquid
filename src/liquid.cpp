@@ -28,8 +28,9 @@ int main(int argc, char** argv)
     {
         if(!exists(argv[1]))
         {
-            cout<<"File doesn't exist."<<endl;
             //Display some error
+            cout<<"File doesn't exist."<<endl;
+            return -1;
         }
 
         //Check if it is a file or a folder
@@ -41,8 +42,11 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        // Initializing AVFormatContext
-        load_data(argv[1], av_format_ctx, av_codec_params, av_codec);
+        // Loading data
+        if(!(load_data(argv[1], av_format_ctx, av_codec_params, av_codec)))
+        {
+            return -1;
+        }
 
         // New window
         gl_window = new window(1280, 720, argv[1]);
