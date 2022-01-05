@@ -6,12 +6,13 @@ bool load_data( char* filename,
                 AVCodec* av_codec, 
                 AVCodecContext* av_codec_ctx,
                 AVPacket* av_packet,
-                AVFrame* av_frame
+                AVFrame* av_frame,
+                int* f_width,
+                int* f_height
             )
 {
     // Variables
-    int video_stream_index = -1;
-    int audio_stream_index = -1;
+    int video_stream_index = -1, audio_stream_index = -1, p_response, f_response;
     
     // Allocate AVPacket
     if(!(av_packet = av_packet_alloc()))
@@ -92,6 +93,37 @@ bool load_data( char* filename,
     {
         cout<<"Couldn't open codec!"<<endl;
         return false;
+    }
+
+    while(av_read_frame(av_format_ctx, av_packet) >= 0)
+    {
+        if(av_packet->stream_index != video_stream_index)
+        {
+            continue;
+        }
+
+        p_response = avcodec_send_packet(av_codec_ctx, av_packet);
+        if(p_response < 0)
+        {
+            cout<<"Failed to decode packet!"<<endl;
+            return false;
+        }
+
+        f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
+        if(f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF)
+        {
+            continue;
+        }
+        else if(f_response < 0)
+        {
+            cout<<"Failed to receive frame!"<<endl;
+            return false;
+        }
+
+        // Temporary code here
+        // Send the frame width and height to init window
+        // Receive the first frame and break
+        break;
     }
 
     return true;

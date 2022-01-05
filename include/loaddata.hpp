@@ -18,6 +18,8 @@ bool load_data( char* filename,
                 AVCodec* av_codec, 
                 AVCodecContext* av_codec_ctx,
                 AVPacket* av_packet,
-                AVFrame* av_frame
+                AVFrame* av_frame,
+                int* f_width,
+                int* f_height
             );
 #endif

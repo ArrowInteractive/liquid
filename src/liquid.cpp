@@ -10,6 +10,8 @@ using std::filesystem::is_regular_file;
 int main(int argc, char** argv)
 {
     // Variables
+    int* f_width; 
+    int* f_height;
     window* gl_window;
     AVCodec* av_codec;
     AVCodecContext* av_codec_ctx;
@@ -48,7 +50,9 @@ int main(int argc, char** argv)
                         av_codec, 
                         av_codec_ctx, 
                         av_packet, 
-                        av_frame
+                        av_frame,
+                        f_width,
+                        f_height
                     )))
         {
             return -1;
