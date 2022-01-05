@@ -1,8 +1,8 @@
 #include <loaddata.hpp>
 
-
 bool load_data(char* filename, AVFormatContext* av_format_ctx, AVCodecParameters* av_codec_params, AVCodec* av_codec)
 {
+    // Initializing AVFormatContext
     if(!(av_format_ctx = avformat_alloc_context()))
     {
         cout<<"Couldn't initialize AVFormatContext!"<<endl;
