@@ -13,6 +13,10 @@ void window::initWindow()
     {
         return;
     }
+    
+    // Temporarly stop window resize
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
     m_window = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
     if (!m_window)
     {

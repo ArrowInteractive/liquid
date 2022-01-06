@@ -58,6 +58,7 @@ int main(int argc, char** argv)
     }
 
     // Deallocate
+    close_data(&state);
     gl_window->destroyWindow();
     delete(gl_window);
 

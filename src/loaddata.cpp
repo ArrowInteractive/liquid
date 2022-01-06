@@ -133,3 +133,13 @@ bool load_data( char* filename, framedata_struct* state)
 
     return true;
 }
+
+void close_data(framedata_struct* state)
+{
+    avformat_close_input(&state->av_format_ctx);
+    avformat_free_context(state->av_format_ctx);
+    av_packet_free(&state->av_packet);
+    av_frame_free(&state->av_frame);
+    avcodec_free_context(&state->av_codec_ctx);
+    cout<<"Successfully freed resources."<<endl;
+}
