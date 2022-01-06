@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         {
             return -1;
         }
-
+        
         // New window
         gl_window = new window(1280, 720, argv[1]);
     }

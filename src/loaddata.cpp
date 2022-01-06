@@ -13,6 +13,8 @@ bool load_data( char* filename, framedata_struct* state)
     auto& audio_stream_index = state->audio_stream_index;
     auto& f_response = state->f_response;
     auto& p_response = state->p_response;
+    auto& f_width = state->f_width;
+    auto& f_height = state->f_height;
     
     // Allocate AVPacket
     if(!(av_packet = av_packet_alloc()))
@@ -123,10 +125,10 @@ bool load_data( char* filename, framedata_struct* state)
         // Temporary code here
         // Send the frame width and height to init window
         // Receive the first frame and break
-        cout<<"Frame width  : "<<av_frame->width<<endl;
-        cout<<"Frame height : "<<av_frame->height<<endl;
-        // Setup a break point here
-
+        f_width = av_frame->width;
+        f_height = av_frame->height;
+        cout<<"Frame width  : "<<f_width<<endl;
+        cout<<"Frame height : "<<f_height<<endl;
         
         break;
     }
