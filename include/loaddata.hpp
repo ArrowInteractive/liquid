@@ -4,12 +4,18 @@
 #include <iostream>
 using namespace std;
 
+
 extern "C"
 {
     #include <libavcodec/avcodec.h>
     #include <libavformat/avformat.h>
     #include <inttypes.h>
 }
+
+struct framedata_struct
+{
+    int f_width=0, f_height=0;
+};
 
 // Functions
 bool load_data( char* filename, 
@@ -19,7 +25,6 @@ bool load_data( char* filename,
                 AVCodecContext* av_codec_ctx,
                 AVPacket* av_packet,
                 AVFrame* av_frame,
-                int* f_width,
-                int* f_height
+                framedata_struct* state
             );
 #endif
