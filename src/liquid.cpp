@@ -41,9 +41,11 @@ int main(int argc, char** argv)
         {
             return -1;
         }
-        
+
         // New window
-        gl_window = new window(1280, 720, argv[1]);
+        cout<<"Frame width  : "<<state.f_width<<endl;
+        cout<<"Frame height : "<<state.f_height<<endl;
+        gl_window = new window(state.f_width, state.f_height, argv[1]);
     }
 
     //Initialize the window

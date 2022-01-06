@@ -127,8 +127,6 @@ bool load_data( char* filename, framedata_struct* state)
         // Receive the first frame and break
         f_width = av_frame->width;
         f_height = av_frame->height;
-        cout<<"Frame width  : "<<f_width<<endl;
-        cout<<"Frame height : "<<f_height<<endl;
         
         break;
     }
