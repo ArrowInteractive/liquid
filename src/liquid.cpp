@@ -10,14 +10,8 @@ using std::filesystem::is_regular_file;
 int main(int argc, char** argv)
 {
     // Variables
-    framedata_struct* state;
     window* gl_window;
-    AVCodec* av_codec;
-    AVCodecContext* av_codec_ctx;
-    AVCodecParameters* av_codec_params;
-    AVFormatContext* av_format_ctx;
-    AVPacket* av_packet;
-    AVFrame* av_frame;
+    framedata_struct state;
 
     // Check for args
     if(argc < 2)
@@ -43,15 +37,7 @@ int main(int argc, char** argv)
         }
 
         // Loading data
-        if(!(load_data( argv[1], 
-                        av_format_ctx, 
-                        av_codec_params, 
-                        av_codec, 
-                        av_codec_ctx, 
-                        av_packet, 
-                        av_frame,
-                        state
-                    )))
+        if(!(load_data(argv[1], &state)))
         {
             return -1;
         }

@@ -1,18 +1,18 @@
 #include <loaddata.hpp>
 
-bool load_data( char* filename, 
-                AVFormatContext* av_format_ctx, 
-                AVCodecParameters* av_codec_params, 
-                AVCodec* av_codec, 
-                AVCodecContext* av_codec_ctx,
-                AVPacket* av_packet,
-                AVFrame* av_frame,
-                framedata_struct* state
-            )
+bool load_data( char* filename, framedata_struct* state)
 {
     // Variables
-    int video_stream_index = -1, audio_stream_index = -1, p_response, f_response;
-    auto& width = state->f_width;
+    auto& av_format_ctx = state->av_format_ctx;
+    auto& av_codec_params = state->av_codec_params;
+    auto& av_codec = state->av_codec;
+    auto& av_codec_ctx = state->av_codec_ctx;
+    auto& av_packet = state->av_packet;
+    auto& av_frame = state->av_frame;
+    auto& video_stream_index = state->video_stream_index;
+    auto& audio_stream_index = state->audio_stream_index;
+    auto& f_response = state->f_response;
+    auto& p_response = state->p_response;
     
     // Allocate AVPacket
     if(!(av_packet = av_packet_alloc()))

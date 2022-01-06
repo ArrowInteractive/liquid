@@ -14,17 +14,17 @@ extern "C"
 
 struct framedata_struct
 {
-    int f_width=0, f_height=0;
+    int f_width=0, f_height=0, video_stream_index = -1, audio_stream_index = -1, p_response, f_response;
+    AVFormatContext* av_format_ctx;
+    AVCodecParameters* av_codec_params;
+    AVCodec* av_codec;
+    AVCodecContext* av_codec_ctx;
+    AVPacket* av_packet;
+    AVFrame* av_frame;
+
 };
 
 // Functions
-bool load_data( char* filename, 
-                AVFormatContext* av_format_ctx, 
-                AVCodecParameters* av_codec_params, 
-                AVCodec* av_codec, 
-                AVCodecContext* av_codec_ctx,
-                AVPacket* av_packet,
-                AVFrame* av_frame,
-                framedata_struct* state
-            );
+bool load_data( char* filename, framedata_struct* state);
+
 #endif
