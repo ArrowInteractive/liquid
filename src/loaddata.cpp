@@ -16,35 +16,30 @@ bool load_data( char* filename, framedata_struct* state)
     auto& f_width = state->f_width;
     auto& f_height = state->f_height;
     
-    // Allocate AVPacket
     if(!(av_packet = av_packet_alloc()))
     {
         cout<<"Couldn't allocate AVPacket!"<<endl;
         return false;
     }
 
-    // Allocate AVFrame
     if(!(av_frame = av_frame_alloc()))
     {
         cout<<"Couldn't allocate AVFrame!"<<endl;
         return false;
     }
 
-    // Allocating AVFormatContext
     if(!(av_format_ctx = avformat_alloc_context()))
     {
         cout<<"Couldn't initialize AVFormatContext!"<<endl;
         return false;
     }
 
-    // Opening file
     if(avformat_open_input(&av_format_ctx, filename, NULL, NULL) != 0)
     {
         cout<<"Couldn't open file!"<<endl;
         return false;
     }
 
-    // Finding streams
     for(int i=0; i < av_format_ctx->nb_streams; i++)
     {
         av_codec_params = av_format_ctx->streams[i]->codecpar;
@@ -52,7 +47,6 @@ bool load_data( char* filename, framedata_struct* state)
         cout<<"Stream ID : "<<i<<endl;
         cout<<"CODEC     : "<<av_codec->AVCodec::long_name<<endl;
 
-        // Finding stream ids
         if(av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO)
         {
             video_stream_index = i;
@@ -72,7 +66,6 @@ bool load_data( char* filename, framedata_struct* state)
         }
     }
 
-    // If no stream was found, exit
     if(video_stream_index == -1 && audio_stream_index == -1)
     {
         cout<<"Couldn't find any streams in the file!"<<endl;

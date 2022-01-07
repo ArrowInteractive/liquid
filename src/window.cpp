@@ -14,7 +14,7 @@ void window::initWindow()
         return;
     }
     
-    // Temporarly stop window resize
+    // Temporarly disable window resize
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     m_window = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);

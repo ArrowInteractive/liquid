@@ -21,10 +21,8 @@ struct framedata_struct
     AVCodecContext* av_codec_ctx;
     AVPacket* av_packet;
     AVFrame* av_frame;
-
 };
 
-// Functions
 bool load_data(char* filename, framedata_struct* state);
 void close_data(framedata_struct* state);
 
