@@ -56,7 +56,7 @@ jobs:
     - name: Building
       run: |
         git submodule update --init --recursive
-        sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev 
+        sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev libsdl2-dev
         mkdir binary
         cd binary
         cmake ..
