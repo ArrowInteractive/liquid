@@ -23,12 +23,12 @@ int main(int argc, char** argv)
     if(argc < 2)
     {
         window = SDL_CreateWindow(
-                                    "Liquid Media Player",             // window title
-                                    SDL_WINDOWPOS_UNDEFINED,           // initial x position
-                                    SDL_WINDOWPOS_UNDEFINED,           // initial y position
-                                    640,                               // width, in pixels
-                                    480,                               // height, in pixels
-                                    SDL_WINDOW_OPENGL                  // flags - see below
+                                    "Liquid Media Player",
+                                    SDL_WINDOWPOS_UNDEFINED,
+                                    SDL_WINDOWPOS_UNDEFINED,
+                                    640,
+                                    480,
+                                    SDL_WINDOW_OPENGL
                                 );
 
         if(window == NULL)
@@ -63,12 +63,12 @@ int main(int argc, char** argv)
         cout<<"Frame width  : "<<state.f_width<<endl;
         cout<<"Frame height : "<<state.f_height<<endl;
         window = SDL_CreateWindow(
-                                    argv[1],                           // window title
-                                    SDL_WINDOWPOS_UNDEFINED,           // initial x position
-                                    SDL_WINDOWPOS_UNDEFINED,           // initial y position
-                                    state.f_width,                     // width, in pixels
-                                    state.f_height,                    // height, in pixels
-                                    SDL_WINDOW_OPENGL                  // flags - see below
+                                    argv[1],
+                                    SDL_WINDOWPOS_UNDEFINED,
+                                    SDL_WINDOWPOS_UNDEFINED,
+                                    state.f_width,
+                                    state.f_height,
+                                    SDL_WINDOW_OPENGL
                                 );
 
         if(window == NULL)
