@@ -52,6 +52,7 @@ jobs:
     
     - name: Building
       run: |
+        sudo apt update --fix-missing
         sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev libsdl2-dev
         git submodule update --init --recursive
         mkdir binary
