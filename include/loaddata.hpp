@@ -7,9 +7,13 @@ using namespace std;
 
 extern "C"
 {
-    #include <libavcodec/avcodec.h>
+    #include <libavfilter/avfilter.h>
     #include <libavformat/avformat.h>
-    #include <inttypes.h>
+    #include <libavcodec/avcodec.h>
+    #include <libavdevice/avdevice.h>
+    #include <libavutil/imgutils.h>
+    #include <libswresample/swresample.h>
+    #include <libswscale/swscale.h>
 }
 
 struct framedata_struct
