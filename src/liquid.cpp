@@ -1,7 +1,10 @@
-#include "window.hpp"
-#include "loaddata.hpp"
+#define SDL_MAIN_HANDLED
+
 #include <iostream>
+#include <SDL2/SDL.h>
 #include <filesystem>
+
+#include "loaddata.hpp"
 using namespace std;
 using std::filesystem::exists;
 using std::filesystem::is_directory;
@@ -10,12 +13,31 @@ using std::filesystem::is_regular_file;
 int main(int argc, char** argv)
 {
     // Variables
-    window* gl_window;
     framedata_struct state;
+    SDL_Window* window;
+    SDL_Event event;
+    SDL_Renderer* renderer;
+
+    SDL_Init(SDL_INIT_VIDEO);
 
     if(argc < 2)
     {
-        gl_window = new window(1280, 720, "Liquid Media Player");
+        window = SDL_CreateWindow(
+                                    "Liquid Media Player",             // window title
+                                    SDL_WINDOWPOS_UNDEFINED,           // initial x position
+                                    SDL_WINDOWPOS_UNDEFINED,           // initial y position
+                                    640,                               // width, in pixels
+                                    480,                               // height, in pixels
+                                    SDL_WINDOW_OPENGL                  // flags - see below
+                                );
+
+        if(window == NULL)
+        {
+            cout<<"Couldn't create window!"<<endl;
+            return -1;
+        }
+
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
     else
     {
@@ -40,20 +62,42 @@ int main(int argc, char** argv)
 
         cout<<"Frame width  : "<<state.f_width<<endl;
         cout<<"Frame height : "<<state.f_height<<endl;
-        gl_window = new window(state.f_width, state.f_height, argv[1]);
+        window = SDL_CreateWindow(
+                                    argv[1],                           // window title
+                                    SDL_WINDOWPOS_UNDEFINED,           // initial x position
+                                    SDL_WINDOWPOS_UNDEFINED,           // initial y position
+                                    state.f_width,                     // width, in pixels
+                                    state.f_height,                    // height, in pixels
+                                    SDL_WINDOW_OPENGL                  // flags - see below
+                                );
+
+        if(window == NULL)
+        {
+            cout<<"Couldn't create window!"<<endl;
+            return -1;
+        }
+
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
 
-    //Initialize the window
-    gl_window->initWindow();
-
-    while(gl_window->isWindowNotClosed())
+    while(true)
     {
-        gl_window->updateWindow();
+        if(SDL_PollEvent(&event))
+        {
+            if(event.type == SDL_QUIT)
+            {
+                break;
+            }
+        }
+
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer);
     }
-    
+
     close_data(&state);
-    gl_window->destroyWindow();
-    delete(gl_window);
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_Quit();
 
     return 0;
 }

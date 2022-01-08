@@ -11,13 +11,11 @@ FILE(GLOB SOURCES src/*.cpp)
 
 add_executable(liquid ${SOURCES})
 
-add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/glad)
 add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
 
 target_link_libraries(liquid
-    glfw
     glad
     ffmpeg
     SDL2
