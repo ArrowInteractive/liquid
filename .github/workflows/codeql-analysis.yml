@@ -50,13 +50,13 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Install GLFW Deps
-      uses: RpxdYTX/install-glfw-deps@v2
+    - name: Install dependencies
+      run: |
+        sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev libsdl2-dev
     
     - name: Building
       run: |
         git submodule update --init --recursive
-        sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev libsdl2-dev
         mkdir binary
         cd binary
         cmake ..
