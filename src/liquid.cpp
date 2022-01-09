@@ -77,7 +77,7 @@ int main(int argc, char** argv)
                                     SDL_WINDOWPOS_UNDEFINED,
                                     state.f_width,
                                     state.f_height,
-                                    SDL_WINDOW_SHOWN
+                                    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
                                 );
 
         if(window == NULL)
