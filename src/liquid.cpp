@@ -14,12 +14,20 @@ int main(int argc, char** argv)
 {
     // Variables
     framedata_struct state;
+    SDL_DisplayMode dm;
     SDL_Window* window;
     SDL_Event event;
     SDL_Renderer* renderer;
     SDL_Texture* texture;
+    bool is_fullscreen = false;
 
     SDL_Init(SDL_INIT_VIDEO);
+
+    if (SDL_GetDesktopDisplayMode(0, &dm))
+    {
+        cout<<"Error getting display mode!"<<endl;
+        return -1;
+    }
 
     if(argc < 2)
     {
@@ -69,7 +77,7 @@ int main(int argc, char** argv)
                                     SDL_WINDOWPOS_UNDEFINED,
                                     state.f_width,
                                     state.f_height,
-                                    SDL_WINDOW_OPENGL
+                                    SDL_WINDOW_SHOWN
                                 );
 
         if(window == NULL)
@@ -83,22 +91,53 @@ int main(int argc, char** argv)
 
     while(true)
     {
-        if(SDL_PollEvent(&event))
+        SDL_PollEvent(&event);
+
+        if(event.type == SDL_QUIT)
         {
-            if(event.type == SDL_QUIT)
+            break;
+        }
+        else
+        {
+            if(event.type == SDL_KEYDOWN)
             {
-                break;
+                if(event.key.keysym.sym == SDLK_q)
+                {
+                    break;
+                }
+                else if(event.key.keysym.sym == SDLK_f)
+                {
+                    if(!is_fullscreen)
+                    {
+                        SDL_SetWindowSize(window, dm.w, dm.h + 10);
+                        SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                    }
+                    else
+                    {
+                        if(state.f_width == 0 && state.f_height == 0)
+                        {
+                            SDL_SetWindowSize(window, 1280, 720);
+                            SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                        }
+                        else
+                        {
+                            SDL_SetWindowSize(window, state.f_width, state.f_height);
+                            SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                        }
+                    }
+                    is_fullscreen = !is_fullscreen;
+                }
             }
         }
 
         SDL_RenderClear(renderer);
         SDL_RenderPresent(renderer);
+        SDL_Delay(5);
     }
 
-    close_data(&state);
-    SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
-
+    close_data(&state);
     return 0;
 }

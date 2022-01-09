@@ -15,7 +15,7 @@ bool load_data( char* filename, framedata_struct* state)
     auto& p_response = state->p_response;
     auto& f_width = state->f_width;
     auto& f_height = state->f_height;
-    auto& frame_data = state->frame_data;
+    auto& f_data = state->f_data;
     
     if(!(av_packet = av_packet_alloc()))
     {
