@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     SDL_Renderer* renderer;
     SDL_Texture* texture;
     bool is_fullscreen = false;
+    bool is_file_open = false;
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -69,6 +70,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
+        is_file_open = true;
         cout<<"Frame width  : "<<state.f_width<<endl;
         cout<<"Frame height : "<<state.f_height<<endl;
         window = SDL_CreateWindow(
@@ -138,6 +140,10 @@ int main(int argc, char** argv)
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-    close_data(&state);
+    if(is_file_open)
+    {
+        close_data(&state);
+    }
+    
     return 0;
 }

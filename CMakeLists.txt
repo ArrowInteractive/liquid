@@ -4,6 +4,7 @@ project(Liquid)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 include_directories(include)
 
@@ -18,5 +19,6 @@ add_subdirectory(vendor/SDL)
 target_link_libraries(liquid
     glad
     ffmpeg
-    SDL2
+    SDL2main
+    SDL2-static
 )
