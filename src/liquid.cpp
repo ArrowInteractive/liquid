@@ -38,7 +38,7 @@ int main(int argc, char** argv)
                                     SDL_WINDOWPOS_UNDEFINED,
                                     1280,
                                     720,
-                                    SDL_WINDOW_OPENGL
+                                    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
                                 );
 
         if(window == NULL)
@@ -91,6 +91,8 @@ int main(int argc, char** argv)
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
 
+    SDL_SetWindowBordered(window, SDL_FALSE);
+    
     while(true)
     {
         SDL_PollEvent(&event);
