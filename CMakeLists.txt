@@ -4,7 +4,13 @@ project(Liquid)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_EXE_LINKER_FLAGS "-static")
+
+if(LINUX) 
+        message(STATUS ">>> Linux")
+else()
+        message(STATUS ">>> Not Linux")
+        set(CMAKE_EXE_LINKER_FLAGS "-static")
+endif()
 
 include_directories(include)
 
