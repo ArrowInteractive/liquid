@@ -9,13 +9,14 @@ bool load_data( char* filename, framedata_struct* state)
     auto& av_codec_ctx = state->av_codec_ctx;
     auto& av_packet = state->av_packet;
     auto& av_frame = state->av_frame;
+    auto& decoded_frame = state->decoded_frame;
     auto& video_stream_index = state->video_stream_index;
     auto& audio_stream_index = state->audio_stream_index;
     auto& f_response = state->f_response;
     auto& p_response = state->p_response;
     auto& f_width = state->f_width;
     auto& f_height = state->f_height;
-    auto& f_data = state->f_data;
+    auto& sws_ctx = state->sws_ctx;
     
     if(!(av_packet = av_packet_alloc()))
     {
@@ -116,8 +117,6 @@ bool load_data( char* filename, framedata_struct* state)
             return false;
         }
 
-        // Temporary code here
-        // Send the frame width and height to init window
         // Receive the first frame and break
         f_width = av_frame->width;
         f_height = av_frame->height;
@@ -125,6 +124,43 @@ bool load_data( char* filename, framedata_struct* state)
         break;
     }
 
+    /* Setup SWSContext here and send the decoded frame to renderer using decoded_frame */
+    sws_ctx = sws_getContext(   av_frame->width, av_frame->height, av_codec_ctx->pix_fmt, 
+                                av_frame->width, av_frame->height, AV_PIX_FMT_YUV420P, 
+                                SWS_BICUBIC, NULL, NULL, NULL);
+    
+    int num_bytes;
+    uint8_t * buffer = NULL;
+
+    num_bytes = av_image_get_buffer_size(
+                AV_PIX_FMT_YUV420P,
+                av_frame->width,
+                av_frame->height,
+                32
+            );
+    buffer = (uint8_t *) av_malloc(num_bytes * sizeof(uint8_t));
+
+    decoded_frame = av_frame_alloc();
+
+    av_image_fill_arrays(
+        decoded_frame->data,
+        decoded_frame->linesize,
+        buffer,
+        AV_PIX_FMT_YUV420P,
+        av_frame->width,
+        av_frame->height,
+        32
+    );
+
+    sws_scale(
+                    sws_ctx,
+                    (uint8_t const * const *)av_frame->data,
+                    av_frame->linesize,
+                    0,
+                    av_codec_ctx->height,
+                    decoded_frame->data,
+                    decoded_frame->linesize
+                );
     return true;
 }
 

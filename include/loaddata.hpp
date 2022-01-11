@@ -7,13 +7,10 @@ using namespace std;
 
 extern "C"
 {
-    #include <libavfilter/avfilter.h>
-    #include <libavformat/avformat.h>
     #include <libavcodec/avcodec.h>
-    #include <libavdevice/avdevice.h>
-    #include <libavutil/imgutils.h>
-    #include <libswresample/swresample.h>
+    #include <libavformat/avformat.h>
     #include <libswscale/swscale.h>
+    #include <libavutil/imgutils.h>
 }
 
 struct framedata_struct
@@ -25,7 +22,8 @@ struct framedata_struct
     AVCodecContext* av_codec_ctx;
     AVPacket* av_packet;
     AVFrame* av_frame;
-    uint8_t* f_data[8];   
+    AVFrame * decoded_frame;
+    SwsContext* sws_ctx;
 };
 
 bool load_data(char* filename, framedata_struct* state);

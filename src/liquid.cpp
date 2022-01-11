@@ -88,7 +88,8 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, state.f_width, state.f_height);
     }
 
     SDL_SetWindowBordered(window, SDL_FALSE);
@@ -133,8 +134,23 @@ int main(int argc, char** argv)
                 }
             }
         }
-
+        
+        if(is_file_open)
+        {
+            /* Load the texture from decoded_frame */
+            SDL_UpdateYUVTexture(
+                        texture,            // the texture to update
+                        NULL,              // a pointer to the rectangle of pixels to update, or NULL to update the entire texture
+                        state.decoded_frame->data[0],      // the raw pixel data for the Y plane
+                        state.decoded_frame->linesize[0],  // the number of bytes between rows of pixel data for the Y plane
+                        state.decoded_frame->data[1],      // the raw pixel data for the U plane
+                        state.decoded_frame->linesize[1],  // the number of bytes between rows of pixel data for the U plane
+                        state.decoded_frame->data[2],      // the raw pixel data for the V plane
+                        state.decoded_frame->linesize[2]   // the number of bytes between rows of pixel data for the V plane
+                    );
+        }
         SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
         SDL_Delay(5);
     }
