@@ -16,6 +16,8 @@ bool load_data( char* filename, framedata_struct* state)
     auto& p_response = state->p_response;
     auto& f_width = state->f_width;
     auto& f_height = state->f_height;
+    auto& num_bytes = state->num_bytes;
+    auto& buffer = state->buffer;
     auto& sws_ctx = state->sws_ctx;
     
     if(!(av_packet = av_packet_alloc()))
@@ -129,9 +131,7 @@ bool load_data( char* filename, framedata_struct* state)
                                 av_frame->width, av_frame->height, AV_PIX_FMT_YUV420P, 
                                 SWS_BICUBIC, NULL, NULL, NULL);
     
-    int num_bytes;
-    uint8_t * buffer = NULL;
-
+    
     num_bytes = av_image_get_buffer_size(
                 AV_PIX_FMT_YUV420P,
                 av_frame->width,
@@ -166,10 +166,12 @@ bool load_data( char* filename, framedata_struct* state)
 
 void close_data(framedata_struct* state)
 {
-    avformat_close_input(&state->av_format_ctx);
-    avformat_free_context(state->av_format_ctx);
     av_packet_free(&state->av_packet);
     av_frame_free(&state->av_frame);
+    avformat_close_input(&state->av_format_ctx);
+    avformat_free_context(state->av_format_ctx);
+    avcodec_parameters_free(&state->av_codec_params);
     avcodec_free_context(&state->av_codec_ctx);
-    cout<<"Successfully freed resources."<<endl;
+    av_free(&state->buffer);
+    sws_freeContext(state->sws_ctx);
 }

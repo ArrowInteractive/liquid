@@ -1,14 +1,4 @@
-#define SDL_MAIN_HANDLED
-
-#include <iostream>
-#include <SDL2/SDL.h>
-#include <filesystem>
-
-#include "loaddata.hpp"
-using namespace std;
-using std::filesystem::exists;
-using std::filesystem::is_directory;
-using std::filesystem::is_regular_file;
+#include <liquid.hpp>
 
 int main(int argc, char** argv)
 {
@@ -44,10 +34,17 @@ int main(int argc, char** argv)
         if(window == NULL)
         {
             cout<<"Couldn't create window!"<<endl;
+            SDL_DestroyWindow(window);
             return -1;
         }
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        if(renderer == NULL)
+        {
+            cout<<"Couldn't create renderer!"<<endl;
+            SDL_DestroyRenderer(renderer);
+            return -1;
+        }
     }
     else
     {
@@ -89,7 +86,20 @@ int main(int argc, char** argv)
         }
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+        if(renderer == NULL)
+        {
+            cout<<"Couldn't create renderer!"<<endl;
+            SDL_DestroyRenderer(renderer);
+            return -1;
+        }
+
         texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, state.f_width, state.f_height);
+        if(texture == NULL)
+        {
+            cout<<"Couldn't create texture!"<<endl;
+            SDL_DestroyTexture(texture);
+            return -1;
+        }
     }
 
     SDL_SetWindowBordered(window, SDL_FALSE);
@@ -155,6 +165,12 @@ int main(int argc, char** argv)
         SDL_Delay(5);
     }
 
+    cleanup(window, renderer, texture, is_file_open, state);
+    return 0;
+}
+
+void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, bool is_file_open, framedata_struct state)
+{
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -162,6 +178,4 @@ int main(int argc, char** argv)
     {
         close_data(&state);
     }
-    
-    return 0;
 }
