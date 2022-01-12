@@ -1,5 +1,25 @@
 #include <liquid.hpp>
 
+bool show=true;
+
+Uint32 hide_ui(Uint32 interval,void* param)
+{
+    show = false;
+    return 0;
+}
+
+void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture,SDL_TimerID timer, bool is_file_open, framedata_struct state)
+{
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_RemoveTimer(timer);
+    SDL_Quit();
+    if(is_file_open)
+    {
+        close_data(&state);
+    }
+}
+
 int main(int argc, char** argv)
 {
     // Variables
@@ -10,6 +30,9 @@ int main(int argc, char** argv)
     SDL_Renderer* renderer;
     SDL_Texture* texture;
     SDL_Rect top_bar;
+    SDL_Rect topbar;
+    SDL_Rect xbutton;
+    SDL_TimerID timer;
     bool is_fullscreen = false;
     bool is_file_open = false;
 
@@ -80,6 +103,8 @@ int main(int argc, char** argv)
                                     SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
                                 );
 
+
+
         if(window == NULL)
         {
             cout<<"Couldn't create window!"<<endl;
@@ -101,6 +126,12 @@ int main(int argc, char** argv)
             SDL_DestroyTexture(texture);
             return -1;
         }
+
+        if (SDL_Init( SDL_INIT_TIMER ) < 0 )
+        {
+        cout<< "SDL could not initialize Timer! SDL Error: "<< SDL_GetError();
+        return -1;
+        }
     }
 
     SDL_SetWindowBordered(window, SDL_FALSE);
@@ -109,7 +140,13 @@ int main(int argc, char** argv)
     top_bar.y = 0;
     top_bar.w = state.f_width;
     top_bar.h = (int)(state.f_height * 5)/100;
-    
+
+    //Initialise the X Button
+    xbutton.x=(state.f_width*97)/100;
+    xbutton.y=0;
+    xbutton.w=(int)(state.f_height*6)/100;
+    xbutton.h=(int)(state.f_height*5)/100;
+
     while(true)
     {
         SDL_PollEvent(&event);
@@ -117,6 +154,14 @@ int main(int argc, char** argv)
         if(event.type == SDL_QUIT)
         {
             break;
+        }
+        else if(event.type==SDL_MOUSEMOTION)
+        {
+            SDL_RemoveTimer(timer);
+        }
+        else if(event.type==!SDL_MOUSEMOTION)
+        {
+            timer = SDL_AddTimer(2000,hide_ui,(void *)false);
         }
         else
         {
@@ -135,16 +180,22 @@ int main(int argc, char** argv)
                         /* drawing top_bar */
                         top_bar.x = 0;
                         top_bar.y = 0;
-                        top_bar.w = dm.w;
+                        top_bar.w = (int)(dm.h*6)/100;
                         top_bar.h = (int)(dm.h*5)/100;
                     }
                     else
                     {
-                        /* drawing top_bar */
-                        top_bar.x = 0;
-                        top_bar.y = 0;
-                        top_bar.w = state.f_width;
-                        top_bar.h = (int)(state.f_height*5)/100;
+                        //turn back the size of topbar after exiting fullscreen
+                        topbar.x = 0;
+                        topbar.y = 0;
+                        topbar.w = state.f_width;
+                        topbar.h = (int)(state.f_height*5)/100;
+
+                        //Code for turn back to the original X Button size
+                        xbutton.x=(state.f_width*97)/100;
+                        xbutton.y=0;
+                        xbutton.w=(int)(state.f_height*6)/100;
+                        xbutton.h=(int)(state.f_height*5)/100;
 
                         if(state.f_width == 0 && state.f_height == 0)
                         {
@@ -161,13 +212,13 @@ int main(int argc, char** argv)
                 }
             }
         }
-        
+
         if(is_file_open)
         {
             /* Load the texture from decoded_frame */
             SDL_UpdateYUVTexture(
                         texture,            // the texture to update
-                        NULL,              // a pointer to the rectangle of pixels to update, or NULL to update the entire texture
+                        NULL,              // a pointer to the topbarangle of pixels to update, or NULL to update the entire texture
                         state.decoded_frame->data[0],      // the raw pixel data for the Y plane
                         state.decoded_frame->linesize[0],  // the number of bytes between rows of pixel data for the Y plane
                         state.decoded_frame->data[1],      // the raw pixel data for the U plane
@@ -176,25 +227,19 @@ int main(int argc, char** argv)
                         state.decoded_frame->linesize[2]   // the number of bytes between rows of pixel data for the V plane
                     );
         }
+
         SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 126, 126, 126, 50);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
-        SDL_RenderDrawRect(renderer,&top_bar);
+        if(show)
+        {
+        SDL_RenderDrawRect(renderer,&topbar);
+        SDL_RenderDrawRect(renderer,&xbutton);
+        }
         SDL_RenderPresent(renderer);
         SDL_Delay(5);
     }
 
-    cleanup(window, renderer, texture, is_file_open, state);
+    cleanup(window, renderer, texture, timer, is_file_open, state);
     return 0;
-}
-
-void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, bool is_file_open, framedata_struct state)
-{
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    if(is_file_open)
-    {
-        close_data(&state);
-    }
 }

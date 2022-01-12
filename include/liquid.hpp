@@ -9,4 +9,6 @@ using std::filesystem::exists;
 using std::filesystem::is_directory;
 using std::filesystem::is_regular_file;
 
+Uint32 hide_ui(Uint32 interval,void* param);
+
 void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, bool is_file_open, framedata_struct state);
