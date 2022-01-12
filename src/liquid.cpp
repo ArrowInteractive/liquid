@@ -9,6 +9,7 @@ int main(int argc, char** argv)
     SDL_Event event;
     SDL_Renderer* renderer;
     SDL_Texture* texture;
+    SDL_Rect top_bar;
     bool is_fullscreen = false;
     bool is_file_open = false;
 
@@ -103,6 +104,11 @@ int main(int argc, char** argv)
     }
 
     SDL_SetWindowBordered(window, SDL_FALSE);
+    /* drawing default top_bar */
+    top_bar.x = 0;
+    top_bar.y = 0;
+    top_bar.w = state.f_width;
+    top_bar.h = (int)(state.f_height * 5)/100;
     
     while(true)
     {
@@ -126,9 +132,20 @@ int main(int argc, char** argv)
                     {
                         SDL_SetWindowSize(window, dm.w, dm.h + 10);
                         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                        /* drawing top_bar */
+                        top_bar.x = 0;
+                        top_bar.y = 0;
+                        top_bar.w = dm.w;
+                        top_bar.h = (int)(dm.h*5)/100;
                     }
                     else
                     {
+                        /* drawing top_bar */
+                        top_bar.x = 0;
+                        top_bar.y = 0;
+                        top_bar.w = state.f_width;
+                        top_bar.h = (int)(state.f_height*5)/100;
+
                         if(state.f_width == 0 && state.f_height == 0)
                         {
                             SDL_SetWindowSize(window, 1280, 720);
@@ -160,7 +177,9 @@ int main(int argc, char** argv)
                     );
         }
         SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 126, 126, 126, 50);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderDrawRect(renderer,&top_bar);
         SDL_RenderPresent(renderer);
         SDL_Delay(5);
     }
