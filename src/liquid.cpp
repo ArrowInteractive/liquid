@@ -132,16 +132,15 @@ int main(int argc, char** argv)
         /* Draw UI */
         if(!is_fullscreen)
         {
-            /* drawing default top_bar */
+            /*  
+                Not fullscreen 
+                Drawing X button 
+            */
             topbar.x = 0;
             topbar.y = 0;
             topbar.w = state.f_width;
             topbar.h = (int)(state.f_height*5)/100;
 
-            /*  
-                Not fullscreen 
-                Drawing X button 
-            */
             xbutton.x=(int)(state.f_width*97)/100;
             xbutton.y=0;
             xbutton.w=(int)(state.f_width*6)/100;
@@ -149,16 +148,15 @@ int main(int argc, char** argv)
         }
         else
         {
-            //Code for change the size of topbar in fullscreen
+            /*  
+                Is fullscreen 
+                Drawing X button 
+            */
             topbar.x = 0;
             topbar.y = 0;
             topbar.w = dm.w;
             topbar.h = (int)(dm.h*5)/100;
 
-            /*  
-                Is fullscreen 
-                Drawing X button 
-            */
             xbutton.x = (int)(dm.w*97)/100;
             xbutton.y = 0;
             xbutton.w = (int)(dm.h*6)/100;
@@ -167,15 +165,9 @@ int main(int argc, char** argv)
         /* Draw the UI based on mouse activity */
         if(event.type == SDL_MOUSEMOTION)
         {
+            SDL_RemoveTimer(ui_draw_timer);
             draw_ui = true;
-            ui_draw_timer = SDL_AddTimer(5000, hide_ui, (void *)false);
-        }
-
-        if(event.type == SDL_QUIT|| (SDL_MOUSEBUTTONDOWN) && ((event.motion.x > xbutton.x) && 
-            (event.motion.x < xbutton.x + xbutton.w) && (event.motion.y > xbutton.y)
-            && (event.motion.y < xbutton.y + xbutton.h)))
-        {
-            break;
+            ui_draw_timer = SDL_AddTimer(4000, hide_ui, (void *)false);
         }
         else
         {
@@ -210,6 +202,17 @@ int main(int argc, char** argv)
                         }
                     }
                     is_fullscreen = !is_fullscreen;
+                }
+            }
+            else if(event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                if(     event.button.button == SDL_BUTTON_LEFT && 
+                        ((event.motion.x > xbutton.x) && 
+                        (event.motion.x < xbutton.x + xbutton.w) && 
+                        (event.motion.y > xbutton.y) && 
+                        (event.motion.y < xbutton.y + xbutton.h)))
+                {
+                    break;
                 }
             }
         }
