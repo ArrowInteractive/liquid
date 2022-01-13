@@ -69,20 +69,23 @@ int main(int argc, char** argv)
             return -1;
         }
 
+        /* Set target width and height */
+        state.t_width = dm.w;
+        state.t_height = dm.h;
         if(!(load_data(argv[1], &state)))
         {
             return -1;
         }
 
         is_file_open = true;
-        cout<<"Frame width  : "<<state.f_width<<endl;
-        cout<<"Frame height : "<<state.f_height<<endl;
+        cout<<"Frame width  : "<<state.av_frame->width<<endl;
+        cout<<"Frame height : "<<state.av_frame->height<<endl;
         window = SDL_CreateWindow(
                                     argv[1],
                                     SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED,
-                                    state.f_width,
-                                    state.f_height,
+                                    state.av_frame->width,
+                                    state.av_frame->height,
                                     SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
                                 );
 
@@ -102,7 +105,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, state.f_width, state.f_height);
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, dm.w, dm.h);
         if(texture == NULL)
         {
             cout<<"Couldn't create texture!"<<endl;
@@ -116,14 +119,14 @@ int main(int argc, char** argv)
     //Initialise the topbar
     topbar.x = 0;
     topbar.y = 0;
-    topbar.w = state.f_width;
-    topbar.h = (int)(state.f_height*5)/100;
+    topbar.w = state.av_frame->width;
+    topbar.h = (int)(state.av_frame->height*5)/100;
 
     //Initialise the X Button
-    xbutton.x=(int)(state.f_width*98)/100;
-    xbutton.y=0;
-    xbutton.w=(int)(state.f_width*6)/100;
-    xbutton.h=(int)(state.f_height*6)/100;
+    xbutton.x = (int)(state.av_frame->width*98)/100;
+    xbutton.y = 0;
+    xbutton.w = (int)(state.av_frame->width*6)/100;
+    xbutton.h = (int)(state.av_frame->height*6)/100;
 
     while(true)
     {
@@ -138,13 +141,13 @@ int main(int argc, char** argv)
             */
             topbar.x = 0;
             topbar.y = 0;
-            topbar.w = state.f_width;
-            topbar.h = (int)(state.f_height*5)/100;
+            topbar.w = state.av_frame->width;
+            topbar.h = (int)(state.av_frame->height*5)/100;
 
-            xbutton.x=(int)(state.f_width*97)/100;
-            xbutton.y=0;
-            xbutton.w=(int)(state.f_width*6)/100;
-            xbutton.h=(int)(state.f_height*5)/100;
+            xbutton.x = (int)(state.av_frame->width*97)/100;
+            xbutton.y = 0;
+            xbutton.w = (int)(state.av_frame->width*6)/100;
+            xbutton.h = (int)(state.av_frame->height*5)/100;
         }
         else
         {
@@ -167,7 +170,7 @@ int main(int argc, char** argv)
         {
             SDL_RemoveTimer(ui_draw_timer);
             draw_ui = true;
-            ui_draw_timer = SDL_AddTimer(4000, hide_ui, (void *)false);
+            ui_draw_timer = SDL_AddTimer(1000, hide_ui, (void *)false);
         }
         else
         {
@@ -190,14 +193,14 @@ int main(int argc, char** argv)
                     }
                     else
                     {
-                        if(state.f_width == 0 && state.f_height == 0)
+                        if(state.av_frame->width == 0 && state.av_frame->height == 0)
                         {
                             SDL_SetWindowSize(window, 1280, 720);
                             SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                         }
                         else
                         {
-                            SDL_SetWindowSize(window, state.f_width, state.f_height);
+                            SDL_SetWindowSize(window, state.av_frame->width, state.av_frame->height);
                             SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                         }
                     }
