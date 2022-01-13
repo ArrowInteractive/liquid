@@ -126,7 +126,7 @@ bool load_data( char* filename, framedata_struct* state)
     /* Setup SWSContext here and send the decoded frame to renderer using decoded_frame */
     sws_ctx = sws_getContext(   av_frame->width, av_frame->height, av_codec_ctx->pix_fmt, 
                                 t_width, t_height, AV_PIX_FMT_YUV420P, 
-                                SWS_BICUBIC, NULL, NULL, NULL);
+                                SWS_BILINEAR, NULL, NULL, NULL);
     
     
     num_bytes = av_image_get_buffer_size(

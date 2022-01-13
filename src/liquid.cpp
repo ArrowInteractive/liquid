@@ -105,7 +105,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, dm.w, dm.h);
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, state.t_width, state.t_height);
         if(texture == NULL)
         {
             cout<<"Couldn't create texture!"<<endl;
