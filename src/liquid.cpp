@@ -116,13 +116,12 @@ int main(int argc, char** argv)
 
     SDL_SetWindowBordered(window, SDL_FALSE);
 
-    //Initialise the topbar
+    /* UI initial conf */
     topbar.x = 0;
     topbar.y = 0;
     topbar.w = state.av_frame->width;
     topbar.h = (int)(state.av_frame->height*5)/100;
 
-    //Initialise the X Button
     xbutton.x = (int)(state.av_frame->width*98)/100;
     xbutton.y = 0;
     xbutton.w = (int)(state.av_frame->width*6)/100;
@@ -137,7 +136,7 @@ int main(int argc, char** argv)
         {
             /*  
                 Not fullscreen 
-                Drawing X button 
+                Drawing UI
             */
             topbar.x = 0;
             topbar.y = 0;
@@ -153,7 +152,7 @@ int main(int argc, char** argv)
         {
             /*  
                 Is fullscreen 
-                Drawing X button 
+                Drawing UI
             */
             topbar.x = 0;
             topbar.y = 0;
