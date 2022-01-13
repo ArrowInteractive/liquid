@@ -1,24 +1,7 @@
 #include <liquid.hpp>
 
-bool show=true;
-
-Uint32 hide_ui(Uint32 interval,void* param)
-{
-    show = false;
-    return 0;
-}
-
-void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture,SDL_TimerID timer, bool is_file_open, framedata_struct state)
-{
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_RemoveTimer(timer);
-    SDL_Quit();
-    if(is_file_open)
-    {
-        close_data(&state);
-    }
-}
+/* Globals */
+bool draw_ui = true;
 
 int main(int argc, char** argv)
 {
@@ -32,11 +15,11 @@ int main(int argc, char** argv)
     SDL_Rect top_bar;
     SDL_Rect topbar;
     SDL_Rect xbutton;
-    SDL_TimerID timer;
+    SDL_TimerID ui_draw_timer;
     bool is_fullscreen = false;
     bool is_file_open = false;
 
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
     if (SDL_GetDesktopDisplayMode(0, &dm))
     {
@@ -126,42 +109,47 @@ int main(int argc, char** argv)
             SDL_DestroyTexture(texture);
             return -1;
         }
-
-        if (SDL_Init( SDL_INIT_TIMER ) < 0 )
-        {
-        cout<< "SDL could not initialize Timer! SDL Error: "<< SDL_GetError();
-        return -1;
-        }
     }
 
     SDL_SetWindowBordered(window, SDL_FALSE);
-    /* drawing default top_bar */
-    top_bar.x = 0;
-    top_bar.y = 0;
-    top_bar.w = state.f_width;
-    top_bar.h = (int)(state.f_height * 5)/100;
-
-    //Initialise the X Button
-    xbutton.x=(state.f_width*97)/100;
-    xbutton.y=0;
-    xbutton.w=(int)(state.f_height*6)/100;
-    xbutton.h=(int)(state.f_height*5)/100;
 
     while(true)
     {
         SDL_PollEvent(&event);
 
+        /* Draw UI */
+        if(!is_fullscreen)
+        {
+            /*  
+                Not fullscreen 
+                Drawing X button 
+            */
+            xbutton.x=(state.f_width*97)/100;
+            xbutton.y=0;
+            xbutton.w=(int)(state.f_height*6)/100;
+            xbutton.h=(int)(state.f_height*5)/100;
+        }
+        else
+        {
+            /*  
+                Is fullscreen 
+                Drawing X button 
+            */
+            xbutton.x = (dm.w*97)/100;
+            xbutton.y = 0;
+            xbutton.w = (int)(dm.h*6)/100;
+            xbutton.h = (int)(dm.h*5)/100;
+        }
+        /* Draw the UI based on mouse activity */
+        if(event.type == SDL_MOUSEMOTION)
+        {
+            draw_ui = true;
+            ui_draw_timer = SDL_AddTimer(5000, hide_ui, (void *)false);
+        }
+
         if(event.type == SDL_QUIT)
         {
             break;
-        }
-        else if(event.type==SDL_MOUSEMOTION)
-        {
-            SDL_RemoveTimer(timer);
-        }
-        else if(event.type==!SDL_MOUSEMOTION)
-        {
-            timer = SDL_AddTimer(2000,hide_ui,(void *)false);
         }
         else
         {
@@ -173,30 +161,17 @@ int main(int argc, char** argv)
                 }
                 else if(event.key.keysym.sym == SDLK_f)
                 {
+                    /* 
+                        Check if fullscreen, if not then make it 
+                        If it is fullscreen, then make it the initial size
+                    */
                     if(!is_fullscreen)
                     {
                         SDL_SetWindowSize(window, dm.w, dm.h + 10);
                         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-                        /* drawing top_bar */
-                        top_bar.x = 0;
-                        top_bar.y = 0;
-                        top_bar.w = (int)(dm.h*6)/100;
-                        top_bar.h = (int)(dm.h*5)/100;
                     }
                     else
                     {
-                        //turn back the size of topbar after exiting fullscreen
-                        topbar.x = 0;
-                        topbar.y = 0;
-                        topbar.w = state.f_width;
-                        topbar.h = (int)(state.f_height*5)/100;
-
-                        //Code for turn back to the original X Button size
-                        xbutton.x=(state.f_width*97)/100;
-                        xbutton.y=0;
-                        xbutton.w=(int)(state.f_height*6)/100;
-                        xbutton.h=(int)(state.f_height*5)/100;
-
                         if(state.f_width == 0 && state.f_height == 0)
                         {
                             SDL_SetWindowSize(window, 1280, 720);
@@ -231,15 +206,36 @@ int main(int argc, char** argv)
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
-        if(show)
+
+        /* Draw the ui */
+        if(draw_ui)
         {
-        SDL_RenderDrawRect(renderer,&topbar);
-        SDL_RenderDrawRect(renderer,&xbutton);
+            SDL_RenderDrawRect(renderer, &topbar);
+            SDL_RenderDrawRect(renderer, &xbutton);
         }
+        
         SDL_RenderPresent(renderer);
         SDL_Delay(5);
     }
 
-    cleanup(window, renderer, texture, timer, is_file_open, state);
+    cleanup(window, renderer, texture, ui_draw_timer, is_file_open, state);
     return 0;
+}
+
+Uint32 hide_ui(Uint32 interval,void* param)
+{
+    draw_ui = false;
+    return 0;
+}
+
+void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_TimerID ui_draw_timer, bool is_file_open, framedata_struct state)
+{
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_RemoveTimer(ui_draw_timer);
+    SDL_Quit();
+    if(is_file_open)
+    {
+        close_data(&state);
+    }
 }
