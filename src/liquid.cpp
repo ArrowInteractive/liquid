@@ -113,6 +113,18 @@ int main(int argc, char** argv)
 
     SDL_SetWindowBordered(window, SDL_FALSE);
 
+    //Initialise the topbar
+    topbar.x = 0;
+    topbar.y = 0;
+    topbar.w = state.f_width;
+    topbar.h = (int)(state.f_height*5)/100;
+
+    //Initialise the X Button
+    xbutton.x=(int)(state.f_width*98)/100;
+    xbutton.y=0;
+    xbutton.w=(int)(state.f_width*6)/100;
+    xbutton.h=(int)(state.f_height*6)/100;
+
     while(true)
     {
         SDL_PollEvent(&event);
@@ -120,22 +132,34 @@ int main(int argc, char** argv)
         /* Draw UI */
         if(!is_fullscreen)
         {
+            /* drawing default top_bar */
+            topbar.x = 0;
+            topbar.y = 0;
+            topbar.w = state.f_width;
+            topbar.h = (int)(state.f_height*5)/100;
+
             /*  
                 Not fullscreen 
                 Drawing X button 
             */
-            xbutton.x=(state.f_width*97)/100;
+            xbutton.x=(int)(state.f_width*97)/100;
             xbutton.y=0;
-            xbutton.w=(int)(state.f_height*6)/100;
+            xbutton.w=(int)(state.f_width*6)/100;
             xbutton.h=(int)(state.f_height*5)/100;
         }
         else
         {
+            //Code for change the size of topbar in fullscreen
+            topbar.x = 0;
+            topbar.y = 0;
+            topbar.w = dm.w;
+            topbar.h = (int)(dm.h*5)/100;
+
             /*  
                 Is fullscreen 
                 Drawing X button 
             */
-            xbutton.x = (dm.w*97)/100;
+            xbutton.x = (int)(dm.w*97)/100;
             xbutton.y = 0;
             xbutton.w = (int)(dm.h*6)/100;
             xbutton.h = (int)(dm.h*5)/100;
@@ -147,7 +171,9 @@ int main(int argc, char** argv)
             ui_draw_timer = SDL_AddTimer(5000, hide_ui, (void *)false);
         }
 
-        if(event.type == SDL_QUIT)
+        if(event.type == SDL_QUIT|| (SDL_MOUSEBUTTONDOWN) && ((event.motion.x > xbutton.x) && 
+            (event.motion.x < xbutton.x + xbutton.w) && (event.motion.y > xbutton.y)
+            && (event.motion.y < xbutton.y + xbutton.h)))
         {
             break;
         }
@@ -155,7 +181,7 @@ int main(int argc, char** argv)
         {
             if(event.type == SDL_KEYDOWN)
             {
-                if(event.key.keysym.sym == SDLK_q)
+                if(event.key.keysym.sym == SDLK_q )
                 {
                     break;
                 }
@@ -204,14 +230,15 @@ int main(int argc, char** argv)
         }
 
         SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
 
         /* Draw the ui */
         if(draw_ui)
         {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);//set render color to white
             SDL_RenderDrawRect(renderer, &topbar);
-            SDL_RenderDrawRect(renderer, &xbutton);
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);//set render color to red
+            SDL_RenderFillRect(renderer, &xbutton);
         }
         
         SDL_RenderPresent(renderer);
