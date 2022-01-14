@@ -117,17 +117,6 @@ int main(int argc, char** argv)
 
     SDL_SetWindowBordered(window, SDL_FALSE);
 
-    /* UI initial conf */
-    topbar.x = 0;
-    topbar.y = 0;
-    topbar.w = (int)(state.av_frame->width*90)/100;
-    topbar.h = (int)(state.av_frame->height*5)/100;
-
-    xbutton.x = (int)(state.av_frame->width*98)/100;
-    xbutton.y = 0;
-    xbutton.w = (int)(state.av_frame->width*6)/100;
-    xbutton.h = (int)(state.av_frame->height*6)/100;
-
     while(true)
     {
         SDL_PollEvent(&event);
@@ -141,7 +130,7 @@ int main(int argc, char** argv)
             */
             topbar.x = 0;
             topbar.y = 0;
-            topbar.w = (int)(state.av_frame->width*90)/100;
+            topbar.w = state.av_frame->width;
             topbar.h = (int)(state.av_frame->height*5)/100;
 
             xbutton.x = (int)(state.av_frame->width*97)/100;
@@ -258,10 +247,11 @@ int main(int argc, char** argv)
         /* Draw the ui */
         if(draw_ui)
         {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);//set render color to white
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);//set render color to white
             SDL_RenderDrawRect(renderer, &topbar);
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);//set render color to red
             SDL_RenderFillRect(renderer, &xbutton);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         }
         
         SDL_RenderPresent(renderer);
