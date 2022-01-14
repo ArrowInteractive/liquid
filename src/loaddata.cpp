@@ -17,7 +17,7 @@ bool load_data( char* filename, framedata_struct* state)
     auto& buffer = state->buffer;
     auto& sws_ctx = state->sws_ctx;
     /* Local vars */
-    int f_response, p_response, num_bytes;
+    int ret, f_response, p_response, num_bytes;
     
     if(!(av_packet = av_packet_alloc()))
     {
@@ -45,27 +45,12 @@ bool load_data( char* filename, framedata_struct* state)
 
     for(int i=0; i < av_format_ctx->nb_streams; i++)
     {
-        av_codec_params = av_format_ctx->streams[i]->codecpar;
-        av_codec = avcodec_find_decoder(av_codec_params->codec_id);
-        cout<<"Stream ID : "<<i<<endl;
-        cout<<"CODEC     : "<<av_codec->AVCodec::long_name<<endl;
-
-        if(av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO)
+        if(av_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
         {
+            av_codec_params = av_format_ctx->streams[i]->codecpar;
+            av_codec = avcodec_find_decoder(av_codec_params->codec_id);
             video_stream_index = i;
-        }
-
-        if(av_codec_params->codec_type == AVMEDIA_TYPE_AUDIO)
-        {
-            // For now just find the first audio stream
-            if(audio_stream_index == -1)
-            {
-                audio_stream_index = i;
-            }
-            else
-            {
-                continue;
-            }
+            break;
         }
     }
 
@@ -95,31 +80,32 @@ bool load_data( char* filename, framedata_struct* state)
 
     while(av_read_frame(av_format_ctx, av_packet) >= 0)
     {
-        if(av_packet->stream_index != video_stream_index)
+        if(av_packet->stream_index == video_stream_index)
+        {
+            p_response = avcodec_send_packet(av_codec_ctx, av_packet);
+            if(p_response < 0)
+            {
+                cout<<"Failed to decode packet!"<<endl;
+                return false;
+            }
+
+            f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
+            if(f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF)
+            {
+                continue;
+            }
+            else if(f_response < 0)
+            {
+                cout<<"Failed to receive frame!"<<endl;
+                return false;
+            }
+        }
+        else
         {
             continue;
         }
 
-        p_response = avcodec_send_packet(av_codec_ctx, av_packet);
-        if(p_response < 0)
-        {
-            cout<<"Failed to decode packet!"<<endl;
-            return false;
-        }
-
-        f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
-        if(f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF)
-        {
-            continue;
-        }
-        else if(f_response < 0)
-        {
-            cout<<"Failed to receive frame!"<<endl;
-            return false;
-        }
-
-        // Receive the first frame and break
-        
+        /* Decode the first frame and then break */
         break;
     }
 
@@ -165,10 +151,12 @@ void close_data(framedata_struct* state)
 {
     av_packet_free(&state->av_packet);
     av_frame_free(&state->av_frame);
+    av_frame_free(&state->decoded_frame);
+
     avformat_close_input(&state->av_format_ctx);
-    avformat_free_context(state->av_format_ctx);
-    avcodec_parameters_free(&state->av_codec_params);
     avcodec_free_context(&state->av_codec_ctx);
-    av_free(&state->buffer);
+    avcodec_close(state->av_codec_ctx);
+    av_freep(&state->buffer);
     sws_freeContext(state->sws_ctx);
+    cout<<"Cleanup complete!"<<endl;
 }

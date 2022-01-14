@@ -216,10 +216,10 @@ int main(int argc, char** argv)
                     /*Work in progress 
                     Drag the window using topbar
                     */
-                    SDL_GetWindowPosition(window,&window_pos_x,&window_pos_y);
-                    window_pos_x += event.motion.x;
-                    window_pos_y += event.motion.y;
-                    cout<<"position : "<<window_pos_x<<window_pos_y;
+                    SDL_GetWindowPosition(window, &window_pos_x, &window_pos_y);
+                    window_pos_x = event.motion.x + window_pos_x;
+                    window_pos_y = event.motion.y + window_pos_y;
+                    cout<<"position : "<<window_pos_x<<window_pos_y<<endl;
                     SDL_SetWindowPosition(window,window_pos_x,window_pos_y);
                 }
 
