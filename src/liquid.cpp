@@ -16,6 +16,7 @@ int main(int argc, char** argv)
     SDL_Rect topbar;
     SDL_Rect xbutton;
     SDL_TimerID ui_draw_timer;
+    int window_pos_x,window_pos_y;
     bool is_fullscreen = false;
     bool is_file_open = false;
 
@@ -119,7 +120,7 @@ int main(int argc, char** argv)
     /* UI initial conf */
     topbar.x = 0;
     topbar.y = 0;
-    topbar.w = state.av_frame->width;
+    topbar.w = (int)(state.av_frame->width*90)/100;
     topbar.h = (int)(state.av_frame->height*5)/100;
 
     xbutton.x = (int)(state.av_frame->width*98)/100;
@@ -140,7 +141,7 @@ int main(int argc, char** argv)
             */
             topbar.x = 0;
             topbar.y = 0;
-            topbar.w = state.av_frame->width;
+            topbar.w = (int)(state.av_frame->width*90)/100;
             topbar.h = (int)(state.av_frame->height*5)/100;
 
             xbutton.x = (int)(state.av_frame->width*97)/100;
@@ -216,6 +217,23 @@ int main(int argc, char** argv)
                 {
                     break;
                 }
+                
+                if(     event.button.button == SDL_BUTTON_LEFT && 
+                        ((event.motion.x > topbar.x) && 
+                        (event.motion.x < topbar.x + topbar.w) && 
+                        (event.motion.y > topbar.y) && 
+                        (event.motion.y < topbar.y + topbar.h)))
+                {
+                    /*Work in progress 
+                    Drag the window using topbar
+                    */
+                    SDL_GetWindowPosition(window,&window_pos_x,&window_pos_y);
+                    window_pos_x += event.motion.x;
+                    window_pos_y += event.motion.y;
+                    cout<<"position : "<<window_pos_x<<window_pos_y;
+                    SDL_SetWindowPosition(window,window_pos_x,window_pos_y);
+                }
+
             }
         }
 
