@@ -124,8 +124,8 @@ int main(int argc, char** argv)
         /* Draw UI */
         if(!is_fullscreen)
         {
-            /*  
-                Not fullscreen 
+            /*
+                Not fullscreen
                 Drawing UI
             */
             topbar.x = 0;
@@ -140,8 +140,8 @@ int main(int argc, char** argv)
         }
         else
         {
-            /*  
-                Is fullscreen 
+            /*
+                Is fullscreen
                 Drawing UI
             */
             topbar.x = 0;
@@ -171,8 +171,8 @@ int main(int argc, char** argv)
                 }
                 else if(event.key.keysym.sym == SDLK_f)
                 {
-                    /* 
-                        Check if fullscreen, if not then make it 
+                    /*
+                        Check if fullscreen, if not then make it
                         If it is fullscreen, then make it the initial size
                     */
                     if(!is_fullscreen)
@@ -198,23 +198,24 @@ int main(int argc, char** argv)
             }
             else if(event.type == SDL_MOUSEBUTTONDOWN)
             {
-                if(     event.button.button == SDL_BUTTON_LEFT && 
-                        ((event.motion.x > xbutton.x) && 
-                        (event.motion.x < xbutton.x + xbutton.w) && 
-                        (event.motion.y > xbutton.y) && 
+                if(     event.button.button == SDL_BUTTON_LEFT &&
+                        ((event.motion.x > xbutton.x) &&
+                        (event.motion.x < xbutton.x + xbutton.w) &&
+                        (event.motion.y > xbutton.y) &&
                         (event.motion.y < xbutton.y + xbutton.h)))
                 {
                     break;
                 }
-                
-                if(     event.button.button == SDL_BUTTON_LEFT && 
-                        ((event.motion.x > topbar.x) && 
-                        (event.motion.x < topbar.x + topbar.w) && 
-                        (event.motion.y > topbar.y) && 
+
+                if(     event.button.button == SDL_BUTTON_LEFT &&
+                        ((event.motion.x > topbar.x) &&
+                        (event.motion.x < topbar.x + topbar.w) &&
+                        (event.motion.y > topbar.y) &&
                         (event.motion.y < topbar.y + topbar.h)))
                 {
-                    /*Work in progress 
-                    Drag the window using topbar
+                    /*
+                        Work in progress
+                        Dragging the window
                     */
                     SDL_GetWindowPosition(window, &window_pos_x, &window_pos_y);
                     window_pos_x = event.motion.x + window_pos_x;
@@ -247,13 +248,13 @@ int main(int argc, char** argv)
         /* Draw the ui */
         if(draw_ui)
         {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);//set render color to white
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); /* Set render color to black */
             SDL_RenderDrawRect(renderer, &topbar);
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);//set render color to red
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); /* Set render color to red */
             SDL_RenderFillRect(renderer, &xbutton);
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         }
-        
+
         SDL_RenderPresent(renderer);
         SDL_Delay(5);
     }

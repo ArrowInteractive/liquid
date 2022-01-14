@@ -17,7 +17,7 @@ bool load_data( char* filename, framedata_struct* state)
     auto& buffer = state->buffer;
     auto& sws_ctx = state->sws_ctx;
     /* Local vars */
-    int ret, f_response, p_response, num_bytes;
+    int f_response, p_response, num_bytes;
     
     if(!(av_packet = av_packet_alloc()))
     {
