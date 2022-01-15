@@ -64,17 +64,17 @@ bool load_data(char* filename, framedata_struct* state)
 bool load_frames(framedata_struct* state)
 {
     /* Unpacking vars */
-    auto& av_format_ctx = state->av_format_ctx; //used
-    auto& av_codec_ctx = state->av_codec_ctx; //used
-    auto& av_packet = state->av_packet; //used
-    auto& av_frame = state->av_frame; //used
-    auto& decoded_frame = state->decoded_frame; //used
-    auto& video_stream_index = state->video_stream_index; //used
-    auto& audio_stream_index = state->audio_stream_index; //used
-    auto& t_width = state->t_width; //used
-    auto& t_height = state->t_height; //used
-    auto& buffer = state->buffer; //used
-    auto& sws_ctx = state->sws_ctx; //used
+    auto& av_format_ctx = state->av_format_ctx;
+    auto& av_codec_ctx = state->av_codec_ctx;
+    auto& av_packet = state->av_packet; 
+    auto& av_frame = state->av_frame;
+    auto& decoded_frame = state->decoded_frame;
+    auto& video_stream_index = state->video_stream_index;
+    auto& audio_stream_index = state->audio_stream_index;
+    auto& t_width = state->t_width;
+    auto& t_height = state->t_height; 
+    auto& buffer = state->buffer; 
+    auto& sws_ctx = state->sws_ctx;
     /* Local vars */
     int f_response, p_response, num_bytes;
     

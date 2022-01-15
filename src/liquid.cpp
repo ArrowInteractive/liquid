@@ -187,14 +187,23 @@ int main(int argc, char** argv)
                     }
                     else
                     {
-                        if(state.av_frame->width == 0 && state.av_frame->height == 0)
+                        /* Temporary fix */
+                        if(is_file_open)
                         {
-                            SDL_SetWindowSize(window, 1280, 720);
-                            SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                            if(state.av_frame->width == 0 && state.av_frame->height == 0)
+                            {
+                                SDL_SetWindowSize(window, 1280, 720);
+                                SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                            }
+                            else
+                            {
+                                SDL_SetWindowSize(window, state.av_frame->width, state.av_frame->height);
+                                SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                            }
                         }
                         else
                         {
-                            SDL_SetWindowSize(window, state.av_frame->width, state.av_frame->height);
+                            SDL_SetWindowSize(window, 1280, 720);
                             SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                         }
                     }
