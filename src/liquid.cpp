@@ -78,20 +78,15 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        if(!(load_frames(&state)))
-        {
-            return -1;
-        }
-
         is_file_open = true;
-        cout<<"Frame width  : "<<state.av_frame->width<<endl;
-        cout<<"Frame height : "<<state.av_frame->height<<endl;
+        cout<<"Frame width  : "<<state.av_codec_ctx->width<<endl;
+        cout<<"Frame height : "<<state.av_codec_ctx->height<<endl;
         window = SDL_CreateWindow(
                                     argv[1],
                                     SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED,
-                                    state.av_frame->width,
-                                    state.av_frame->height,
+                                    state.av_codec_ctx->width,
+                                    state.av_codec_ctx->height,
                                     SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
                                 );
 
@@ -135,13 +130,13 @@ int main(int argc, char** argv)
             */
             topbar.x = 0;
             topbar.y = 0;
-            topbar.w = state.av_frame->width;
-            topbar.h = (int)(state.av_frame->height*5)/100;
+            topbar.w = state.av_codec_ctx->width;
+            topbar.h = (int)(state.av_codec_ctx->height*5)/100;
 
-            xbutton.x = (int)(state.av_frame->width*97)/100;
+            xbutton.x = (int)(state.av_codec_ctx->width*97)/100;
             xbutton.y = 0;
-            xbutton.w = (int)(state.av_frame->width*6)/100;
-            xbutton.h = (int)(state.av_frame->height*5)/100;
+            xbutton.w = (int)(state.av_codec_ctx->width*6)/100;
+            xbutton.h = (int)(state.av_codec_ctx->height*5)/100;
         }
         else
         {
@@ -190,14 +185,14 @@ int main(int argc, char** argv)
                         /* Temporary fix */
                         if(is_file_open)
                         {
-                            if(state.av_frame->width == 0 && state.av_frame->height == 0)
+                            if(state.av_codec_ctx->width == 0 && state.av_codec_ctx->height == 0)
                             {
                                 SDL_SetWindowSize(window, 1280, 720);
                                 SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                             }
                             else
                             {
-                                SDL_SetWindowSize(window, state.av_frame->width, state.av_frame->height);
+                                SDL_SetWindowSize(window, state.av_codec_ctx->width, state.av_codec_ctx->height);
                                 SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                             }
                         }

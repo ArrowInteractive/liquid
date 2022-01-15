@@ -145,6 +145,7 @@ bool load_frames(framedata_struct* state)
                 cout<<"Failed to receive frame!"<<endl;
                 return false;
             }
+            av_packet_unref(state->av_packet);
         }
         else
         {
@@ -171,6 +172,7 @@ bool load_frames(framedata_struct* state)
                     decoded_frame->data,
                     decoded_frame->linesize
                 );
+        av_frame_unref(state->av_frame);
         break;
     }
     return true;
