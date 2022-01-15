@@ -11,6 +11,14 @@ bool load_data(char* filename, framedata_struct* state)
     auto& video_stream_index = state->video_stream_index;
     auto& audio_stream_index = state->audio_stream_index;
 
+    auto& buffer = state->buffer;
+    auto& num_bytes = state->num_bytes;
+    auto& av_packet = state->av_packet; 
+    auto& av_frame = state->av_frame;
+    auto& decoded_frame = state->decoded_frame;
+    auto& t_width = state->t_width;
+    auto& t_height = state->t_height;
+
     if(!(av_format_ctx = avformat_alloc_context()))
     {
         cout<<"Couldn't initialize AVFormatContext!"<<endl;
@@ -58,26 +66,6 @@ bool load_data(char* filename, framedata_struct* state)
         return false;
     }
 
-    return true;
-}
-
-bool load_frames(framedata_struct* state)
-{
-    /* Unpacking vars */
-    auto& av_format_ctx = state->av_format_ctx;
-    auto& av_codec_ctx = state->av_codec_ctx;
-    auto& av_packet = state->av_packet; 
-    auto& av_frame = state->av_frame;
-    auto& decoded_frame = state->decoded_frame;
-    auto& video_stream_index = state->video_stream_index;
-    auto& audio_stream_index = state->audio_stream_index;
-    auto& t_width = state->t_width;
-    auto& t_height = state->t_height; 
-    auto& buffer = state->buffer; 
-    auto& sws_ctx = state->sws_ctx;
-    /* Local vars */
-    int f_response, p_response, num_bytes;
-    
     if(!(av_packet = av_packet_alloc()))
     {
         cout<<"Couldn't allocate AVPacket!"<<endl;
@@ -102,6 +90,28 @@ bool load_frames(framedata_struct* state)
                                             32
                                         );
     buffer = (uint8_t *)av_malloc(num_bytes * sizeof(uint8_t));
+    
+    return true;
+}
+
+bool load_frames(framedata_struct* state)
+{
+    /* Unpacking vars */
+    auto& av_format_ctx = state->av_format_ctx;
+    auto& av_codec_ctx = state->av_codec_ctx;
+    auto& av_packet = state->av_packet; 
+    auto& av_frame = state->av_frame;
+    auto& decoded_frame = state->decoded_frame;
+    auto& video_stream_index = state->video_stream_index;
+    auto& audio_stream_index = state->audio_stream_index;
+    auto& t_width = state->t_width;
+    auto& t_height = state->t_height; 
+    auto& sws_ctx = state->sws_ctx;
+
+    auto& buffer = state->buffer;
+    auto& num_bytes = state->num_bytes;
+    auto& p_response = state->p_response;
+    auto& f_response = state->f_response;
 
     while(av_read_frame(av_format_ctx, av_packet) >= 0)
     {

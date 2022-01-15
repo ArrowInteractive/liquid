@@ -244,6 +244,10 @@ int main(int argc, char** argv)
         if(is_file_open)
         {
             /* Load the texture from decoded_frame */
+            if(!(load_frames(&state)))
+            {
+                return -1;
+            }
             SDL_UpdateYUVTexture(
                         texture,            // the texture to update
                         NULL,              // a pointer to the topbarangle of pixels to update, or NULL to update the entire texture
