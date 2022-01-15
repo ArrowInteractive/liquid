@@ -83,8 +83,8 @@ bool load_data(char* filename, framedata_struct* state)
         cout<<"Couldn't allocate AVFrame!"<<endl;
         return false;
     }
-    
-    /* Check resolution - Experimental*/
+
+    /* Check resolution - Experimental */
     if(t_width <= av_codec_ctx->width && t_height <= av_codec_ctx->height)
     {
         t_width = av_codec_ctx->width;
@@ -143,9 +143,13 @@ bool load_frames(framedata_struct* state)
             }
 
             f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
-            if(f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF)
+            if(f_response == AVERROR(EAGAIN))
             {
                 continue;
+            }
+            else if(f_response == AVERROR_EOF)
+            {
+                break;
             }
             else if(f_response < 0)
             {
@@ -159,26 +163,30 @@ bool load_frames(framedata_struct* state)
             continue;
         }
 
-        /* Decode the first frame and then break */
-        av_image_fill_arrays(
-                                decoded_frame->data,
-                                decoded_frame->linesize,
-                                buffer,
-                                AV_PIX_FMT_YUV420P,
-                                t_width,
-                                t_height,
-                                32
-                            );
+        /* If End of File, then stop processing frames */
+        if(f_response != AVERROR_EOF)
+        {
+            /* Scale the image and send it via decoded_frame */
+            av_image_fill_arrays(
+                                    decoded_frame->data,
+                                    decoded_frame->linesize,
+                                    buffer,
+                                    AV_PIX_FMT_YUV420P,
+                                    t_width,
+                                    t_height,
+                                    32
+                                );
 
-        sws_scale(
-                    sws_ctx,
-                    (uint8_t const * const *)av_frame->data,
-                    av_frame->linesize,
-                    0,
-                    av_frame->height,
-                    decoded_frame->data,
-                    decoded_frame->linesize
-                );
+            sws_scale(
+                        sws_ctx,
+                        (uint8_t const * const *)av_frame->data,
+                        av_frame->linesize,
+                        0,
+                        av_frame->height,
+                        decoded_frame->data,
+                        decoded_frame->linesize
+                    );
+        }
         av_frame_unref(state->av_frame);
         break;
     }

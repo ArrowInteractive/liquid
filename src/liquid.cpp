@@ -5,7 +5,7 @@ bool draw_ui = true;
 
 int main(int argc, char** argv)
 {
-    // Variables
+    /* Vars */
     framedata_struct state;
     SDL_DisplayMode dm;
     SDL_Window* window;
@@ -64,8 +64,12 @@ int main(int argc, char** argv)
 
         if(!is_regular_file(argv[1]))
         {
-            // Write some code to load files from that folder
-            // For now just display some error.
+            /* 
+                Setup liquid to load media files from the folder and play
+                them sequentially.
+
+                For now, display some error.
+            */
             cout<<"Provided input is a folder."<<endl;
             return -1;
         }
