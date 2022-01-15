@@ -179,12 +179,43 @@ int main(int argc, char** argv)
                     {
                         SDL_SetWindowSize(window, dm.w, dm.h + 10);
                         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+                        if(is_file_open)
+                        {
+                            /* Scaling control begin -- maybe make it a function? */
+                            state.t_width = dm.w;
+                            state.t_height = dm.h;
+                            SDL_DestroyTexture(texture);
+                            texture = SDL_CreateTexture(    renderer, SDL_PIXELFORMAT_YV12, 
+                                                            SDL_TEXTUREACCESS_STREAMING, 
+                                                            dm.w, 
+                                                            dm.h
+                                                        );
+                            if(texture == NULL)
+                            {
+                                cout<<"Couldn't create texture!"<<endl;
+                                SDL_DestroyTexture(texture);
+                                return -1;
+                            }
+                            sws_freeContext(state.sws_ctx);
+                            state.num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
+                                                dm.w,
+                                                dm.h,
+                                                32
+                                            );
+                            state.buffer = (uint8_t *)av_malloc(state.num_bytes * sizeof(uint8_t));
+                            state.sws_ctx = sws_getContext(     state.av_codec_ctx->width, state.av_codec_ctx->height, state.av_codec_ctx->pix_fmt, 
+                                                                dm.w, dm.h, AV_PIX_FMT_YUV420P, 
+                                                                SWS_BILINEAR, NULL, NULL, NULL);
+                            /* Scaling control end */
+                        }
                     }
                     else
                     {
                         /* Temporary fix */
                         if(is_file_open)
                         {
+                            /* If the width and height of the media is 0 then there must be an decoding error */
                             if(state.av_codec_ctx->width == 0 && state.av_codec_ctx->height == 0)
                             {
                                 SDL_SetWindowSize(window, 1280, 720);
@@ -194,6 +225,34 @@ int main(int argc, char** argv)
                             {
                                 SDL_SetWindowSize(window, state.av_codec_ctx->width, state.av_codec_ctx->height);
                                 SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+                                /* Scaling control begin -- maybe make it a function? */
+                                state.t_width = state.av_codec_ctx->width;
+                                state.t_height = state.av_codec_ctx->height;
+                                SDL_DestroyTexture(texture);
+                                texture = SDL_CreateTexture(    renderer, SDL_PIXELFORMAT_YV12, 
+                                                                SDL_TEXTUREACCESS_STREAMING, 
+                                                                state.av_codec_ctx->width, 
+                                                                state.av_codec_ctx->height
+                                                            );
+                                if(texture == NULL)
+                                {
+                                    cout<<"Couldn't create texture!"<<endl;
+                                    SDL_DestroyTexture(texture);
+                                    return -1;
+                                }
+                                sws_freeContext(state.sws_ctx);
+                                state.num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
+                                                    state.av_codec_ctx->width,
+                                                    state.av_codec_ctx->height,
+                                                    32
+                                                );
+                                state.buffer = (uint8_t *)av_malloc(state.num_bytes * sizeof(uint8_t));
+                                state.sws_ctx = sws_getContext(     state.av_codec_ctx->width, state.av_codec_ctx->height, state.av_codec_ctx->pix_fmt, 
+                                                                    state.av_codec_ctx->width, state.av_codec_ctx->height, AV_PIX_FMT_YUV420P, 
+                                                                    SWS_BILINEAR, NULL, NULL, NULL
+                                                                );
+                                /* Scaling control end */                               
                             }
                         }
                         else

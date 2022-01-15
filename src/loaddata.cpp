@@ -83,6 +83,13 @@ bool load_data(char* filename, framedata_struct* state)
         cout<<"Couldn't allocate AVFrame!"<<endl;
         return false;
     }
+    
+    /* Check resolution - Experimental*/
+    if(t_width <= av_codec_ctx->width && t_height <= av_codec_ctx->height)
+    {
+        t_width = av_codec_ctx->width;
+        t_height = av_codec_ctx->height;
+    }
 
     num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
                                             t_width,
