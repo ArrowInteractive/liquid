@@ -114,6 +114,17 @@ bool load_frames(framedata_struct* state)
                 return false;
             }
 
+            if(sws_ctx == NULL)
+            {
+                /* 
+                    Setup sws_context here and send the decoded frame to renderer using decoded_frame
+                    May cause crashes
+                */
+                sws_ctx = sws_getContext(   av_codec_ctx->width, av_codec_ctx->height, av_codec_ctx->pix_fmt, 
+                                            t_width, t_height, AV_PIX_FMT_YUV420P, 
+                                            SWS_BILINEAR, NULL, NULL, NULL);
+            }
+
             f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
             if(f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF)
             {
@@ -131,36 +142,27 @@ bool load_frames(framedata_struct* state)
         }
 
         /* Decode the first frame and then break */
+        av_image_fill_arrays(
+                                decoded_frame->data,
+                                decoded_frame->linesize,
+                                buffer,
+                                AV_PIX_FMT_YUV420P,
+                                t_width,
+                                t_height,
+                                32
+                            );
+
+        sws_scale(
+                    sws_ctx,
+                    (uint8_t const * const *)av_frame->data,
+                    av_frame->linesize,
+                    0,
+                    av_frame->height,
+                    decoded_frame->data,
+                    decoded_frame->linesize
+                );
         break;
     }
-
-    /* 
-        Setup SWSContext here and send the decoded frame to renderer using decoded_frame
-        If this is done above the loop, av_codec_ctx->pix_fmt will be AV_PIX_FMT_NONE and then it crashes
-    */
-    sws_ctx = sws_getContext(   av_codec_ctx->width, av_codec_ctx->height, av_codec_ctx->pix_fmt, 
-                                t_width, t_height, AV_PIX_FMT_YUV420P, 
-                                SWS_BILINEAR, NULL, NULL, NULL);
-
-    av_image_fill_arrays(
-        decoded_frame->data,
-        decoded_frame->linesize,
-        buffer,
-        AV_PIX_FMT_YUV420P,
-        t_width,
-        t_height,
-        32
-    );
-
-    sws_scale(
-                sws_ctx,
-                (uint8_t const * const *)av_frame->data,
-                av_frame->linesize,
-                0,
-                av_frame->height,
-                decoded_frame->data,
-                decoded_frame->linesize
-            );
     return true;
 }
 
