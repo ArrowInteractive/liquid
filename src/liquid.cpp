@@ -78,6 +78,11 @@ int main(int argc, char** argv)
             return -1;
         }
 
+        if(!(load_frames(&state)))
+        {
+            return -1;
+        }
+
         is_file_open = true;
         cout<<"Frame width  : "<<state.av_frame->width<<endl;
         cout<<"Frame height : "<<state.av_frame->height<<endl;

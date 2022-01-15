@@ -1,35 +1,15 @@
 #include <loaddata.hpp>
 
-bool load_data( char* filename, framedata_struct* state)
+
+bool load_data(char* filename, framedata_struct* state)
 {
     /* Unpacking vars */
     auto& av_format_ctx = state->av_format_ctx;
     auto& av_codec_params = state->av_codec_params;
     auto& av_codec = state->av_codec;
     auto& av_codec_ctx = state->av_codec_ctx;
-    auto& av_packet = state->av_packet;
-    auto& av_frame = state->av_frame;
-    auto& decoded_frame = state->decoded_frame;
     auto& video_stream_index = state->video_stream_index;
     auto& audio_stream_index = state->audio_stream_index;
-    auto& t_width = state->t_width;
-    auto& t_height = state->t_height;
-    auto& buffer = state->buffer;
-    auto& sws_ctx = state->sws_ctx;
-    /* Local vars */
-    int f_response, p_response, num_bytes;
-    
-    if(!(av_packet = av_packet_alloc()))
-    {
-        cout<<"Couldn't allocate AVPacket!"<<endl;
-        return false;
-    }
-
-    if(!(av_frame = av_frame_alloc()))
-    {
-        cout<<"Couldn't allocate AVFrame!"<<endl;
-        return false;
-    }
 
     if(!(av_format_ctx = avformat_alloc_context()))
     {
@@ -78,6 +58,51 @@ bool load_data( char* filename, framedata_struct* state)
         return false;
     }
 
+    return true;
+}
+
+bool load_frames(framedata_struct* state)
+{
+    /* Unpacking vars */
+    auto& av_format_ctx = state->av_format_ctx; //used
+    auto& av_codec_ctx = state->av_codec_ctx; //used
+    auto& av_packet = state->av_packet; //used
+    auto& av_frame = state->av_frame; //used
+    auto& decoded_frame = state->decoded_frame; //used
+    auto& video_stream_index = state->video_stream_index; //used
+    auto& audio_stream_index = state->audio_stream_index; //used
+    auto& t_width = state->t_width; //used
+    auto& t_height = state->t_height; //used
+    auto& buffer = state->buffer; //used
+    auto& sws_ctx = state->sws_ctx; //used
+    /* Local vars */
+    int f_response, p_response, num_bytes;
+    
+    if(!(av_packet = av_packet_alloc()))
+    {
+        cout<<"Couldn't allocate AVPacket!"<<endl;
+        return false;
+    }
+
+    if(!(av_frame = av_frame_alloc()))
+    {
+        cout<<"Couldn't allocate AVFrame!"<<endl;
+        return false;
+    }
+
+    if(!(decoded_frame = av_frame_alloc()))
+    {
+        cout<<"Couldn't allocate AVFrame!"<<endl;
+        return false;
+    }
+
+    num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
+                                            t_width,
+                                            t_height,
+                                            32
+                                        );
+    buffer = (uint8_t *)av_malloc(num_bytes * sizeof(uint8_t));
+
     while(av_read_frame(av_format_ctx, av_packet) >= 0)
     {
         if(av_packet->stream_index == video_stream_index)
@@ -109,21 +134,13 @@ bool load_data( char* filename, framedata_struct* state)
         break;
     }
 
-    /* Setup SWSContext here and send the decoded frame to renderer using decoded_frame */
-    sws_ctx = sws_getContext(   av_frame->width, av_frame->height, av_codec_ctx->pix_fmt, 
+    /* 
+        Setup SWSContext here and send the decoded frame to renderer using decoded_frame
+        If this is done above the loop, av_codec_ctx->pix_fmt will be AV_PIX_FMT_NONE and then it crashes
+    */
+    sws_ctx = sws_getContext(   av_codec_ctx->width, av_codec_ctx->height, av_codec_ctx->pix_fmt, 
                                 t_width, t_height, AV_PIX_FMT_YUV420P, 
                                 SWS_BILINEAR, NULL, NULL, NULL);
-    
-    
-    num_bytes = av_image_get_buffer_size(
-                AV_PIX_FMT_YUV420P,
-                t_width,
-                t_height,
-                32
-            );
-    buffer = (uint8_t *)av_malloc(num_bytes * sizeof(uint8_t));
-
-    decoded_frame = av_frame_alloc();
 
     av_image_fill_arrays(
         decoded_frame->data,
@@ -152,7 +169,6 @@ void close_data(framedata_struct* state)
     av_packet_free(&state->av_packet);
     av_frame_free(&state->av_frame);
     av_frame_free(&state->decoded_frame);
-
     avformat_close_input(&state->av_format_ctx);
     avcodec_free_context(&state->av_codec_ctx);
     avcodec_close(state->av_codec_ctx);
