@@ -145,21 +145,27 @@ bool load_frames(framedata_struct* state)
             f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
             if(f_response == AVERROR(EAGAIN))
             {
+                av_packet_unref(state->av_packet);
                 continue;
             }
             else if(f_response == AVERROR_EOF)
             {
+                av_packet_unref(state->av_packet);
                 break;
             }
             else if(f_response < 0)
             {
                 cout<<"Failed to receive frame!"<<endl;
+                av_packet_unref(state->av_packet);
+                av_frame_unref(state->av_frame);
                 return false;
             }
             av_packet_unref(state->av_packet);
         }
         else
         {
+            av_packet_unref(state->av_packet);
+            av_frame_unref(state->av_frame);
             continue;
         }
 
