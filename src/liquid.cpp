@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
         if(!is_regular_file(argv[1]))
         {
-            /* 
+            /*
                 Setup liquid to load media files from the folder and play
                 them sequentially.
 
@@ -189,10 +189,12 @@ int main(int argc, char** argv)
                             /* Scaling control begin -- maybe make it a function? */
                             state.t_width = dm.w;
                             state.t_height = dm.h;
+                            /* Free previously used items */
                             SDL_DestroyTexture(texture);
-                            texture = SDL_CreateTexture(    renderer, SDL_PIXELFORMAT_YV12, 
-                                                            SDL_TEXTUREACCESS_STREAMING, 
-                                                            dm.w, 
+                            sws_freeContext(state.sws_ctx);
+                            texture = SDL_CreateTexture(    renderer, SDL_PIXELFORMAT_YV12,
+                                                            SDL_TEXTUREACCESS_STREAMING,
+                                                            dm.w,
                                                             dm.h
                                                         );
                             if(texture == NULL)
@@ -201,16 +203,16 @@ int main(int argc, char** argv)
                                 SDL_DestroyTexture(texture);
                                 return -1;
                             }
-                            sws_freeContext(state.sws_ctx);
-                            state.num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
-                                                dm.w,
-                                                dm.h,
-                                                32
-                                            );
+                            state.num_bytes = av_image_get_buffer_size(     AV_PIX_FMT_YUV420P,
+                                                                            dm.w,
+                                                                            dm.h,
+                                                                            32
+                                                                        );
                             state.buffer = (uint8_t *)av_malloc(state.num_bytes * sizeof(uint8_t));
-                            state.sws_ctx = sws_getContext(     state.av_codec_ctx->width, state.av_codec_ctx->height, state.av_codec_ctx->pix_fmt, 
-                                                                dm.w, dm.h, AV_PIX_FMT_YUV420P, 
-                                                                SWS_BILINEAR, NULL, NULL, NULL);
+                            state.sws_ctx = sws_getContext(     state.av_codec_ctx->width, state.av_codec_ctx->height, state.av_codec_ctx->pix_fmt,
+                                                                dm.w, dm.h, AV_PIX_FMT_YUV420P,
+                                                                SWS_BILINEAR, NULL, NULL, NULL
+                                                            );
                             /* Scaling control end */
                         }
                     }
@@ -233,10 +235,12 @@ int main(int argc, char** argv)
                                 /* Scaling control begin -- maybe make it a function? */
                                 state.t_width = state.av_codec_ctx->width;
                                 state.t_height = state.av_codec_ctx->height;
+                                /* Free previously used items */
                                 SDL_DestroyTexture(texture);
-                                texture = SDL_CreateTexture(    renderer, SDL_PIXELFORMAT_YV12, 
-                                                                SDL_TEXTUREACCESS_STREAMING, 
-                                                                state.av_codec_ctx->width, 
+                                sws_freeContext(state.sws_ctx);
+                                texture = SDL_CreateTexture(    renderer, SDL_PIXELFORMAT_YV12,
+                                                                SDL_TEXTUREACCESS_STREAMING,
+                                                                state.av_codec_ctx->width,
                                                                 state.av_codec_ctx->height
                                                             );
                                 if(texture == NULL)
@@ -245,18 +249,17 @@ int main(int argc, char** argv)
                                     SDL_DestroyTexture(texture);
                                     return -1;
                                 }
-                                sws_freeContext(state.sws_ctx);
-                                state.num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
-                                                    state.av_codec_ctx->width,
-                                                    state.av_codec_ctx->height,
-                                                    32
-                                                );
+                                state.num_bytes = av_image_get_buffer_size(     AV_PIX_FMT_YUV420P,
+                                                                                state.av_codec_ctx->width,
+                                                                                state.av_codec_ctx->height,
+                                                                                32
+                                                                            );
                                 state.buffer = (uint8_t *)av_malloc(state.num_bytes * sizeof(uint8_t));
-                                state.sws_ctx = sws_getContext(     state.av_codec_ctx->width, state.av_codec_ctx->height, state.av_codec_ctx->pix_fmt, 
-                                                                    state.av_codec_ctx->width, state.av_codec_ctx->height, AV_PIX_FMT_YUV420P, 
+                                state.sws_ctx = sws_getContext(     state.av_codec_ctx->width, state.av_codec_ctx->height, state.av_codec_ctx->pix_fmt,
+                                                                    state.av_codec_ctx->width, state.av_codec_ctx->height, AV_PIX_FMT_YUV420P,
                                                                     SWS_BILINEAR, NULL, NULL, NULL
                                                                 );
-                                /* Scaling control end */                               
+                                /* Scaling control end */
                             }
                         }
                         else

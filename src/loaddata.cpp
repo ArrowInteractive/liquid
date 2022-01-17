@@ -13,7 +13,7 @@ bool load_data(char* filename, framedata_struct* state)
 
     auto& buffer = state->buffer;
     auto& num_bytes = state->num_bytes;
-    auto& av_packet = state->av_packet; 
+    auto& av_packet = state->av_packet;
     auto& av_frame = state->av_frame;
     auto& decoded_frame = state->decoded_frame;
     auto& t_width = state->t_width;
@@ -97,7 +97,16 @@ bool load_data(char* filename, framedata_struct* state)
                                             32
                                         );
     buffer = (uint8_t *)av_malloc(num_bytes * sizeof(uint8_t));
-    
+
+    av_image_fill_arrays(   decoded_frame->data,
+                            decoded_frame->linesize,
+                            buffer,
+                            AV_PIX_FMT_YUV420P,
+                            t_width,
+                            t_height,
+                            32
+                        );
+
     return true;
 }
 
@@ -106,13 +115,13 @@ bool load_frames(framedata_struct* state)
     /* Unpacking vars */
     auto& av_format_ctx = state->av_format_ctx;
     auto& av_codec_ctx = state->av_codec_ctx;
-    auto& av_packet = state->av_packet; 
+    auto& av_packet = state->av_packet;
     auto& av_frame = state->av_frame;
     auto& decoded_frame = state->decoded_frame;
     auto& video_stream_index = state->video_stream_index;
     auto& audio_stream_index = state->audio_stream_index;
     auto& t_width = state->t_width;
-    auto& t_height = state->t_height; 
+    auto& t_height = state->t_height;
     auto& sws_ctx = state->sws_ctx;
 
     auto& buffer = state->buffer;
@@ -133,13 +142,17 @@ bool load_frames(framedata_struct* state)
 
             if(sws_ctx == NULL)
             {
-                /* 
+                /*
+                    If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems
+                    when running sws_scale()
+
                     Setup sws_context here and send the decoded frame to renderer using decoded_frame
                     May cause crashes
                 */
-                sws_ctx = sws_getContext(   av_codec_ctx->width, av_codec_ctx->height, av_codec_ctx->pix_fmt, 
-                                            t_width, t_height, AV_PIX_FMT_YUV420P, 
-                                            SWS_BILINEAR, NULL, NULL, NULL);
+                sws_ctx = sws_getContext(   av_codec_ctx->width, av_codec_ctx->height, av_codec_ctx->pix_fmt,
+                                            t_width, t_height, AV_PIX_FMT_YUV420P,
+                                            SWS_LANCZOS, NULL, NULL, NULL
+                                        );
             }
 
             f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
@@ -173,18 +186,7 @@ bool load_frames(framedata_struct* state)
         if(f_response != AVERROR_EOF)
         {
             /* Scale the image and send it via decoded_frame */
-            av_image_fill_arrays(
-                                    decoded_frame->data,
-                                    decoded_frame->linesize,
-                                    buffer,
-                                    AV_PIX_FMT_YUV420P,
-                                    t_width,
-                                    t_height,
-                                    32
-                                );
-
-            sws_scale(
-                        sws_ctx,
+            sws_scale(  sws_ctx,
                         (uint8_t const * const *)av_frame->data,
                         av_frame->linesize,
                         0,

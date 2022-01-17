@@ -24,7 +24,7 @@ struct framedata_struct
     AVFrame* av_frame;
     AVFrame * decoded_frame;
     uint8_t * buffer = NULL;
-    SwsContext* sws_ctx;
+    SwsContext* sws_ctx = NULL;
 };
 
 bool load_data(char* filename, framedata_struct* state);
