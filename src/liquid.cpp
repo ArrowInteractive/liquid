@@ -126,37 +126,75 @@ int main(int argc, char** argv)
         SDL_PollEvent(&event);
 
         /* Draw UI */
-        if(!is_fullscreen)
+        if(is_file_open)
         {
-            /*
-                Not fullscreen
-                Drawing UI
-            */
-            topbar.x = 0;
-            topbar.y = 0;
-            topbar.w = state.av_codec_ctx->width;
-            topbar.h = (int)(state.av_codec_ctx->height*5)/100;
+            if(!is_fullscreen)
+            {
+                /*
+                    Not fullscreen
+                    Drawing UI
+                */
+                topbar.x = 0;
+                topbar.y = 0;
+                topbar.w = state.av_codec_ctx->width;
+                topbar.h = (int)(state.av_codec_ctx->height*5)/100;
 
-            xbutton.x = (int)(state.av_codec_ctx->width*97)/100;
-            xbutton.y = 0;
-            xbutton.w = (int)(state.av_codec_ctx->width*6)/100;
-            xbutton.h = (int)(state.av_codec_ctx->height*5)/100;
+                xbutton.x = (int)(state.av_codec_ctx->width*97)/100;
+                xbutton.y = 0;
+                xbutton.w = (int)(state.av_codec_ctx->width*6)/100;
+                xbutton.h = (int)(state.av_codec_ctx->height*5)/100;
+            }
+            else
+            {
+                /*
+                    Is fullscreen
+                    Drawing UI
+                */
+                topbar.x = 0;
+                topbar.y = 0;
+                topbar.w = dm.w;
+                topbar.h = (int)(dm.h*5)/100;
+
+                xbutton.x = (int)(dm.w*97)/100;
+                xbutton.y = 0;
+                xbutton.w = (int)(dm.h*6)/100;
+                xbutton.h = (int)(dm.h*5)/100;
+            }
         }
         else
         {
-            /*
-                Is fullscreen
-                Drawing UI
-            */
-            topbar.x = 0;
-            topbar.y = 0;
-            topbar.w = dm.w;
-            topbar.h = (int)(dm.h*5)/100;
+            if(!is_fullscreen)
+            {
+                /*
+                    Not fullscreen
+                    Drawing UI
+                */
+                topbar.x = 0;
+                topbar.y = 0;
+                topbar.w = 1280;
+                topbar.h = (int)(720*5)/100;
 
-            xbutton.x = (int)(dm.w*97)/100;
-            xbutton.y = 0;
-            xbutton.w = (int)(dm.h*6)/100;
-            xbutton.h = (int)(dm.h*5)/100;
+                xbutton.x = (int)(1280*97)/100;
+                xbutton.y = 0;
+                xbutton.w = (int)(1280*6)/100;
+                xbutton.h = (int)(720*5)/100;
+            }
+            else
+            {
+                /*
+                    Is fullscreen
+                    Drawing UI
+                */
+                topbar.x = 0;
+                topbar.y = 0;
+                topbar.w = dm.w;
+                topbar.h = (int)(dm.h*5)/100;
+
+                xbutton.x = (int)(dm.w*97)/100;
+                xbutton.y = 0;
+                xbutton.w = (int)(dm.h*6)/100;
+                xbutton.h = (int)(dm.h*5)/100;
+            }
         }
         /* Draw the UI based on mouse activity */
         if(event.type == SDL_MOUSEMOTION)
