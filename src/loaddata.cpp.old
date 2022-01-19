@@ -133,6 +133,7 @@ bool load_frames(framedata_struct* state)
     {
         if(av_packet->stream_index == video_stream_index)
         {
+            /* Raises an exception here */
             p_response = avcodec_send_packet(av_codec_ctx, av_packet);
             if(p_response < 0)
             {

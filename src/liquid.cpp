@@ -5,10 +5,9 @@ int main(int argc, char **argv)
     Window *window;
     Renderer *renderer;
     Texture* texture;
+    VideoData* videodata;
     Input input;
     bool is_file_open = false;
-
-    /* Use previous implementation for now */
     framedata_struct state;
 
     if(argc < 2)
@@ -38,7 +37,7 @@ int main(int argc, char **argv)
         }
         
         /* Using previosly written functions */
-        if (!(load_data(argv[1], &state)))
+        if (!(videodata->load_data(argv[1], &state)))
         {
             return -1;
         }
@@ -64,6 +63,10 @@ int main(int argc, char **argv)
     while (input.is_window_running())
     {
         input.update_events();
+        if(is_file_open)
+        {
+            
+        }
         renderer->clear_renderer();
         renderer->render_present();
         SDL_Delay(5);

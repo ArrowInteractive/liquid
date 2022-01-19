@@ -8,7 +8,7 @@
 #include "Renderer.hpp"
 #include "Input.hpp"
 #include "Texture.hpp"
-#include "loaddata.hpp"
+#include "VideoData.hpp"
 
 using namespace std;
 using std::filesystem::exists;
