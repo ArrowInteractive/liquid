@@ -14,11 +14,9 @@ void Input::update_events()
     }
     if (event.type == SDL_KEYDOWN)
     {
-    if(event.key.keysym.sym == SDLK_q)
-    {
-        m_isrunning = false;
+        if(event.key.keysym.sym == SDLK_q)
+        {
+            m_isrunning = false;
+        }
     }
-}
-
-
 }

@@ -1,7 +1,8 @@
-#include <SDL2/SDL.h>
+#define SDL_MAIN_HANDLED
 #include "Window.hpp"
 #include "Renderer.hpp"
 #include "Input.hpp"
+#include <SDL2/SDL.h>
 
 int main()
 {
