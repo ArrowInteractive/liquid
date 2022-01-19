@@ -1,4 +1,5 @@
 #include <liquid.hpp>
+#include <cmath>
 
 /* Globals */
 bool draw_ui = true;
@@ -93,7 +94,6 @@ int main(int argc, char** argv)
                                     state.av_codec_ctx->height,
                                     SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
                                 );
-
 
 
         if(window == NULL)
@@ -360,7 +360,8 @@ int main(int argc, char** argv)
         }
 
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        if(is_file_open)
+            SDL_RenderCopy(renderer, texture, NULL, NULL);
 
         /* Draw the ui */
         if(draw_ui)
