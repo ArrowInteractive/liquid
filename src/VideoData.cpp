@@ -130,72 +130,25 @@ bool VideoData::load_frames(framedata_struct* state)
 
     while(av_read_frame(av_format_ctx, av_packet) >= 0)
     {
-        /* An exception gets raised randomly here - Only on Win32? */
-        if(av_packet->stream_index == video_stream_index)
+        /* Need to rewrite previous code */
+        if (av_packet->stream_index == video_stream_index) 
         {
-            p_response = avcodec_send_packet(av_codec_ctx, av_packet);
-            if(p_response < 0)
-            {
-                cout<<"Failed to decode packet!"<<endl;
-                return false;
-            }
-
-            if(sws_ctx == NULL)
-            {
-                /*
-                    If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems
-                    when running sws_scale()
-
-                    Setup sws_context here and send the decoded frame to renderer using decoded_frame
-                    May cause crashes
-                */
-                sws_ctx = sws_getContext(   av_codec_ctx->width, av_codec_ctx->height, av_codec_ctx->pix_fmt,
-                                            t_width, t_height, AV_PIX_FMT_YUV420P,
-                                            SWS_LANCZOS, NULL, NULL, NULL
-                                        );
-            }
-
-            f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
-            if(f_response == AVERROR(EAGAIN))
-            {
-                av_packet_unref(state->av_packet);
-                continue;
-            }
-            else if(f_response == AVERROR_EOF)
-            {
-                av_packet_unref(state->av_packet);
+            int ret = avcodec_send_packet(av_codec_ctx, av_packet);
+            if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                std::cout << "avcodec_send_packet: " << ret << std::endl;
                 break;
             }
-            else if(f_response < 0)
-            {
-                cout<<"Failed to receive frame!"<<endl;
-                av_packet_unref(state->av_packet);
-                av_frame_unref(state->av_frame);
-                return false;
+            while (ret  >= 0) {
+                ret = avcodec_receive_frame(av_codec_ctx, av_frame);
+                if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                    //std::cout << "avcodec_receive_frame: " << ret << std::endl;
+                    break;
+                }
+                std::cout << "frame: " << av_codec_ctx->frame_number << std::endl;
+                break;
             }
-            av_packet_unref(state->av_packet);
         }
-        else
-        {
-            av_packet_unref(state->av_packet);
-            av_frame_unref(state->av_frame);
-            continue;
-        }
-
-        /* If End of File, then stop processing frames */
-        if(f_response != AVERROR_EOF)
-        {
-            /* Scale the image and send it via decoded_frame */
-            sws_scale(  sws_ctx,
-                        (uint8_t const * const *)av_frame->data,
-                        av_frame->linesize,
-                        0,
-                        av_frame->height,
-                        decoded_frame->data,
-                        decoded_frame->linesize
-                    );
-        }
-        av_frame_unref(state->av_frame);
+        av_packet_unref(av_packet);
         break;
     }
     return true;

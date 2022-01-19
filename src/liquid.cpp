@@ -65,7 +65,10 @@ int main(int argc, char **argv)
         input.update_events();
         if(is_file_open)
         {
-            
+            if(!(videodata->load_frames(&state)))
+            {
+                return -1;
+            }
         }
         renderer->clear_renderer();
         renderer->render_present();
