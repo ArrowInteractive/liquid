@@ -1,13 +1,14 @@
 #define SDL_MAIN_HANDLED
 
-#include <iostream>
 #include <SDL2/SDL.h>
+#include <iostream>
 #include <filesystem>
+
 #include "Window.hpp"
 #include "Renderer.hpp"
 #include "Input.hpp"
 #include "Texture.hpp"
-#include "VideoData.hpp"
+#include "loaddata.hpp"
 
 using namespace std;
 using std::filesystem::exists;

@@ -2,9 +2,9 @@
 
 Texture::Texture(Renderer* renderer)
 {
-    if (m_texture ==NULL)
+    if (m_texture != NULL)
     {
-        delete_texture();
+        destroy_texture();
     }
     m_renderer = renderer;
     m_texture = SDL_CreateTexture(
@@ -34,7 +34,12 @@ void Texture::set_texture_data()
     
 }
 
-void Texture::delete_texture()
+void Texture::destroy_texture()
 {
     SDL_DestroyTexture(m_texture);
+}
+
+SDL_Texture* Texture::get_texture()
+{
+    return m_texture;
 }

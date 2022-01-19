@@ -11,20 +11,22 @@ Renderer::Renderer(Window *window) : m_window(window)
     std::cout<<"LOG::INITIALISED RENDERER"<<std::endl;
 }
 
-void Renderer::render_image()
-{}
+void Renderer::render_copy()
+{
+
+}
 
 void Renderer::clear_renderer()
 {
     SDL_RenderClear(m_renderer);
 }
 
-void Renderer::render()
+void Renderer::render_present()
 {
     SDL_RenderPresent(m_renderer);
 }
 
-void Renderer::close_renderer()
+void Renderer::destroy_renderer()
 {
     SDL_DestroyRenderer(m_renderer);
     std::cout<<"LOG::DESTROY RENDERER"<<std::endl;

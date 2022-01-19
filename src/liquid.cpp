@@ -5,8 +5,10 @@ int main(int argc, char **argv)
     Window *window;
     Renderer *renderer;
     Texture* texture;
-    VideoData* videodata;
     Input input;
+    bool is_file_open = false;
+
+    /* Use previous implementation for now */
     framedata_struct state;
 
     if(argc < 2)
@@ -35,10 +37,12 @@ int main(int argc, char **argv)
             return -1;
         }
         
-        if (!(videodata->load_data(argv[1], &state)))
+        /* Using previosly written functions */
+        if (!(load_data(argv[1], &state)))
         {
             return -1;
         }
+        is_file_open = true;
         
         window = new Window(    argv[1], 
                                 state.av_codec_ctx->width, 
@@ -61,11 +65,11 @@ int main(int argc, char **argv)
     {
         input.update_events();
         renderer->clear_renderer();
-        renderer->render();
+        renderer->render_present();
         SDL_Delay(5);
     }
     window->close_window();
-    renderer->close_renderer();
+    renderer->destroy_renderer();
     
     return 0;
 }

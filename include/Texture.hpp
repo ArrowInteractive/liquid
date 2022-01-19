@@ -14,7 +14,8 @@ public:
     Texture(Renderer* renderer);
     Texture(Renderer* renderer, int width, int height);
     void set_texture_data();
-    void delete_texture();
+    void destroy_texture();
+    SDL_Texture* get_texture();
 };
 
 #endif

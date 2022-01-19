@@ -12,10 +12,10 @@ private:
 
 public:
     Renderer(Window *window);
-    void render_image();
     void clear_renderer();
-    void render();
-    void close_renderer();
+    void render_copy();
+    void render_present();
+    void destroy_renderer();
     SDL_Renderer* get_renderer();
 };
 
