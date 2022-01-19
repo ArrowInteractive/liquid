@@ -21,9 +21,9 @@ Window::Window(const char *title, int width, int height) :
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     if (m_windowptr == NULL)
     {
-        std::cout<<"ERROR:COULD NOT INITIALIZE WINDOW!"<<std::endl;
+        std::cout<<"ERROR::Could not initialize window!"<<std::endl;
     }
-    std::cout<<"LOG::INITIALIZED WINDOW."<<std::endl;
+    std::cout<<"LOG::Initialized window"<<std::endl;
 }
 SDL_Window *Window::get_window_ptr()
 {
@@ -43,5 +43,5 @@ int Window::get_window_width()
 void Window::close_window()
 {
     SDL_DestroyWindow(m_windowptr);
-    std::cout<<"LOG::WINDOW SUCCESSFULLY DESTROYED."<<std::endl;
+    std::cout<<"LOG::Destroyed window."<<std::endl;
 }

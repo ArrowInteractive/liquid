@@ -130,7 +130,7 @@ bool VideoData::load_frames(framedata_struct* state)
 
     while(av_read_frame(av_format_ctx, av_packet) >= 0)
     {
-        /* An exception gets raised randomly here */
+        /* An exception gets raised randomly here - Only on Win32? */
         if(av_packet->stream_index == video_stream_index)
         {
             p_response = avcodec_send_packet(av_codec_ctx, av_packet);

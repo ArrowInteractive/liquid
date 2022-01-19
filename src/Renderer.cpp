@@ -8,7 +8,7 @@ Renderer::Renderer(Window *window) : m_window(window)
                                         -1,
                                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE
                                     );
-    std::cout<<"LOG::INITIALISED RENDERER"<<std::endl;
+    std::cout<<"LOG::Initialized renderer."<<std::endl;
 }
 
 void Renderer::render_copy()
@@ -29,7 +29,7 @@ void Renderer::render_present()
 void Renderer::destroy_renderer()
 {
     SDL_DestroyRenderer(m_renderer);
-    std::cout<<"LOG::DESTROY RENDERER"<<std::endl;
+    std::cout<<"LOG::Destroyed renderer."<<std::endl;
 }
 
 SDL_Renderer *Renderer::get_renderer()
