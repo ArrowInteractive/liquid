@@ -12,12 +12,11 @@ private:
 
 public:
     Renderer(Window *window);
-    ~Renderer();
-    void InitRenderer();
-    void RenderImage();
-    void clearRenderer();
+    void init_renderer();
+    void render_image();
+    void clear_renderer();
     void render();
-    void closeRenderer();
+    void close_renderer();
 
 };
 

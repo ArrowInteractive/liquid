@@ -10,12 +10,7 @@ Window::Window(const char *title, int width, int height) :
     m_height = height;
 }
 
-Window::~Window()
-{
-    closeWindow();
-}
-
-void Window::InitWindow()
+void Window::init_window()
 {
     if(SDL_Init(SDL_INIT_VIDEO))
     {
@@ -37,12 +32,12 @@ void Window::InitWindow()
     std::cout<<"LOG::INITIALISED WINDOW"<<std::endl;
 }
 
-SDL_Window *Window::getWindowptr()
+SDL_Window *Window::get_window_ptr()
 {
     return m_windowptr;
 }
 
-void Window::closeWindow()
+void Window::close_window()
 {
     SDL_DestroyWindow(m_windowptr);
     std::cout<<"LOG::DESTROY WINDOW"<<std::endl;

@@ -1,35 +1,26 @@
 #include <SDL2/SDL.h>
 #include "Window.hpp"
 #include "Renderer.hpp"
+#include "Input.hpp"
 
 int main()
 {
     Window* window;
     Renderer* renderer;
-    SDL_Event event;
+    Input input;
     window = new Window("Liquid Video Player", 1280, 720);
     renderer = new Renderer(window);
 
-    window->InitWindow();
-    renderer->InitRenderer();
+    window->init_window();
+    renderer->init_renderer();
 
-    while (true)
+    while (input.is_window_running())
     {
-        SDL_PollEvent(&event);
-        if (event.type == SDL_QUIT)
-        {
-            break;
-        }
-        if (event.type == SDL_KEYDOWN)
-        {
-            if(event.key.keysym.sym == SDLK_q)
-            {
-                break;
-            }
-        }
-
-        renderer->clearRenderer();
+        input.update_events();
+        renderer->clear_renderer();
         renderer->render();
         SDL_Delay(5);
     }
+    window->close_window();
+    renderer->close_renderer();
 }

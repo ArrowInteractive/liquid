@@ -14,10 +14,9 @@ private:
 
 public:
     Window(const char *title, int width, int height);
-    ~Window();
-    SDL_Window* getWindowptr();
-    void InitWindow();
-    void closeWindow();
+    SDL_Window* get_window_ptr();
+    void init_window();
+    void close_window();
 };
 
 #endif
