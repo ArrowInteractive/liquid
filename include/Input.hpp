@@ -6,7 +6,7 @@
 class Input
 {
     private:
-        bool m_isrunning;
+        bool m_isrunning = true;
         SDL_Event event;
 
     public:

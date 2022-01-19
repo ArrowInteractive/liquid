@@ -12,7 +12,6 @@ private:
 
 public:
     Renderer(Window *window);
-    void init_renderer();
     void render_image();
     void clear_renderer();
     void render();

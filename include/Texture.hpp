@@ -11,8 +11,8 @@ private:
     Renderer *m_renderer;
     int m_width,m_height;
 public:
-    Texture(Renderer *renderer);
-    Texture(Renderer *renderer, int width, int height);
+    Texture(Renderer* renderer);
+    Texture(Renderer* renderer, int width, int height);
     void set_texture_data();
     void delete_texture();
 };
