@@ -133,18 +133,22 @@ bool VideoData::load_frames(framedata_struct* state)
         /* Need to rewrite previous code */
         if (av_packet->stream_index == video_stream_index) 
         {
-            int ret = avcodec_send_packet(av_codec_ctx, av_packet);
-            if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                std::cout << "avcodec_send_packet: " << ret << std::endl;
+            p_response = avcodec_send_packet(av_codec_ctx, av_packet);
+            if (p_response < 0 || p_response == AVERROR(EAGAIN) || p_response == AVERROR_EOF) 
+            {
+                cout<<"avcodec_send_packet: "<<p_response<<endl;
                 break;
             }
-            while (ret  >= 0) {
-                ret = avcodec_receive_frame(av_codec_ctx, av_frame);
-                if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                    //std::cout << "avcodec_receive_frame: " << ret << std::endl;
+            while (p_response >= 0) 
+            {
+                f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
+                if (f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF) {
+                    cout<<"avcodec_receive_frame: "<<f_response<<endl;
                     break;
                 }
-                std::cout << "frame: " << av_codec_ctx->frame_number << std::endl;
+                cout<<"Frame: "<<av_codec_ctx->frame_number<<endl;
+                av_packet_unref(av_packet);
+                av_frame_unref(av_frame);
                 break;
             }
         }
