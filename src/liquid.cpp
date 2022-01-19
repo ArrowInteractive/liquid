@@ -1,16 +1,18 @@
-#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
 #include "Window.hpp"
 #include "Renderer.hpp"
 #include "Input.hpp"
-#include <SDL2/SDL.h>
+#include "Texture.hpp"
 
 int main()
 {
-    Window* window;
-    Renderer* renderer;
+    Window *window;
+    Renderer *renderer;
+    Texture* texture;
     Input input;
     window = new Window("Liquid Video Player", 1280, 720);
     renderer = new Renderer(window);
+    texture = new Texture(renderer,1280,720);
 
     window->init_window();
     renderer->init_renderer();

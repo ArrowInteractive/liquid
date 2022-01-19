@@ -17,6 +17,8 @@ public:
     SDL_Window* get_window_ptr();
     void init_window();
     void close_window();
+    int get_window_height();
+    int get_window_width();
 };
 
 #endif

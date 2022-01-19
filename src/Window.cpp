@@ -37,6 +37,16 @@ SDL_Window *Window::get_window_ptr()
     return m_windowptr;
 }
 
+int Window::get_window_height()
+{
+    return m_height;
+}
+
+int Window::get_window_width()
+{
+    return m_width;
+}
+
 void Window::close_window()
 {
     SDL_DestroyWindow(m_windowptr);

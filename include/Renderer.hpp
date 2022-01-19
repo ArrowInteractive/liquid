@@ -17,7 +17,7 @@ public:
     void clear_renderer();
     void render();
     void close_renderer();
-
+    SDL_Renderer* get_renderer();
 };
 
 #endif

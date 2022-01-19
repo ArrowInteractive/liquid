@@ -33,3 +33,8 @@ void Renderer::close_renderer()
     SDL_DestroyRenderer(m_renderer);
     std::cout<<"LOG::DESTROY RENDERER"<<std::endl;
 }
+
+SDL_Renderer *Renderer::get_renderer()
+{
+    return m_renderer;
+}
