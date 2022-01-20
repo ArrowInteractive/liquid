@@ -11,7 +11,7 @@ Renderer::Renderer(Window *window) : m_window(window)
     std::cout<<"LOG::Initialized renderer."<<std::endl;
 }
 
-void Renderer::render_texture(SDL_Texture *texture)
+void Renderer::render_copy(SDL_Texture *texture)
 {
     SDL_RenderCopy(m_renderer, texture, NULL, NULL);
 }

@@ -14,7 +14,7 @@ private:
 public:
     Renderer(Window *window);
     void clear_renderer();
-    void render_texture(SDL_Texture *texture);
+    void render_copy(SDL_Texture *texture);
     void update_texture(SDL_Texture *texture,framedata_struct* state);
     void render_present();
     void destroy_renderer();

@@ -71,7 +71,12 @@ int main(int argc, char **argv)
         }
 
         renderer->clear_renderer();
-        renderer->render_texture(texture->get_texture());
+        
+        if(is_file_open)
+        {
+            renderer->render_copy(texture->get_texture());
+        }
+        
         renderer->render_present();
         SDL_Delay(5);
     }
