@@ -7,15 +7,16 @@
 class Texture
 {
 private:
-    SDL_Texture* m_texture;
+    SDL_Texture *m_texture;
     Renderer *m_renderer;
-    int m_width,m_height;
+    int m_width, m_height;
+
 public:
-    Texture(Renderer* renderer);
-    Texture(Renderer* renderer, int width, int height);
+    Texture(Renderer *renderer);
+    Texture(Renderer *renderer, int width, int height);
     void set_texture_data();
     void destroy_texture();
-    SDL_Texture* get_texture();
+    SDL_Texture *get_texture();
 };
 
 #endif
