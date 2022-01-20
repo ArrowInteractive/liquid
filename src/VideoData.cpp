@@ -154,7 +154,7 @@ void VideoData::close_data(framedata_struct* state)
     av_packet_free(&state->av_packet);
     av_frame_free(&state->av_frame);
     av_frame_free(&state->decoded_frame);
-    avformat_close_input(&state->av_format_ctx);
+    //avformat_close_input(&state->av_format_ctx);
     avcodec_free_context(&state->av_codec_ctx);
     avcodec_close(state->av_codec_ctx);
     av_freep(&state->buffer);
