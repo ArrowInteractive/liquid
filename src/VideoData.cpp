@@ -2,107 +2,91 @@
 
 bool VideoData::load_data(char* filename, framedata_struct* state)
 {
-    auto& av_format_ctx = state->av_format_ctx;
-    auto& av_codec_params = state->av_codec_params;
-    auto& av_codec = state->av_codec;
-    auto& av_codec_ctx = state->av_codec_ctx;
-    auto& video_stream_index = state->video_stream_index;
-    auto& audio_stream_index = state->audio_stream_index;
-
-    auto& buffer = state->buffer;
-    auto& num_bytes = state->num_bytes;
-    auto& av_packet = state->av_packet;
-    auto& av_frame = state->av_frame;
-    auto& decoded_frame = state->decoded_frame;
-    auto& t_width = state->t_width;
-    auto& t_height = state->t_height;
-
-
-    if(!(av_format_ctx = avformat_alloc_context()))
+    if(!(state->av_format_ctx = avformat_alloc_context()))
     {
         cout<<"Couldn't initialize AVFormatContext!"<<endl;
         return false;
     }
 
-    if(avformat_open_input(&av_format_ctx, filename, NULL, NULL) != 0)
+    if(avformat_open_input(&state->av_format_ctx, filename, NULL, NULL) != 0)
     {
         cout<<"Couldn't open file!"<<endl;
         return false;
     }
 
-    for(int i=0; i < av_format_ctx->nb_streams; i++)
+    for(int i=0; i < state->av_format_ctx->nb_streams; i++)
     {
-        if(av_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+        if(state->av_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
         {
-            av_codec_params = av_format_ctx->streams[i]->codecpar;
-            av_codec = avcodec_find_decoder(av_codec_params->codec_id);
-            video_stream_index = i;
+            state->av_codec_params = state->av_format_ctx->streams[i]->codecpar;
+            state->av_codec = avcodec_find_decoder(state->av_codec_params->codec_id);
+            state->video_stream_index = i;
             break;
         }
     }
 
-    if(video_stream_index == -1 && audio_stream_index == -1)
+    if(state->video_stream_index == -1 && state->audio_stream_index == -1)
     {
         cout<<"Couldn't find any streams in the file!"<<endl;
         return false;
     }
 
-    if(!(av_codec_ctx = avcodec_alloc_context3(av_codec)))
+    if(!(state->av_codec_ctx = avcodec_alloc_context3(state->av_codec)))
     {
         cout<<"Couldn't setup AVCodecContext!"<<endl;
         return false;
     }
 
-    if(avcodec_parameters_to_context(av_codec_ctx, av_codec_params) < 0)
+    if(avcodec_parameters_to_context(state->av_codec_ctx, state->av_codec_params) < 0)
     {
         cout<<"Couldn't pass the parameters to AVCodecContext!"<<endl;
         return false;
     }
 
-    if(avcodec_open2(av_codec_ctx, av_codec, NULL) < 0)
+    if(avcodec_open2(state->av_codec_ctx, state->av_codec, NULL) < 0)
     {
         cout<<"Couldn't open codec!"<<endl;
         return false;
     }
 
-    if(!(av_packet = av_packet_alloc()))
+    if(!(state->av_packet = av_packet_alloc()))
     {
         cout<<"Couldn't allocate AVPacket!"<<endl;
         return false;
     }
 
-    if(!(av_frame = av_frame_alloc()))
+    if(!(state->av_frame = av_frame_alloc()))
     {
         cout<<"Couldn't allocate AVFrame!"<<endl;
         return false;
     }
 
-    if(!(decoded_frame = av_frame_alloc()))
+    if(!(state->decoded_frame = av_frame_alloc()))
     {
         cout<<"Couldn't allocate AVFrame!"<<endl;
         return false;
     }
 
     /* Check resolution - Experimental */
-    if(t_width <= av_codec_ctx->width && t_height <= av_codec_ctx->height)
+    if(state->t_width <= state->av_codec_ctx->width && state->t_height <= state->av_codec_ctx->height)
     {
-        t_width = av_codec_ctx->width;
-        t_height = av_codec_ctx->height;
+        state->t_width = state->av_codec_ctx->width;
+        state->t_height = state->av_codec_ctx->height;
     }
 
-    num_bytes = av_image_get_buffer_size(   AV_PIX_FMT_YUV420P,
-                                            t_width,
-                                            t_height,
-                                            32
-                                        );
-    buffer = (uint8_t *)av_malloc(num_bytes * sizeof(uint8_t));
+    state->num_bytes = av_image_get_buffer_size(    AV_PIX_FMT_YUV420P,
+                                                    state->t_width,
+                                                    state->t_height,
+                                                    32
+                                                );
+    state->buffer = (uint8_t *)av_malloc(state->num_bytes * sizeof(uint8_t));
 
-    av_image_fill_arrays(   decoded_frame->data,
-                            decoded_frame->linesize,
-                            buffer,
+    av_image_fill_arrays(   state->decoded_frame->data,
+                            state->decoded_frame->linesize,
+                            state->buffer,
                             AV_PIX_FMT_YUV420P,
-                            t_width,
-                            t_height,
+                            state->t_width,
+                            state->t_height,
                             32
                         );
 
@@ -111,48 +95,55 @@ bool VideoData::load_data(char* filename, framedata_struct* state)
 
 bool VideoData::load_frames(framedata_struct* state)
 {
-    /* Unpacking vars */
-    auto& av_format_ctx = state->av_format_ctx;
-    auto& av_codec_ctx = state->av_codec_ctx;
-    auto& av_packet = state->av_packet;
-    auto& av_frame = state->av_frame;
-    auto& decoded_frame = state->decoded_frame;
-    auto& video_stream_index = state->video_stream_index;
-    auto& audio_stream_index = state->audio_stream_index;
-    auto& t_width = state->t_width;
-    auto& t_height = state->t_height;
-    auto& sws_ctx = state->sws_ctx;
-
-    auto& buffer = state->buffer;
-    auto& num_bytes = state->num_bytes;
-    auto& p_response = state->p_response;
-    auto& f_response = state->f_response;
-
-    while(av_read_frame(av_format_ctx, av_packet) >= 0)
+    while(av_read_frame(state->av_format_ctx, state->av_packet) >= 0)
     {
         /* Need to rewrite previous code */
-        if (av_packet->stream_index == video_stream_index) 
+        if (state->av_packet->stream_index == state->video_stream_index) 
         {
-            p_response = avcodec_send_packet(av_codec_ctx, av_packet);
-            if (p_response < 0 || p_response == AVERROR(EAGAIN) || p_response == AVERROR_EOF) 
+            state->p_response = avcodec_send_packet(state->av_codec_ctx, state->av_packet);
+            if (state->p_response < 0 || state->p_response == AVERROR(EAGAIN) || state->p_response == AVERROR_EOF) 
             {
-                cout<<"avcodec_send_packet: "<<p_response<<endl;
+                cout<<"avcodec_send_packet: "<<state->p_response<<endl;
                 break;
             }
-            while (p_response >= 0) 
+            while (state->p_response >= 0) 
             {
-                f_response = avcodec_receive_frame(av_codec_ctx, av_frame);
-                if (f_response == AVERROR(EAGAIN) || f_response == AVERROR_EOF) {
-                    cout<<"avcodec_receive_frame: "<<f_response<<endl;
+                if(state->sws_ctx == NULL)
+                {
+                    /*
+                        If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems
+                        when running sws_scale()
+
+                        Setup sws_context here and send the decoded frame to renderer using decoded_frame
+                        May cause crashes
+                    */
+                    state->sws_ctx = sws_getContext(    state->av_codec_ctx->width, state->av_codec_ctx->height, state->av_codec_ctx->pix_fmt,
+                                                        state->t_width, state->t_height, AV_PIX_FMT_YUV420P,
+                                                        SWS_LANCZOS, NULL, NULL, NULL
+                                                    );
+                }
+                state->f_response = avcodec_receive_frame(state->av_codec_ctx, state->av_frame);
+                if (state->f_response == AVERROR(EAGAIN) || state->f_response == AVERROR_EOF) 
+                {
+                    cout<<"avcodec_receive_frame: "<<state->f_response<<endl;
                     break;
                 }
-                cout<<"Frame: "<<av_codec_ctx->frame_number<<endl;
-                av_packet_unref(av_packet);
-                av_frame_unref(av_frame);
+                cout<<"Frame: "<<state->av_codec_ctx->frame_number<<endl;
+                /* Scale the image and send it via decoded_frame */
+                sws_scale(  
+                            state->sws_ctx,
+                            (uint8_t const * const *)state->av_frame->data,
+                            state->av_frame->linesize,
+                            0,
+                            state->av_frame->height,
+                            state->decoded_frame->data,
+                            state->decoded_frame->linesize
+                        );
+                av_frame_unref(state->av_frame);
                 break;
             }
         }
-        av_packet_unref(av_packet);
+        av_packet_unref(state->av_packet);
         break;
     }
     return true;

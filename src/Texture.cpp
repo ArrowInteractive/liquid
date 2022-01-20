@@ -27,10 +27,6 @@ Texture::Texture(Renderer *renderer, int width, int height)
         m_height);
 }
 
-void Texture::set_texture_data()
-{
-}
-
 void Texture::destroy_texture()
 {
     SDL_DestroyTexture(m_texture);
