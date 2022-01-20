@@ -33,6 +33,7 @@ private:
 public:
     bool load_data(char* filename, framedata_struct* state);
     bool load_frames(framedata_struct* state);
+    void scale_frame(framedata_struct* state);
     void close_data(framedata_struct* state);
 };
 

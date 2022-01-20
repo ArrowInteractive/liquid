@@ -67,6 +67,7 @@ int main(int argc, char **argv)
             {
                 return -1;
             }
+            //videodata->scale_frame(&state);
             renderer->update_texture(texture->get_texture(),&state);
         }
 
@@ -83,7 +84,9 @@ int main(int argc, char **argv)
     window->close_window();
     renderer->destroy_renderer();
     if (is_file_open)
+    {
         videodata->close_data(&state);
-
+    }
+    
     return 0;
 }

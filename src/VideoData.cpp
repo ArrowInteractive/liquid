@@ -113,10 +113,42 @@ bool VideoData::load_frames(framedata_struct* state)
                     break;
                 }
                 cout<<"Frame No. "<<state->av_codec_ctx->frame_number<<" decoded"<<endl;
+                av_frame_unref(state->av_frame);
+                break;
             }
         }
         av_packet_unref(state->av_packet);
+        break;
     }
+    return true;
+}
+
+void VideoData::scale_frame(framedata_struct* state)
+{
+    if(state->sws_ctx == NULL)
+    {
+        /*
+            If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems
+            when running sws_scale()
+
+            Setup sws_context here and send the decoded frame to renderer using decoded_frame
+            May cause crashes
+        */
+        state->sws_ctx = sws_getContext(    
+                                            state->av_codec_ctx->width, state->av_codec_ctx->height, state->av_codec_ctx->pix_fmt,
+                                            state->t_width, state->t_height, AV_PIX_FMT_YUV420P,
+                                            SWS_LANCZOS, NULL, NULL, NULL
+                                        );
+    }
+    /* Scale the image and send it via decoded_frame */
+    sws_scale(  state->sws_ctx,
+                (uint8_t const * const *)state->av_frame->data,
+                state->av_frame->linesize,
+                0,
+                state->av_frame->height,
+                state->decoded_frame->data,
+                state->decoded_frame->linesize
+            );
 }
 
 void VideoData::close_data(framedata_struct* state)
@@ -124,7 +156,7 @@ void VideoData::close_data(framedata_struct* state)
     av_packet_free(&state->av_packet);
     av_frame_free(&state->av_frame);
     av_frame_free(&state->decoded_frame);
-    //avformat_close_input(&state->av_format_ctx);
+    avformat_close_input(&state->av_format_ctx);
     avcodec_free_context(&state->av_codec_ctx);
     avcodec_close(state->av_codec_ctx);
     av_freep(&state->buffer);
