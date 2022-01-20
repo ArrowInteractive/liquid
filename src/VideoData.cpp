@@ -97,56 +97,26 @@ bool VideoData::load_frames(framedata_struct* state)
 {
     while(av_read_frame(state->av_format_ctx, state->av_packet) >= 0)
     {
-        /* Need to rewrite previous code */
         if (state->av_packet->stream_index == state->video_stream_index) 
         {
-            state->p_response = avcodec_send_packet(state->av_codec_ctx, state->av_packet);
-            if (state->p_response < 0 || state->p_response == AVERROR(EAGAIN) || state->p_response == AVERROR_EOF) 
+            state->response = avcodec_send_packet(state->av_codec_ctx, state->av_packet);
+            if (state->response < 0 || state->response == AVERROR(EAGAIN) || state->response == AVERROR_EOF) 
             {
-                cout<<"avcodec_send_packet: "<<state->p_response<<endl;
+                cout <<"avcodec_send_packet: "<<state->response<<endl;
                 break;
             }
-            while (state->p_response >= 0) 
+            while (state->response >= 0 ) 
             {
-                if(state->sws_ctx == NULL)
-                {
-                    /*
-                        If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems
-                        when running sws_scale()
-
-                        Setup sws_context here and send the decoded frame to renderer using decoded_frame
-                        May cause crashes
-                    */
-                    state->sws_ctx = sws_getContext(    state->av_codec_ctx->width, state->av_codec_ctx->height, state->av_codec_ctx->pix_fmt,
-                                                        state->t_width, state->t_height, AV_PIX_FMT_YUV420P,
-                                                        SWS_LANCZOS, NULL, NULL, NULL
-                                                    );
-                }
-                state->f_response = avcodec_receive_frame(state->av_codec_ctx, state->av_frame);
-                if (state->f_response == AVERROR(EAGAIN) || state->f_response == AVERROR_EOF) 
-                {
-                    cout<<"avcodec_receive_frame: "<<state->f_response<<endl;
+                state->response = avcodec_receive_frame(state->av_codec_ctx, state->av_frame);
+                if (state->response == AVERROR(EAGAIN) || state->response == AVERROR_EOF) {
+                    cout <<"avcodec_receive_frame: "<<state->response<<endl;
                     break;
                 }
-                cout<<"Frame: "<<state->av_codec_ctx->frame_number<<endl;
-                /* Scale the image and send it via decoded_frame */
-                sws_scale(  
-                            state->sws_ctx,
-                            (uint8_t const * const *)state->av_frame->data,
-                            state->av_frame->linesize,
-                            0,
-                            state->av_frame->height,
-                            state->decoded_frame->data,
-                            state->decoded_frame->linesize
-                        );
-                av_frame_unref(state->av_frame);
-                break;
+                cout<<"Frame No. "<<state->av_codec_ctx->frame_number<<" decoded"<<endl;
             }
         }
         av_packet_unref(state->av_packet);
-        break;
     }
-    return true;
 }
 
 void VideoData::close_data(framedata_struct* state)

@@ -13,7 +13,7 @@ extern "C"
 
 struct framedata_struct
 {
-    int t_width=0, t_height=0, video_stream_index = -1, audio_stream_index = -1, p_response, f_response, num_bytes;
+    int t_width=0, t_height=0, video_stream_index = -1, audio_stream_index = -1, response, num_bytes;
     AVFormatContext* av_format_ctx;
     AVCodecParameters* av_codec_params;
     AVCodec* av_codec;

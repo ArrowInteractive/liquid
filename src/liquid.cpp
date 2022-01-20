@@ -67,11 +67,6 @@ int main(int argc, char **argv)
             {
                 return -1;
             }
-            /* Experimental */
-            if(state.f_response == AVERROR_EOF)
-            {
-                is_file_open = false;
-            }
             renderer->update_texture(texture->get_texture(),&state);
         }
 
