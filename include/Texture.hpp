@@ -1,21 +1,12 @@
 #ifndef TEXTURE
 #define TEXTURE
 
+#include <iostream>
 #include <SDL2/SDL.h>
-#include "Renderer.hpp"
+using namespace std;
 
-class Texture
-{
-private:
-    SDL_Texture *m_texture;
-    Renderer *m_renderer;
-    int m_width, m_height;
-
-public:
-    Texture(Renderer *renderer);
-    Texture(Renderer *renderer, int width, int height);
-    void destroy_texture();
-    SDL_Texture *get_texture();
-};
+bool texture_create(SDL_Texture* texture);
+bool texture_update(SDL_Texture* texture);
+bool texture_destroy(SDL_Texture* texture);
 
 #endif

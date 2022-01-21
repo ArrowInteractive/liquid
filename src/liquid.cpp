@@ -1,92 +1,81 @@
 #include "liquid.hpp"
 
 int main(int argc, char **argv)
-{
-    Window *window;
-    Renderer *renderer;
-    Texture *texture;
-    VideoData *videodata;
-    Input input;
+{   
+    SDL_DisplayMode displaymode;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* texture;
+    SDL_Event event;
     bool is_file_open = false;
-    framedata_struct state;
-
-    if (argc < 2)
-    {
-        window = new Window("Liquid Video Player", 960, 480);
-        renderer = new Renderer(window);
-        texture = new Texture(renderer, 960, 480);
+    datastruct state;
+    
+    if(!(get_display_mode(&displaymode))){
+        cout<<"ERROR: Could not get display mode!"<<endl;
+        return -1;
     }
-    else
-    {
-        if (!exists(argv[1]))
+
+    // Check arguments
+    if(argc < 2){
+        if(!window_create(window, "Liquid Media Player", 300, 300))
         {
-            cout << "File doesn't exist." << endl;
+            return -1;
+        }
+    }
+    else{
+
+        // Check file properties
+        if(!exists(argv[1])){
+            cout<<"The file doesn't exist!"<<endl;
             return -1;
         }
 
-        if (!is_regular_file(argv[1]))
-        {
+        if(!is_regular_file(argv[1])){
             /*
                 Setup liquid to load media files from the folder and play
                 them sequentially.
 
                 For now, display some error.
             */
-            cout << "Provided input is a folder." << endl;
+            cout<<"Provided input is a folder!"<<endl;
             return -1;
         }
 
-        /* Using previosly written functions */
-        if (!(videodata->load_data(argv[1], &state)))
-        {
+        // Set target width and height
+        state.t_width = displaymode.w;
+        state.t_height = displaymode.h;
+
+        /*
+            Use FFmpeg to decode basic info about the input
+            Need to have separate functions for file and folder
+        */
+
+        if(!(load_data(argv[1], &state))){
+            cout<<"ERROR: Failed to load data!"<<endl;
             return -1;
         }
         is_file_open = true;
 
-        window = new Window(argv[1],
-                            state.av_codec_ctx->width,
-                            state.av_codec_ctx->height);
-
-        /* Set target width and height */
-        state.t_width = window->m_displaymode.w;
-        state.t_height = window->m_displaymode.h;
-
-        renderer = new Renderer(window);
-
-        texture = new Texture(renderer,
-                              state.av_codec_ctx->width,
-                              state.av_codec_ctx->height);
+        if(!(window_create(window, argv[1], state.av_codec_ctx->width, state.av_codec_ctx->height))){
+            return -1;
+        }
     }
 
-    while (input.is_window_running())
+    // Main loop
+    while(true)
     {
-        input.update_events();
-        if (is_file_open)
-        {
-            if (!(videodata->load_frames(&state)))
-            {
-                return -1;
-            }
-            //videodata->scale_frame(&state);
-            renderer->update_texture(texture->get_texture(),&state);
+        SDL_PollEvent(&event);
+
+        if (event.type == SDL_QUIT){
+            break;
         }
 
-        renderer->clear_renderer();
-        
-        if(is_file_open)
-        {
-            renderer->render_copy(texture->get_texture());
-        }
-        
-        renderer->render_present();
         SDL_Delay(5);
     }
-    window->close_window();
-    renderer->destroy_renderer();
-    if (is_file_open)
-    {
-        videodata->close_data(&state);
-    }
+
+    // Cleanup
+    window_destroy(window);
+    SDL_Quit();
     
     return 0;
 }

@@ -4,7 +4,6 @@
 #include <iostream>
 using namespace std;
 
-
 extern "C"
 {
     #include <libavcodec/avcodec.h>
@@ -13,9 +12,9 @@ extern "C"
     #include <libavutil/imgutils.h>
 }
 
-struct framedata_struct
+struct datastruct
 {
-    int t_width=0, t_height=0, video_stream_index = -1, audio_stream_index = -1, p_response, f_response, num_bytes;
+    int t_width=0, t_height=0, video_stream_index = -1, audio_stream_index = -1, response, num_bytes;
     AVFormatContext* av_format_ctx;
     AVCodecParameters* av_codec_params;
     AVCodec* av_codec;
@@ -27,8 +26,9 @@ struct framedata_struct
     SwsContext* sws_ctx = NULL;
 };
 
-bool load_data(char* filename, framedata_struct* state);
-bool load_frames(framedata_struct* state);
-void close_data(framedata_struct* state);
+bool load_data(char* filename, datastruct* state);
+void load_frame(datastruct* state);
+void scale_frame(datastruct* state);
+void close_data(datastruct* state);
 
 #endif
