@@ -25,3 +25,9 @@ void texture_update(SDL_Texture* texture, datastruct* state)
         state->decoded_frame->linesize[2]   // the number of bytes between rows of pixel data for the V plane
     );
 }
+
+void texture_destroy(SDL_Texture* texture)
+{
+    SDL_DestroyTexture(texture);
+    cout<<"Destoyed texture."<<endl;
+}

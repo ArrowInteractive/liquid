@@ -72,7 +72,10 @@ int main(int argc, char **argv)
     }
     
     if(is_file_open){
-        // Create texture here
+        if((texture = texture_create(renderer, texture, state.t_width, state.t_height)) == NULL)
+        {
+            cout<<"ERROR: Could not create texture!"<<endl;
+        }
     }
 
 
@@ -81,10 +84,18 @@ int main(int argc, char **argv)
     {
         SDL_PollEvent(&event);
 
+        if(is_file_open){
+            load_frame(&state);
+            texture_update(texture, &state);
+        }
+
         if (event.type == SDL_QUIT){
             break;
         }
         renderer_clear(renderer);
+        if(is_file_open){
+            renderer_copy(renderer, texture);
+        }
         render_present(renderer);
 
         SDL_Delay(5);
