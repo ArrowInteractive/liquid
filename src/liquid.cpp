@@ -17,10 +17,10 @@ int main(int argc, char **argv)
 
     // Check arguments
     if(argc < 2){
-        if(!window_create(window, "Liquid Media Player", 300, 300))
-        {
-            return -1;
-        }
+       if((window = window_create(window, "Liquid Media Player", 600, 400)) == NULL)
+       {
+           cout<<"ERROR: Could not create window!"<<endl;
+       }
     }
     else{
 
@@ -56,10 +56,25 @@ int main(int argc, char **argv)
         }
         is_file_open = true;
 
-        if(!(window_create(window, argv[1], state.av_codec_ctx->width, state.av_codec_ctx->height))){
+        if((window = window_create(window, argv[1], state.av_codec_ctx->width, state.av_codec_ctx->height)) == NULL)
+        {
+            cout<<"ERROR: Could not create window!"<<endl;
             return -1;
         }
     }
+    /*
+        Setup renderer and texture
+    */
+    if((renderer = renderer_create(renderer, window)) == NULL)
+    {
+        cout<<"ERROR: Could not create renderer!"<<endl;
+        return -1;
+    }
+    
+    if(is_file_open){
+        // Create texture here
+    }
+
 
     // Main loop
     while(true)
@@ -69,12 +84,15 @@ int main(int argc, char **argv)
         if (event.type == SDL_QUIT){
             break;
         }
+        renderer_clear(renderer);
+        render_present(renderer);
 
         SDL_Delay(5);
     }
 
     // Cleanup
     window_destroy(window);
+    renderer_destroy(renderer);
     SDL_Quit();
     
     return 0;

@@ -11,7 +11,7 @@ bool get_display_mode(SDL_DisplayMode* displaymode)
     return true;
 }
 
-bool window_create(SDL_Window* window, const char* title, int width, int height)
+SDL_Window* window_create(SDL_Window* window, const char* title, int width, int height)
 {   
     window = SDL_CreateWindow(
         title,
@@ -21,17 +21,11 @@ bool window_create(SDL_Window* window, const char* title, int width, int height)
         height,
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
-    
-    if(window == NULL){
-        cout<<"ERROR: Could not create window!"<<endl;
-        SDL_DestroyWindow(window);
-        return false;
-    }
-    return true;
+    return window;
 }
 
 void window_destroy(SDL_Window* window)
 {
     SDL_DestroyWindow(window);
-    return;
+    cout<<"Destroyed window."<<endl;
 }
