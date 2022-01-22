@@ -1,6 +1,7 @@
-# Liquid Media Player
+# Liquid Media Player 
 Free and open-source media player written in C++. Currently in development.
 
+[![CodeQL](https://github.com/ArrowInteractive/liquid/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ArrowInteractive/liquid/actions/workflows/codeql-analysis.yml)
 
 # Build Guide
 
