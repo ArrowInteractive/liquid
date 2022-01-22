@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     SDL_Renderer* renderer;
     SDL_Texture* texture;
     SDL_Event event;
-    datastruct state;
+    datastruct datastate;
     eventstruct eventstate;
     bool is_file_open = false;
     
@@ -15,6 +15,8 @@ int main(int argc, char **argv)
         cout<<"ERROR: Could not get display mode!"<<endl;
         return -1;
     }
+    datastate.d_width = displaymode.w;
+    datastate.d_height = displaymode.h;
 
     // Check arguments
     if(argc < 2){
@@ -42,22 +44,18 @@ int main(int argc, char **argv)
             return -1;
         }
 
-        // Set target width and height
-        state.t_width = displaymode.w;
-        state.t_height = displaymode.h;
-
         /*
             Use FFmpeg to decode basic info about the input
             Need to have separate functions for file and folder
         */
 
-        if(!(load_data(argv[1], &state))){
+        if(!(load_data(argv[1], &datastate))){
             cout<<"ERROR: Failed to load data!"<<endl;
             return -1;
         }
         is_file_open = true;
 
-        if((window = window_create(window, argv[1], state.av_codec_ctx->width, state.av_codec_ctx->height)) == NULL)
+        if((window = window_create(window, argv[1], datastate.av_codec_ctx->width, datastate.av_codec_ctx->height)) == NULL)
         {
             cout<<"ERROR: Could not create window!"<<endl;
             return -1;
@@ -73,7 +71,7 @@ int main(int argc, char **argv)
     }
     
     if(is_file_open){
-        if((texture = texture_create(renderer, texture, state.t_width, state.t_height)) == NULL)
+        if((texture = texture_create(renderer, texture, datastate.av_codec_ctx->width, datastate.av_codec_ctx->height)) == NULL)
         {
             cout<<"ERROR: Could not create texture!"<<endl;
         }
@@ -84,11 +82,11 @@ int main(int argc, char **argv)
     while(eventstate.is_running)
     {
         // Process inputs
-        handle_inputs(&event, &eventstate);
+        handle_inputs(&event, &eventstate, window, &datastate);
         
         if(is_file_open){
-            load_frame(&state);
-            texture_update(texture, &state);
+            load_frame(&datastate);
+            texture_update(texture, &datastate);
         }
         renderer_clear(renderer);
 
@@ -106,7 +104,7 @@ int main(int argc, char **argv)
     renderer_destroy(renderer);
     if(is_file_open){
         texture_destroy(texture);
-        close_data(&state);
+        close_data(&datastate);
     }
     SDL_Quit();
     

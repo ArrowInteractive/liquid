@@ -14,7 +14,7 @@ extern "C"
 
 struct datastruct
 {
-    int t_width=0, t_height=0, video_stream_index = -1, audio_stream_index = -1, response, num_bytes;
+    int d_width, d_height, video_stream_index = -1, audio_stream_index = -1, response, num_bytes;
     AVFormatContext* av_format_ctx;
     AVCodecParameters* av_codec_params;
     AVCodec* av_codec;
@@ -26,9 +26,9 @@ struct datastruct
     SwsContext* sws_ctx = NULL;
 };
 
-bool load_data(char* filename, datastruct* state);
-void load_frame(datastruct* state);
-void scale_frame(datastruct* state);
-void close_data(datastruct* state);
+bool load_data(char* filename, datastruct* datastate);
+void load_frame(datastruct* datastate);
+void scale_frame(datastruct* datastate);
+void close_data(datastruct* datastate);
 
 #endif

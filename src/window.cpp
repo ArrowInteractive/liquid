@@ -25,6 +25,12 @@ SDL_Window* window_create(SDL_Window* window, const char* title, int width, int 
     return window;
 }
 
+void window_resize(SDL_Window* window, int width, int height)
+{
+    SDL_SetWindowSize(window, width, height);
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+}
+
 void window_destroy(SDL_Window* window)
 {
     SDL_DestroyWindow(window);
