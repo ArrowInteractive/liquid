@@ -21,6 +21,7 @@ SDL_Window* window_create(SDL_Window* window, const char* title, int width, int 
         height,
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
+    SDL_SetWindowBordered(window, SDL_FALSE); // Set window decorations off
     return window;
 }
 

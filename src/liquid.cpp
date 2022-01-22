@@ -83,9 +83,15 @@ int main(int argc, char **argv)
     // Main loop
     while(eventstate.is_running)
     {
+        // Process inputs
         handle_inputs(&event, &eventstate);
         
+        if(is_file_open){
+            load_frame(&state);
+            texture_update(texture, &state);
+        }
         renderer_clear(renderer);
+
         if(is_file_open){
             renderer_copy(renderer, texture);
         }
@@ -93,6 +99,7 @@ int main(int argc, char **argv)
 
         SDL_Delay(5);
     }
+
 
     // Cleanup
     window_destroy(window);
