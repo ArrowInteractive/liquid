@@ -7,8 +7,9 @@ int main(int argc, char **argv)
     SDL_Renderer* renderer;
     SDL_Texture* texture;
     SDL_Event event;
-    bool is_file_open = false;
     datastruct state;
+    eventstruct eventstate;
+    bool is_file_open = false;
     
     if(!(get_display_mode(&displaymode))){
         cout<<"ERROR: Could not get display mode!"<<endl;
@@ -80,18 +81,10 @@ int main(int argc, char **argv)
 
 
     // Main loop
-    while(true)
+    while(eventstate.is_running)
     {
-        SDL_PollEvent(&event);
-
-        if(is_file_open){
-            load_frame(&state);
-            texture_update(texture, &state);
-        }
-
-        if (event.type == SDL_QUIT){
-            break;
-        }
+        handle_inputs(&event, &eventstate);
+        
         renderer_clear(renderer);
         if(is_file_open){
             renderer_copy(renderer, texture);

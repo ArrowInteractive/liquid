@@ -8,6 +8,7 @@
 #include "texture.hpp"
 #include "renderer.hpp"
 #include "load_data.hpp"
+#include "inputs.hpp"
 
 using namespace std;
 using std::filesystem::exists;
