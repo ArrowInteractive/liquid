@@ -104,6 +104,9 @@ int main(int argc, char **argv)
     // Cleanup
     window_destroy(window);
     renderer_destroy(renderer);
+    if(is_file_open){
+        texture_destroy(texture);
+    }
     SDL_Quit();
     
     return 0;
