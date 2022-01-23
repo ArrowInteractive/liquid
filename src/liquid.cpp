@@ -154,7 +154,7 @@ int main(int argc, char **argv)
                 eventstate.change_scaling = false;
                 eventstate.is_fullscreen = !eventstate.is_fullscreen;
             }
-            load_frame(&datastate);
+            load_video_frame(&datastate);
             texture_update(texture, &datastate);
         }
         renderer_clear(renderer);

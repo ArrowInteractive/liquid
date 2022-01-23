@@ -1,4 +1,6 @@
+#ifdef __MINGW32__
 #define SDL_MAIN_HANDLED
+#endif
 
 #include <iostream>
 #include <SDL2/SDL.h>
@@ -8,6 +10,7 @@
 #include "texture.hpp"
 #include "renderer.hpp"
 #include "load_data.hpp"
+#include "video.hpp"
 #include "inputs.hpp"
 
 using namespace std;

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <SDL2/SDL.h>
-#include "load_data.hpp"
+#include "datastruct.hpp"
 using namespace std;
 
 SDL_Texture* texture_create(SDL_Renderer* renderer, SDL_Texture* texture, int width, int height);

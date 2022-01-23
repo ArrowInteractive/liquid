@@ -2,7 +2,7 @@
 #define INPUTS
 
 #include <SDL2/SDL.h>
-#include "load_data.hpp"
+#include "datastruct.hpp"
 #include "window.hpp"
 
 struct eventstruct
