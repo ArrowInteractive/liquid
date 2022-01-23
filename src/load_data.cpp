@@ -57,10 +57,16 @@ bool load_data(char* filename, datastruct* datastate)
         return false;
     }
 
+    /* Check resolution - Experimental */
+    if(datastate->t_width <= datastate->av_codec_ctx->width && datastate->t_height <= datastate->av_codec_ctx->height){
+        datastate->t_width = datastate->av_codec_ctx->width;
+        datastate->t_height = datastate->av_codec_ctx->height;
+    }
+
     datastate->num_bytes = av_image_get_buffer_size(   
         AV_PIX_FMT_YUV420P,
-        datastate->av_codec_ctx->width,
-        datastate->av_codec_ctx->width,
+        datastate->t_width,
+        datastate->t_width,
         32
     );
 
@@ -71,8 +77,8 @@ bool load_data(char* filename, datastruct* datastate)
         datastate->decoded_frame->linesize,
         datastate->buffer,
         AV_PIX_FMT_YUV420P,
-        datastate->av_codec_ctx->width,
-        datastate->av_codec_ctx->height,
+        datastate->t_width,
+        datastate->t_height,
         32
     );
 
@@ -101,7 +107,7 @@ void load_frame(datastruct* datastate)
                 */
                 datastate->sws_ctx = sws_getContext(   
                     datastate->av_codec_ctx->width, datastate->av_codec_ctx->height, datastate->av_codec_ctx->pix_fmt,
-                    datastate->av_codec_ctx->width, datastate->av_codec_ctx->height, AV_PIX_FMT_YUV420P,
+                    datastate->t_width, datastate->t_height, AV_PIX_FMT_YUV420P,
                     SWS_LANCZOS, NULL, NULL, NULL
                 );
             }
@@ -150,34 +156,6 @@ void load_frame(datastruct* datastate)
         av_frame_unref(datastate->av_frame);
         break;
     }
-}
-
-void scale_frame(datastruct* datastate)
-{
-    if(datastate->sws_ctx == NULL){
-        /*
-            If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems
-            when running sws_scale()
-            Setup sws_context here and send the decoded frame to renderer using decoded_frame
-            May cause crashes
-        */
-        datastate->sws_ctx = sws_getContext(
-            datastate->av_codec_ctx->width, datastate->av_codec_ctx->height, datastate->av_codec_ctx->pix_fmt,
-            datastate->av_codec_ctx->width, datastate->av_codec_ctx->height, AV_PIX_FMT_YUV420P,
-            SWS_LANCZOS, NULL, NULL, NULL
-        );
-    }
-
-    // Scale the frame
-    sws_scale(  
-        datastate->sws_ctx,
-        (uint8_t const * const *)datastate->av_frame->data,
-        datastate->av_frame->linesize,
-        0,
-        datastate->av_frame->height,
-        datastate->decoded_frame->data,
-        datastate->decoded_frame->linesize
-    );
 }
 
 void close_data(datastruct* datastate)
