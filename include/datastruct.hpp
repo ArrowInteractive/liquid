@@ -32,7 +32,9 @@ struct datastruct
     SwsContext* sws_ctx = nullptr;
 
     // Audio vars
+    AVCodecParameters* audio_codec_params = nullptr;
     AVCodec* audio_codec = nullptr;
+    AVCodecContext* audio_codec_ctx = nullptr;
 };
 
 #endif

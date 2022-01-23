@@ -23,22 +23,40 @@ bool load_data(char* filename, datastruct* datastate)
             datastate->audio_stream_index = i;
         }   
     }
+    if(datastate->video_stream_index == -1){
+        cout<<"ERROR: Could not find any video streams in the file!"<<endl;
+        return false;
+    }
 
     /*
         Audio decode setup
+        Only allocate audio vars if audio stream is present
     */
-    
+    if(datastate->audio_stream_index  != -1){
+        datastate->audio_codec_params = datastate->av_format_ctx->streams[datastate->audio_stream_index]->codecpar;
+        datastate->audio_codec = avcodec_find_decoder(datastate->audio_codec_params->codec_id);
 
+        if(!(datastate->audio_codec_ctx = avcodec_alloc_context3(datastate->audio_codec))){
+            cout<<"ERROR: Could not setup AVCodecContext!"<<endl;
+            return false;
+        }
+
+        if(avcodec_parameters_to_context(datastate->audio_codec_ctx, datastate->audio_codec_params) < 0){
+            cout<<"ERROR: Could not pass the parameters to AVCodecContext!"<<endl;
+            return false;
+        }
+
+        if(avcodec_open2(datastate->audio_codec_ctx, datastate->audio_codec, NULL) < 0){
+            cout<<"ERROR: Could not open codec!"<<endl;
+            return false;
+        }
+    }
+    
     /* 
         Video decode setup
     */
     datastate->video_codec_params = datastate->av_format_ctx->streams[datastate->video_stream_index]->codecpar;
     datastate->video_codec = avcodec_find_decoder(datastate->video_codec_params->codec_id);
-
-    if(datastate->video_stream_index == -1 && datastate->audio_stream_index == -1){
-        cout<<"ERROR: Could not find any streams in the file!"<<endl;
-        return false;
-    }
 
     if(!(datastate->video_codec_ctx = avcodec_alloc_context3(datastate->video_codec))){
         cout<<"ERROR: Could not setup AVCodecContext!"<<endl;
