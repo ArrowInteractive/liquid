@@ -11,7 +11,7 @@ void handle_inputs(SDL_Event* event, eventstruct* eventstate, SDL_Window* window
         }
         else if(event->key.keysym.sym == SDLK_f){
             if(eventstate->is_fullscreen){
-                window_resize(window, datastate->av_codec_ctx->width, datastate->av_codec_ctx->height);
+                window_resize(window, datastate->video_codec_ctx->width, datastate->video_codec_ctx->height);
                 eventstate->change_scaling = true;
             }
             else{

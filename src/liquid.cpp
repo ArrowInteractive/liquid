@@ -56,7 +56,7 @@ int main(int argc, char **argv)
         }
         is_file_open = true;
 
-        if((window = window_create(window, argv[1], datastate.av_codec_ctx->width, datastate.av_codec_ctx->height)) == NULL)
+        if((window = window_create(window, argv[1], datastate.video_codec_ctx->width, datastate.video_codec_ctx->height)) == NULL)
         {
             cout<<"ERROR: Could not create window!"<<endl;
             return -1;
@@ -95,8 +95,8 @@ int main(int argc, char **argv)
                     texture = SDL_CreateTexture(    
                         renderer, SDL_PIXELFORMAT_YV12,
                         SDL_TEXTUREACCESS_STREAMING,
-                        datastate.av_codec_ctx->width,
-                        datastate.av_codec_ctx->height
+                        datastate.video_codec_ctx->width,
+                        datastate.video_codec_ctx->height
                     );
 
                     if(texture == NULL){
@@ -107,15 +107,15 @@ int main(int argc, char **argv)
 
                     datastate.num_bytes = av_image_get_buffer_size(     
                         AV_PIX_FMT_YUV420P,
-                        datastate.av_codec_ctx->width,
-                        datastate.av_codec_ctx->height,
+                        datastate.video_codec_ctx->width,
+                        datastate.video_codec_ctx->height,
                         32
                     );
 
-                    datastate.buffer = (uint8_t *)av_malloc(datastate.num_bytes * sizeof(uint8_t));
+                    datastate.video_buffer = (uint8_t *)av_malloc(datastate.num_bytes * sizeof(uint8_t));
                     datastate.sws_ctx = sws_getContext(     
-                        datastate.av_codec_ctx->width, datastate.av_codec_ctx->height, datastate.av_codec_ctx->pix_fmt,
-                        datastate.av_codec_ctx->width, datastate.av_codec_ctx->height, AV_PIX_FMT_YUV420P,
+                        datastate.video_codec_ctx->width, datastate.video_codec_ctx->height, datastate.video_codec_ctx->pix_fmt,
+                        datastate.video_codec_ctx->width, datastate.video_codec_ctx->height, AV_PIX_FMT_YUV420P,
                         SWS_BILINEAR, NULL, NULL, NULL
                     );
                 }
@@ -143,10 +143,10 @@ int main(int argc, char **argv)
                         32
                     );
 
-                    datastate.buffer = (uint8_t *)av_malloc(datastate.num_bytes * sizeof(uint8_t));
+                    datastate.video_buffer = (uint8_t *)av_malloc(datastate.num_bytes * sizeof(uint8_t));
 
                     datastate.sws_ctx = sws_getContext(     
-                        datastate.av_codec_ctx->width, datastate.av_codec_ctx->height, datastate.av_codec_ctx->pix_fmt,
+                        datastate.video_codec_ctx->width, datastate.video_codec_ctx->height, datastate.video_codec_ctx->pix_fmt,
                         datastate.d_width, datastate.d_height, AV_PIX_FMT_YUV420P,
                         SWS_BILINEAR, NULL, NULL, NULL
                     );
