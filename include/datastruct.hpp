@@ -18,15 +18,21 @@ struct datastruct
         response, num_bytes,
         max_frames_to_decode;
     double fps, sleep_time;
-    AVFormatContext* video_format_ctx = NULL;
-    AVCodecParameters* video_codec_params = NULL;
-    AVCodec* video_codec = NULL;
-    AVCodecContext* video_codec_ctx = NULL;
-    AVPacket* video_packet = NULL;
-    AVFrame* video_frame = NULL;
-    AVFrame * decoded_video_frame = NULL;
-    uint8_t * video_buffer = NULL;
-    SwsContext* sws_ctx = NULL;
+
+    AVFormatContext* av_format_ctx = nullptr;
+
+    // Video vars
+    AVCodecParameters* video_codec_params = nullptr;
+    AVCodec* video_codec = nullptr;
+    AVCodecContext* video_codec_ctx = nullptr;
+    AVPacket* video_packet = nullptr;
+    AVFrame* video_frame = nullptr;
+    AVFrame * decoded_video_frame = nullptr;
+    uint8_t * video_buffer = nullptr;
+    SwsContext* sws_ctx = nullptr;
+
+    // Audio vars
+    AVCodec* audio_codec = nullptr;
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 void load_video_frame(datastruct* datastate)
 {
-    while(av_read_frame(datastate->video_format_ctx, datastate->video_packet) >= 0)
+    while(av_read_frame(datastate->av_format_ctx, datastate->video_packet) >= 0)
     {
         if(datastate->video_packet->stream_index == datastate->video_stream_index)
         {
@@ -12,7 +12,7 @@ void load_video_frame(datastruct* datastate)
                 break;
             }
 
-            if(datastate->sws_ctx == NULL)
+            if(datastate->sws_ctx == nullptr)
             {
                 /*
                     If sws_ctx is not set to NULL, it causes a seg fault on Linux based systems

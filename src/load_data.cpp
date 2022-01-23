@@ -2,30 +2,37 @@
 
 bool load_data(char* filename, datastruct* datastate)
 {
-    if(!(datastate->video_format_ctx = avformat_alloc_context())){
+    if(!(datastate->av_format_ctx = avformat_alloc_context())){
         cout<<"ERROR: Could not setup AVFormatContext!"<<endl;
         return false;
     }
 
-    if(avformat_open_input(&datastate->video_format_ctx, filename, NULL, NULL) != 0){
+    if(avformat_open_input(&datastate->av_format_ctx, filename, NULL, NULL) != 0){
         cout<<"ERROR: Could not open file!"<<endl;
         return false;
     }
 
-    for(int i=0; i < datastate->video_format_ctx->nb_streams; i++){
-        if(datastate->video_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && datastate->video_stream_index == -1)
+    for(int i=0; i < datastate->av_format_ctx->nb_streams; i++){
+        if(datastate->av_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && datastate->video_stream_index == -1)
         {
             datastate->video_stream_index = i;
         }
         
-        if(datastate->video_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && datastate->audio_stream_index == -1)
+        if(datastate->av_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && datastate->audio_stream_index == -1)
         {
             datastate->audio_stream_index = i;
         }   
     }
 
-    // Set the codec params
-    datastate->video_codec_params = datastate->video_format_ctx->streams[datastate->video_stream_index]->codecpar;
+    /*
+        Audio decode setup
+    */
+    
+
+    /* 
+        Video decode setup
+    */
+    datastate->video_codec_params = datastate->av_format_ctx->streams[datastate->video_stream_index]->codecpar;
     datastate->video_codec = avcodec_find_decoder(datastate->video_codec_params->codec_id);
 
     if(datastate->video_stream_index == -1 && datastate->audio_stream_index == -1){
@@ -96,7 +103,7 @@ void close_data(datastruct* datastate)
     av_packet_free(&datastate->video_packet);
     av_frame_free(&datastate->video_frame);
     av_frame_free(&datastate->decoded_video_frame);
-    avformat_close_input(&datastate->video_format_ctx);
+    avformat_close_input(&datastate->av_format_ctx);
     avcodec_free_context(&datastate->video_codec_ctx);
     avcodec_close(datastate->video_codec_ctx);
     av_freep(&datastate->video_buffer);
