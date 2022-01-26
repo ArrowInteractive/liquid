@@ -13,6 +13,7 @@
 
 // Video macros
 #define VIDEO_PICTURE_QUEUE_SIZE 1
+#define MAX_VIDEOQ_SIZE (5 * 256 * 1024)
 
 // Event macros
 #define FF_REFRESH_EVENT (SDL_USEREVENT)
