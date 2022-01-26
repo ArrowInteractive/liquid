@@ -285,13 +285,89 @@ int decode_thread(void * arg){
         }
     }
 
-    // check both the audio and video codecs were correctly retrieved
+    // Check if both audio and video codecs were correctly retrieved
     if (videostate->video_stream_index < 0 || videostate->audio_stream_index < 0)
     {
         std::cout<<"ERROR: Could not open the file!"<<std::endl;
         return -1;
     }
 
+    // Alloc the AVPacket used to read the media file
+    AVPacket * packet = av_packet_alloc();
+    if (packet == NULL)
+    {
+        std::cout<<"ERROR: Could not allocate AVPacket!"<<std::endl;
+        return -1;
+    }
+
+    for (;;)
+    {
+        // Check quit flag
+        if (videostate->quit)
+        {
+            break;
+        }
+
+        // Seek setup goes here
+
+        // Check audio and video packets queues size
+        if (videostate->audioq.size > MAX_AUDIOQ_SIZE || videostate->videoq.size > MAX_VIDEOQ_SIZE)
+        {
+            // Wait for audio and video queues to decrease size
+            SDL_Delay(10);
+            continue;
+        }
+
+        // Read data from the AVFormatContext by repeatedly calling av_read_frame()
+        ret = av_read_frame(videostate->pformatctx, packet);
+        if (ret < 0)
+        {
+            if (ret == AVERROR_EOF)
+            {
+                // Media EOF reached, quit
+                videostate->quit = 1;
+                break;
+            }
+            else if (videostate->pformatctx->pb->error == 0)
+            {
+                // No read error; wait for user input
+                SDL_Delay(10);
+
+                continue;
+            }
+            else
+            {
+                // Exit loop in case of error
+                break;
+            }
+        }
+
+        // Put the packet in the appropriate queue
+        if (packet->stream_index == videostate->video_stream_index)
+        {
+            packet_queue_put(&videostate->videoq, packet);
+        }
+        else if (packet->stream_index == videostate->audio_stream_index)
+        {
+            packet_queue_put(&videostate->audioq, packet);
+        }
+        else
+        {
+            // Otherwise free the memory
+            av_packet_unref(packet);
+        }
+    }
+
+    // Wait for the rest of the program to end
+    while (!videostate->quit)
+    {
+        SDL_Delay(100);
+    }
+
+    // Close the opened input AVFormatContext
+    avformat_close_input(&videostate->pformatctx);
+
+    // Fail removed
     return 0;
 }
 
@@ -407,6 +483,7 @@ int stream_component_open(VideoState* videostate, int stream_index){
             /*
                 NOTE: Seperate into functions
             */
+            // Window
             videostate->window = SDL_CreateWindow(
                 "Liquid Media Player",
                 SDL_WINDOWPOS_UNDEFINED,
