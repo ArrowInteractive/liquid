@@ -454,6 +454,7 @@ int stream_component_open(VideoState* videostate, int stream_index){
         }
         break;
     }
+    return 0;
 }
 
 int video_thread(void * arg){
