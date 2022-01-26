@@ -342,7 +342,9 @@ int stream_component_open(VideoState* videostate, int stream_index){
             // Snit video packet queue
             packet_queue_init(&videostate->videoq);
 
-            // Start video decoding thread
+            /*
+                Video thread
+            */
             videostate->video_thd = SDL_CreateThread(video_thread, "Video Thread", videostate);
 
             // set up the VideoState SWSContext to convert the image data to YUV420
@@ -410,5 +412,320 @@ int stream_component_open(VideoState* videostate, int stream_index){
         break;
     }
 }
+
+int video_thread(void * arg){
+    VideoState* videostate = (VideoState *)arg;
+
+    AVPacket* packet = av_packet_alloc();
+    if (packet == NULL)
+    {
+        std::cout<<"ERROR: Could not allocate packet!"<<std::endl;
+        return -1;
+    }
+
+    // Set this when we are done decoding an entire frame
+    int is_frame_finished = 0;
+
+    static AVFrame* d_frame = NULL;
+    d_frame = av_frame_alloc();
+    if (!d_frame)
+    {
+        std::cout<<"ERROR: Could not allocate frame!"<<std::endl;
+        return -1;
+    }
+
+    // Every decoded frame carries its PTS in the VideoPicture queue
+    double pts;
+
+    for (;;)
+    {
+        int ret = packet_queue_get(videostate, &videostate->videoq, packet, 1);
+        if (ret < 0)
+        {
+            // Stop getting packets
+            break;
+        }
+
+        if (packet->data == videostate->flush_pkt->data)
+        {
+            avcodec_flush_buffers(videostate->video_ctx);
+            continue;
+        }
+
+        // Send the decoder raw compressed data in an AVPacket
+        ret = avcodec_send_packet(videostate->video_ctx, packet);
+        if (ret < 0)
+        {
+            std::cout<<"ERROR: Failed to send packet!"<<std::endl;
+            return -1;
+        }
+
+        while (ret >= 0)
+        {
+            // Get data from the decoder
+            ret = avcodec_receive_frame(videostate->video_ctx, d_frame);
+
+            // Check if an entire frame was decoded
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            {
+                break;
+            }
+            else if(ret < 0)
+            {
+                std::cout<<"ERROR: Failed to decode frame!"<<std::endl;
+                return -1;
+            }
+            else
+            {
+                is_frame_finished = 1;
+            }
+
+            // Attempt to guess the proper monotonic timestamp for decoded video frame
+            pts = guess_correct_pts(videostate->video_ctx, d_frame->pts, d_frame->pkt_dts);
+
+            // In case we receive an undefined timestamp value
+            if (pts == AV_NOPTS_VALUE)
+            {
+                // Set the PTS to the default value of 0
+                pts = 0;
+            }
+
+            pts *= av_q2d(videostate->video_stream->time_base);
+
+            // Did we get an entire video frame?
+            if(is_frame_finished)
+            {
+                pts = synchronize_video(videostate, d_frame, pts);
+
+                if(queue_picture(videostate, d_frame, pts) < 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        // Wipe the packet
+        av_packet_unref(packet);
+    }
+    // Wipe the frame
+    av_frame_free(&d_frame);
+    av_free(d_frame);
+
+    return 0;
+}
+
+int64_t guess_correct_pts(AVCodecContext* ctx, int64_t reordered_pts, int64_t dts){
+    int64_t pts;
+
+    if (dts != AV_NOPTS_VALUE)
+    {
+        ctx->pts_correction_num_faulty_dts += dts <= ctx->pts_correction_last_dts;
+        ctx->pts_correction_last_dts = dts;
+    }
+    else if (reordered_pts != AV_NOPTS_VALUE)
+    {
+        ctx->pts_correction_last_dts = reordered_pts;
+    }
+
+    if (reordered_pts != AV_NOPTS_VALUE)
+    {
+        ctx->pts_correction_num_faulty_pts += reordered_pts <= ctx->pts_correction_last_pts;
+        ctx->pts_correction_last_pts = reordered_pts;
+    }
+    else if (dts != AV_NOPTS_VALUE)
+    {
+        ctx->pts_correction_last_pts = dts;
+    }
+
+    if ((ctx->pts_correction_num_faulty_pts <= ctx->pts_correction_num_faulty_dts || dts == AV_NOPTS_VALUE) && reordered_pts != AV_NOPTS_VALUE)
+    {
+        pts = reordered_pts;
+    }
+    else
+    {
+        pts = dts;
+    }
+
+    return pts;
+}
+
+double synchronize_video(VideoState* videostate, AVFrame* d_frame, double pts){
+    double frame_delay;
+
+    if (pts != 0)
+    {
+        // If we have PTS, set the clock to it
+        videostate->video_clock = pts;
+    }
+    else
+    {
+        // If the PTS is not provided, set it as clock
+        pts = videostate->video_clock;
+    }
+
+    // Update the video clock
+    frame_delay = av_q2d(videostate->video_ctx->time_base);
+
+    // If we are repeating a frame, adjust clock accordingly
+    frame_delay += d_frame->repeat_pict * (frame_delay * 0.5);
+
+    // Increase video clock to match the delay required for repeaing frames
+    videostate->video_clock += frame_delay;
+
+    return pts;
+}
+
+int queue_picture(VideoState* videostate, AVFrame* d_frame, double pts){
+    // Lock VideoState->pictq mutex
+    SDL_LockMutex(videostate->pictq_mutex);
+
+    // Wait until we have space for a new pic in VideoState->pictq
+    while (videostate->pictq_size >= VIDEO_PICTURE_QUEUE_SIZE && !videostate->quit)
+    {
+        SDL_CondWait(videostate->pictq_cond, videostate->pictq_mutex);
+    }
+
+    // Unlock VideoState->pictq mutex
+    SDL_UnlockMutex(videostate->pictq_mutex);
+
+    // Check quit flag
+    if (videostate->quit)
+    {
+        return -1;
+    }
+
+    // Retrieve video picture using the queue write index
+    VideoPicture * video_picture;
+    video_picture = &videostate->pictq[videostate->pictq_windex];
+
+    // If the VideoPicture SDL_Overlay is not allocated or has a different width/height
+    if (!video_picture->frame ||
+        video_picture->width != videostate->video_ctx->width ||
+        video_picture->height != videostate->video_ctx->height)
+    {
+        // Set SDL_Overlay not allocated
+        video_picture->allocated = 0;
+
+        // allocate a new SDL_Overlay for the VideoPicture struct
+        alloc_picture(videostate);
+
+        // Check quit flag
+        if(videostate->quit)
+        {
+            return -1;
+        }
+    }
+
+    // Check the new SDL_Overlay was correctly allocated
+    if (video_picture->frame)
+    {
+        // Set pts value for the last decode frame in the VideoPicture queu (pctq)
+        video_picture->pts = pts;
+
+        // Set VideoPicture AVFrame info using the last decoded frame
+        video_picture->frame->pict_type = d_frame->pict_type;
+        video_picture->frame->pts = d_frame->pts;
+        video_picture->frame->pkt_dts = d_frame->pkt_dts;
+        video_picture->frame->key_frame = d_frame->key_frame;
+        video_picture->frame->coded_picture_number = d_frame->coded_picture_number;
+        video_picture->frame->display_picture_number = d_frame->display_picture_number;
+        video_picture->frame->width = d_frame->width;
+        video_picture->frame->height = d_frame->height;
+
+        // Scale the image in pFrame->data and put the resulting scaled image in pict->data
+        sws_scale(
+            videostate->sws_ctx,
+            (uint8_t const * const *)d_frame->data,
+            d_frame->linesize,
+            0,
+            videostate->video_ctx->height,
+            video_picture->frame->data,
+            video_picture->frame->linesize
+        );
+
+        // Update VideoPicture queue write index
+        ++videostate->pictq_windex;
+
+        // If the write index has reached the VideoPicture queue size
+        if(videostate->pictq_windex == VIDEO_PICTURE_QUEUE_SIZE)
+        {
+            // Set it to 0
+            videostate->pictq_windex = 0;
+        }
+
+        // lock VideoPicture queue
+        SDL_LockMutex(videostate->pictq_mutex);
+
+        // Increase VideoPicture queue size
+        videostate->pictq_size++;
+
+        // Unlock VideoPicture queue
+        SDL_UnlockMutex(videostate->pictq_mutex);
+    }
+
+    return 0;
+}
+
+void alloc_picture(void * arg){
+    // Retrieve global VideoState reference.
+    VideoState * videostate = (VideoState *)arg;
+
+    // Retrieve the VideoPicture pointed by the queue write index
+    VideoPicture * video_picture;
+    video_picture = &videostate->pictq[videostate->pictq_windex];
+
+    // Check if the SDL_Overlay is allocated
+    if (video_picture->frame)
+    {
+        // we already have an AVFrame allocated, free memory
+        av_frame_free(&video_picture->frame);
+        av_free(video_picture->frame);
+    }
+
+    // lock global screen mutex
+    SDL_LockMutex(videostate->window_mutex);
+
+    // Get the size in bytes required to store an image with the given parameters
+    int numbytes;
+    numbytes = av_image_get_buffer_size(
+        AV_PIX_FMT_YUV420P,
+        videostate->video_ctx->width,
+        videostate->video_ctx->height,
+        32
+    );
+
+    // Allocate image data buffer
+    uint8_t * buffer = NULL;
+    buffer = (uint8_t *) av_malloc(numbytes * sizeof(uint8_t));
+
+    // Alloc the AVFrame later used to contain the scaled frame
+    video_picture->frame = av_frame_alloc();
+    if (video_picture->frame == NULL)
+    {
+        std::cout<<"ERROR: Could not allocate frame!"<<std::endl;
+        return;
+    }
+
+    // The fields of the given image are filled in by using the buffer which points to the image data buffer.
+    av_image_fill_arrays(
+            video_picture->frame->data,
+            video_picture->frame->linesize,
+            buffer,
+            AV_PIX_FMT_YUV420P,
+            videostate->video_ctx->width,
+            videostate->video_ctx->height,
+            32
+    );
+
+    // Unlock global screen mutex
+    SDL_UnlockMutex(videostate->window_mutex);
+
+    // Update VideoPicture struct fields
+    video_picture->width = videostate->video_ctx->width;
+    video_picture->height = videostate->video_ctx->height;
+    video_picture->allocated = 1;
+}
+
+
 
 

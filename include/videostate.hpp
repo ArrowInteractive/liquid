@@ -152,6 +152,9 @@ struct VideoState
 
     // Flags
     int                 quit;
+
+    // Flush packet
+    AVPacket*           flush_pkt;
 };
 
 /*
@@ -169,7 +172,14 @@ void schedule_refresh(VideoState* videostate, Uint32 delay);
 Uint32 sdl_refresh_timer_cb(Uint32 interval, void * param);
 
 // Decode
-int decode_thread(void * args);
+int decode_thread(void * arg);
 int stream_component_open(VideoState* videostate, int stream_index);
+
+// Video
+int video_thread(void * arg);
+int64_t guess_correct_pts(AVCodecContext* ctx, int64_t reordered_pts, int64_t dts);
+double synchronize_video(VideoState* videostate, AVFrame* d_frame, double pts);
+int queue_picture(VideoState* videostate, AVFrame* d_frame, double pts);
+void alloc_picture(void * arg);
 
 #endif
