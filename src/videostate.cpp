@@ -1487,4 +1487,191 @@ double get_external_clock(VideoState* videostate){
     return videostate->external_clock;
 }
 
+void video_refresh_timer(void * arg){
+    // Refreshing state
+
+    // Retrieve VideoState reference
+    VideoState * videostate = (VideoState *)arg;
+
+    // VideoPicture read index reference
+    VideoPicture * videopicture;
+
+    // Used for video frames display delay and audio video sync
+    double pts_delay;
+    double audio_ref_clock;
+    double sync_threshold;
+    double real_delay;
+    double audio_video_delay;
+
+    // Check if video_stream was opened properly
+    if(videostate->video_stream){
+        // Check if the VideoPicture queue contains decoded frames
+        if (videostate->pictq_size == 0)
+        {
+            schedule_refresh(videostate, 1);
+        }
+        else
+        {
+            // Get VideoPicture reference using the queue read index
+            videopicture = &videostate->pictq[videostate->pictq_rindex];
+
+            // Get last frame pts
+            pts_delay = videopicture->pts - videostate->frame_last_pts;
+
+            // If the obtained delay is incorrect
+            if (pts_delay <= 0 || pts_delay >= 1.0)
+            {
+                // Use the previously calculated delay
+                pts_delay = videostate->frame_last_delay;
+            }
+
+            // Save delay information for the next time
+            videostate->frame_last_delay = pts_delay;
+            videostate->frame_last_pts = videopicture->pts;
+
+            // In case the external clock is not used
+            if(videostate->av_sync_type != AV_SYNC_VIDEO_MASTER)
+            {
+                // Update delay to stay in sync with the master clock: audio or video
+                audio_ref_clock = get_master_clock(videostate);
+
+
+                // Calculate audio video delay accordingly to the master clock
+                audio_video_delay = videopicture->pts - audio_ref_clock;
+
+                // Skip or repeat the frame taking into account the delay
+                sync_threshold = (pts_delay > AV_SYNC_THRESHOLD) ? pts_delay : AV_SYNC_THRESHOLD;
+
+                // Check audio video delay absolute value is below sync threshold
+                if(fabs(audio_video_delay) < AV_NOSYNC_THRESHOLD)
+                {
+                    if(audio_video_delay <= -sync_threshold)
+                    {
+                        pts_delay = 0;
+                    }
+                    else if (audio_video_delay >= sync_threshold)
+                    {
+                        pts_delay = 2 * pts_delay;
+                    }
+                }
+            }
+            videostate->frame_timer += pts_delay;
+
+            // Compute the real delay
+            real_delay = videostate->frame_timer - (av_gettime() / 1000000.0);
+            if (real_delay < 0.010)
+            {
+                real_delay = 0.010;
+            }
+
+            schedule_refresh(videostate, (Uint32)(real_delay * 1000 + 0.5));
+
+            // Show the frame on the SDL_Surface (the screen)
+            video_display(videostate);
+
+            // Update read index for the next frame
+            if(++videostate->pictq_rindex == VIDEO_PICTURE_QUEUE_SIZE)
+            {
+                videostate->pictq_rindex = 0;
+            }
+
+            // Lock VideoPicture queue mutex
+            SDL_LockMutex(videostate->pictq_mutex);
+
+            // Decrease VideoPicture queue size
+            videostate->pictq_size--;
+
+            // Notify other threads waiting for the VideoPicture queue
+            SDL_CondSignal(videostate->pictq_cond);
+
+            // Unlock VideoPicture queue mutex
+            SDL_UnlockMutex(videostate->pictq_mutex);
+        }
+    }
+    else
+    {
+        schedule_refresh(videostate, 100);
+    }
+}
+
+void video_display(VideoState* videostate){
+    // Reference for the next VideoPicture to be displayed
+    VideoPicture * videoPicture;
+
+    double aspect_ratio;
+
+    int w, h, x, y;
+
+    // Get next VideoPicture to be displayed from the VideoPicture queue
+    videoPicture = &videostate->pictq[videostate->pictq_rindex];
+
+    if (videoPicture->frame)
+    {
+        if (videostate->video_ctx->sample_aspect_ratio.num == 0)
+        {
+            aspect_ratio = 0;
+        }
+        else
+        {
+            aspect_ratio = av_q2d(videostate->video_ctx->sample_aspect_ratio) * videostate->video_ctx->width / videostate->video_ctx->height;
+        }
+
+        if (aspect_ratio <= 0.0)
+        {
+            aspect_ratio = (float)videostate->video_ctx->width /
+                           (float)videostate->video_ctx->height;
+        }
+
+        // Get the size of a window's client area
+        int screen_width;
+        int screen_height;
+        SDL_GetWindowSize(videostate->window, &screen_width, &screen_height);
+
+        // Global SDL_Surface height
+        h = screen_height;
+
+        // Retrieve width using the calculated aspect ratio and the screen height
+        w = ((int) rint(h * aspect_ratio)) & -3;
+
+        // If the new width is bigger than the screen width
+        if (w > screen_width)
+        {
+            // Set the width to the screen width
+            w = screen_width;
+
+            // Recalculate height using the calculated aspect ratio and the screen width
+            h = ((int) rint(w / aspect_ratio)) & -3;
+        }
+
+        x = (screen_width - w);
+        y = (screen_height - h);
+
+        // Lock screen mutex
+        SDL_LockMutex(videostate->window_mutex);
+
+        // Update the texture with the new pixel data
+        SDL_UpdateYUVTexture(
+                videostate->texture,
+                NULL,
+                videoPicture->frame->data[0],
+                videoPicture->frame->linesize[0],
+                videoPicture->frame->data[1],
+                videoPicture->frame->linesize[1],
+                videoPicture->frame->data[2],
+                videoPicture->frame->linesize[2]
+        );
+
+        // Clear the current rendering target with the drawing color
+        SDL_RenderClear(videostate->renderer);
+
+        // Copy the texture to the current rendering target
+        SDL_RenderCopy(videostate->renderer, videostate->texture, NULL, NULL);
+
+        // Update the screen with any rendering performed since the previous call
+        SDL_RenderPresent(videostate->renderer);
+
+        // Unlock screen mutex
+        SDL_UnlockMutex(videostate->window_mutex);
+    }
+}
 

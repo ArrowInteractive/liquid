@@ -21,6 +21,7 @@
 // Sync macros
 #define AV_NOSYNC_THRESHOLD 1.0
 #define SAMPLE_CORRECTION_PERCENT_MAX 10
+#define AV_SYNC_THRESHOLD 0.01
 
 
 /*
@@ -218,5 +219,9 @@ double get_master_clock(VideoState* videostate);
 double get_video_clock(VideoState* videostate);
 double get_audio_clock(VideoState* videostate);
 double get_external_clock(VideoState* videostate);
+
+// Refresh
+void video_refresh_timer(void * arg);
+void video_display(VideoState* videostate);
 
 #endif

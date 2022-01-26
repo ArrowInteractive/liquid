@@ -59,6 +59,11 @@ int main(int argc, char * argv[])
             }   
         }
 
+        if(event.type == FF_REFRESH_EVENT)
+        {
+            video_refresh_timer(event.user.data1);
+        }
+
         if (videostate->quit)
         {
             // exit for loop
