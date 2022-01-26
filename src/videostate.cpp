@@ -246,25 +246,49 @@ int decode_thread(void * arg){
         std::cout<<"ERROR: Could not find any audio streams!"<<std::endl;
         return -1;
     }
-
     // Open stream components here
-    // Open video stream component
-    ret = stream_component_open(videostate, videostate->video_stream_index);
-
-    // Check if video codec was opened correctly
-    if (ret < 0)
+    // Return with error in case no video stream was found
+    if (videostate->video_stream_index == -1)
     {
-        std::cout<<"ERROR: Could not open video codec!"<<std::endl;
+        std::cout<<"ERROR: Could not find any video stream!"<<std::endl;
         return -1;
     }
-    
-    // Open audio stream component
-    ret = stream_component_open(videostate, videostate->audio_stream_index);
-
-    // check audio codec was opened correctly
-    if (ret < 0)
+    else
     {
-        std::cout<<"ERROR: Could not open audio codec!"<<std::endl;
+        // Open video stream component codec
+        ret = stream_component_open(videostate, videostate->video_stream_index);
+
+        // Check video codec was opened correctly
+        if (ret < 0)
+        {
+            std::cout<<"ERROR: Could not open video codec!"<<std::endl;
+            return -1;
+        }
+    }
+
+    // Return with error in case no audio stream was found
+    if (videostate->audio_stream_index == -1)
+    {
+        std::cout<<"ERROR: Could not find any audio stream!"<<std::endl;
+        return -1;
+    }
+    else
+    {
+        // open audio stream component codec
+        ret = stream_component_open(videostate, videostate->audio_stream_index);
+
+        // check audio codec was opened correctly
+        if (ret < 0)
+        {
+            std::cout<<"ERROR: Could not open audio codec!"<<std::endl;
+            return -1;
+        }
+    }
+
+    // check both the audio and video codecs were correctly retrieved
+    if (videostate->video_stream_index < 0 || videostate->audio_stream_index < 0)
+    {
+        std::cout<<"ERROR: Could not open the file!"<<std::endl;
         return -1;
     }
 
