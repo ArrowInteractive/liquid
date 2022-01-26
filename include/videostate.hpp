@@ -17,6 +17,10 @@
 // Event macros
 #define FF_REFRESH_EVENT (SDL_USEREVENT)
 
+// Sync macros
+#define AV_NOSYNC_THRESHOLD 1.0
+#define SAMPLE_CORRECTION_PERCENT_MAX 10
+
 
 /*
     Audio Video Sync Types.
@@ -46,15 +50,19 @@ enum
 */
 
 #include <iostream>
+#include <assert.h>
 #include <SDL2/SDL.h>
 extern "C"
 {
     #include <libavcodec/avcodec.h>
     #include <libavformat/avformat.h>
     #include <libswscale/swscale.h>
+    #include <libswresample/swresample.h>
     #include <libavutil/imgutils.h>
     #include <libavutil/avutil.h>
     #include <libavutil/time.h>
+    #include <libavutil/macros.h>
+    #include <libavutil/opt.h>
 }
 
 /*
@@ -78,6 +86,21 @@ struct VideoPicture
     int                 height;
     int                 allocated;
     double              pts;
+};
+
+struct AudioResamplingState
+{
+    SwrContext * swr_ctx;
+    int64_t in_channel_layout;
+    uint64_t out_channel_layout;
+    int out_nb_channels;
+    int out_linesize;
+    int in_nb_samples;
+    int64_t out_nb_samples;
+    int64_t max_out_nb_samples;
+    uint8_t ** resampled_data;
+    int resampled_data_size;
+
 };
 
 struct VideoState
@@ -181,5 +204,18 @@ int64_t guess_correct_pts(AVCodecContext* ctx, int64_t reordered_pts, int64_t dt
 double synchronize_video(VideoState* videostate, AVFrame* d_frame, double pts);
 int queue_picture(VideoState* videostate, AVFrame* d_frame, double pts);
 void alloc_picture(void * arg);
+
+// Audio
+void audio_callback(void * arg, Uint8* stream, int len);
+int audio_decode_frame(VideoState* videostate, uint8_t* audio_buf, int buf_size, double* pts_ptr);
+int audio_resampling(VideoState* videostate, AVFrame* decoded_audio_frame, enum AVSampleFormat out_sample_fmt, uint8_t* out_buf);
+AudioResamplingState* get_audio_resampling(uint64_t channel_layout);
+int synchronize_audio(VideoState* videostate, short* samples, int samples_size);
+
+// Clocks
+double get_master_clock(VideoState* videostate);
+double get_video_clock(VideoState* videostate);
+double get_audio_clock(VideoState* videostate);
+double get_external_clock(VideoState* videostate);
 
 #endif

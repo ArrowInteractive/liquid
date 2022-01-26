@@ -726,6 +726,644 @@ void alloc_picture(void * arg){
     video_picture->allocated = 1;
 }
 
+void audio_callback(void * arg, Uint8* stream, int len){
+    // Retrieve the VideoState
+    VideoState * videostate = (VideoState *)arg;
 
+    double pts;
+
+    // While the length of the audio data buffer is > 0
+    while (len > 0)
+    {
+        // Check quit flag
+        if (videostate->quit)
+        {
+            return;
+        }
+
+        // Check how much audio is left to writes
+        if (videostate->audio_buf_index >= videostate->audio_buf_size)
+        {
+            // we have already sent all avaialble data; get more
+            int audio_size = audio_decode_frame(
+                                videostate,
+                                videostate->audio_buf,
+                                sizeof(videostate->audio_buf),
+                                &pts
+                            );
+
+            // if error
+            if (audio_size < 0)
+            {
+                // output silence
+                videostate->audio_buf_size = 1024;
+
+                // clear memory
+                memset(videostate->audio_buf, 0, videostate->audio_buf_size);
+
+                std::cout<<"ERROR: Audio decode failed!"<<std::endl;
+            }
+            else
+            {
+                audio_size = synchronize_audio(videostate, (int16_t *)videostate->audio_buf, audio_size);
+
+                // cast to usigned just to get rid of annoying warning messages
+                videostate->audio_buf_size = (unsigned)audio_size;
+            }
+
+            videostate->audio_buf_index = 0;
+        }
+
+        int len1 = videostate->audio_buf_size - videostate->audio_buf_index;
+
+        if (len1 > len)
+        {
+            len1 = len;
+        }
+
+        // Copy data from audio buffer to the SDL stream
+        memcpy(stream, (uint8_t *)videostate->audio_buf + videostate->audio_buf_index, len1);
+
+        len -= len1;
+        stream += len1;
+
+        // Update global VideoState audio buffer index
+        videostate->audio_buf_index += len1;
+    }
+}
+
+int audio_decode_frame(VideoState* videostate, uint8_t* audio_buf, int buf_size, double* pts_ptr){
+    // Allocate AVPacket to read from the audio PacketQueue (audioq)
+    AVPacket * packet = av_packet_alloc();
+    if (packet == NULL)
+    {
+        std::cout<<"ERROR: Could not allocate packet!"<<std::endl;
+        return -1;
+    }
+
+    static uint8_t * audio_pkt_data = NULL;
+    static int audio_pkt_size = 0;
+
+    double pts;
+    int n;
+
+    // Allocate a new frame, used to decode audio packets
+    static AVFrame * d_frame = NULL;
+    d_frame = av_frame_alloc();
+    if (!d_frame)
+    {
+        std::cout<<"ERROR: Could not allocate frame!"<<std::endl;
+        return -1;
+    }
+
+    int len1 = 0;
+    int data_size = 0;
+
+    // Infinite loop: read AVPackets from the audio PacketQueue, decode them into
+    // Audio frames, resample the obtained frame and update the audio buffer
+    for (;;)
+    {
+        // Check quit flag
+        if (videostate->quit)
+        {
+            av_frame_free(&d_frame);
+            return -1;
+        }
+
+        // Check if we obtained an AVPacket from the audio PacketQueue
+        while (audio_pkt_size > 0)
+        {
+            int got_frame = 0;
+
+            // Get decoded output data from decoder
+            int ret = avcodec_receive_frame(videostate->audio_ctx, d_frame);
+
+            // check and entire audio frame was decoded
+            if (ret == 0)
+            {
+                got_frame = 1;
+            }
+
+            // Check the decoder needs more AVPackets to be sent
+            if (ret == AVERROR(EAGAIN))
+            {
+                ret = 0;
+            }
+
+            if (ret == 0)
+            {
+                // Give the decoder raw compressed data in an AVPacket
+                ret = avcodec_send_packet(videostate->audio_ctx, packet);
+            }
+
+            // Check the decoder needs more AVPackets to be sent
+            if (ret == AVERROR(EAGAIN))
+            {
+                ret = 0;
+            }
+            else if (ret < 0)
+            {
+                std::cout<<"ERROR: Decoding failed!"<<std::endl;
+                av_frame_free(&d_frame);
+                return -1;
+            }
+            else
+            {
+                len1 = packet->size;
+            }
+
+            if (len1 < 0)
+            {
+                // If error, skip frame
+                audio_pkt_size = 0;
+                break;
+            }
+
+            audio_pkt_data += len1;
+            audio_pkt_size -= len1;
+            data_size = 0;
+
+            // If we decoded an entire audio frame
+            if (got_frame)
+            {
+                // Apply audio resampling to the decoded frame
+                data_size = audio_resampling(
+                    videostate,
+                    d_frame,
+                    AV_SAMPLE_FMT_S16,
+                    audio_buf
+                );
+
+                assert(data_size <= buf_size);
+            }
+
+            if (data_size <= 0)
+            {
+                // No data yet, get more frames
+                continue;
+            }
+
+            // Keep audio_clock up-to-date
+            pts = videostate->audio_clock;
+            *pts_ptr = pts;
+            n = 2 * videostate->audio_ctx->channels;
+            videostate->audio_clock += (double)data_size / (double)(n * videostate->audio_ctx->sample_rate);
+
+            if (packet->data)
+            {
+                // Wipe the packet
+                av_packet_unref(packet);
+            }
+            av_frame_free(&d_frame);
+
+            // We have the data, return it and come back for more later
+            return data_size;
+        }
+
+        if (packet->data)
+        {
+            // wipe the packet
+            av_packet_unref(packet);
+        }
+
+        // Get more audio AVPacket
+        int ret = packet_queue_get(videostate, &videostate->audioq, packet, 1);
+
+        // If packet_queue_get returns < 0, the global quit flag was set
+        if (ret < 0)
+        {
+            return -1;
+        }
+
+        if (packet->data == videostate->flush_pkt->data)
+        {
+            avcodec_flush_buffers(videostate->audio_ctx);
+
+            continue;
+        }
+
+        audio_pkt_data = packet->data;
+        audio_pkt_size = packet->size;
+
+        // Keep audio_clock up-to-date
+        if (packet->pts != AV_NOPTS_VALUE)
+        {
+            videostate->audio_clock = av_q2d(videostate->audio_stream->time_base)*packet->pts;
+        }
+    }
+
+    av_frame_free(&d_frame);
+    return 0;
+}
+
+int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enum AVSampleFormat out_sample_fmt, uint8_t * out_buf){
+    // get an instance of the AudioResamplingState struct
+    AudioResamplingState * ar_state = get_audio_resampling(videostate->audio_ctx->channel_layout);
+
+    if (!ar_state->swr_ctx)
+    {
+        std::cout<<"ERROR: swr_alloc failed!"<<std::endl;
+        return -1;
+    }
+
+    // get input audio channels
+    ar_state->in_channel_layout = (videostate->audio_ctx->channels ==
+                                  av_get_channel_layout_nb_channels(videostate->audio_ctx->channel_layout)) ?
+                                 videostate->audio_ctx->channel_layout :
+                                 av_get_default_channel_layout(videostate->audio_ctx->channels);
+
+    // check input audio channels correctly retrieved
+    if (ar_state->in_channel_layout <= 0)
+    {
+        std::cout<<"ERROR: in_channel_layout"<<std::endl;
+        return -1;
+    }
+
+    // set output audio channels based on the input audio channels
+    if (videostate->audio_ctx->channels == 1)
+    {
+        ar_state->out_channel_layout = AV_CH_LAYOUT_MONO;
+    }
+    else if (videostate->audio_ctx->channels == 2)
+    {
+        ar_state->out_channel_layout = AV_CH_LAYOUT_STEREO;
+    }
+    else
+    {
+        ar_state->out_channel_layout = AV_CH_LAYOUT_SURROUND;
+    }
+
+    // retrieve number of audio samples (per channel)
+    ar_state->in_nb_samples = decoded_audio_frame->nb_samples;
+    if (ar_state->in_nb_samples <= 0)
+    {
+        std::cout<<"ERROR: in_nb_samples"<<std::endl;
+        return -1;
+    }
+
+    // Set SwrContext parameters for resampling
+    av_opt_set_int(
+            ar_state->swr_ctx,
+            "in_channel_layout",
+            ar_state->in_channel_layout,
+            0
+    );
+
+    // Set SwrContext parameters for resampling
+    av_opt_set_int(
+            ar_state->swr_ctx,
+            "in_sample_rate",
+            videostate->audio_ctx->sample_rate,
+            0
+    );
+
+    // Set SwrContext parameters for resampling
+    av_opt_set_sample_fmt(
+            ar_state->swr_ctx,
+            "in_sample_fmt",
+            videostate->audio_ctx->sample_fmt,
+            0
+    );
+
+    // Set SwrContext parameters for resampling
+    av_opt_set_int(
+            ar_state->swr_ctx,
+            "out_channel_layout",
+            ar_state->out_channel_layout,
+            0
+    );
+
+    // Set SwrContext parameters for resampling
+    av_opt_set_int(
+            ar_state->swr_ctx,
+            "out_sample_rate",
+            videostate->audio_ctx->sample_rate,
+            0
+    );
+
+    // Set SwrContext parameters for resampling
+    av_opt_set_sample_fmt(
+            ar_state->swr_ctx,
+            "out_sample_fmt",
+            out_sample_fmt,
+            0
+    );
+
+    // Initialize SWR context after user parameters have been set
+    int ret = swr_init(ar_state->swr_ctx);;
+    if (ret < 0)
+    {
+        std::cout<<"ERROR: Could not initialize resampling context!"<<std::endl;
+        return -1;
+    }
+
+    ar_state->max_out_nb_samples = ar_state->out_nb_samples = av_rescale_rnd(
+            ar_state->in_nb_samples,
+            videostate->audio_ctx->sample_rate,
+            videostate->audio_ctx->sample_rate,
+            AV_ROUND_UP
+    );
+
+    // Check rescaling was successful
+    if (ar_state->max_out_nb_samples <= 0)
+    {
+        std::cout<<"ERROR: av_rescale_rnd failed!"<<std::endl;
+        return -1;
+    }
+
+    // Get number of output audio channels
+    ar_state->out_nb_channels = av_get_channel_layout_nb_channels(ar_state->out_channel_layout);
+
+    // Allocate data pointers array for arState->resampled_data and fill data
+    // pointers and linesize accordingly
+    ret = av_samples_alloc_array_and_samples(
+            &ar_state->resampled_data,
+            &ar_state->out_linesize,
+            ar_state->out_nb_channels,
+            ar_state->out_nb_samples,
+            out_sample_fmt,
+            0
+    );
+
+    // Check memory allocation for the resampled data was successful
+    if (ret < 0)
+    {
+        std::cout<<"ERROR: Could not allocate destination samples!"<<std::endl;
+        return -1;
+    }
+
+    // Retrieve output samples number taking into account the progressive delay
+    ar_state->out_nb_samples = av_rescale_rnd(
+            swr_get_delay(ar_state->swr_ctx, videostate->audio_ctx->sample_rate) + ar_state->in_nb_samples,
+            videostate->audio_ctx->sample_rate,
+            videostate->audio_ctx->sample_rate,
+            AV_ROUND_UP
+    );
+
+    // Check output samples number was correctly rescaled
+    if (ar_state->out_nb_samples <= 0)
+    {
+        std::cout<<"ERROR: av_rescale_rnd failed!"<<std::endl;
+        return -1;
+    }
+
+    if (ar_state->out_nb_samples > ar_state->max_out_nb_samples)
+    {
+        // Free memory block and set pointer to NULL
+        av_free(ar_state->resampled_data[0]);
+
+        // Allocate a samples buffer for out_nb_samples samples
+        ret = av_samples_alloc(
+                ar_state->resampled_data,
+                &ar_state->out_linesize,
+                ar_state->out_nb_channels,
+                ar_state->out_nb_samples,
+                out_sample_fmt,
+                1
+        );
+
+        // Check samples buffer correctly allocated
+        if (ret < 0)
+        {
+            std::cout<<"ERROR: av_alloc_frames failed!"<<std::endl;
+            return -1;
+        }
+
+        ar_state->max_out_nb_samples = ar_state->out_nb_samples;
+    }
+
+    if (ar_state->swr_ctx)
+    {
+        // Do the actual audio data resampling
+        ret = swr_convert(
+                ar_state->swr_ctx,
+                ar_state->resampled_data,
+                ar_state->out_nb_samples,
+                (const uint8_t **) decoded_audio_frame->data,
+                decoded_audio_frame->nb_samples
+        );
+
+        // Check audio conversion was successful
+        if (ret < 0)
+        {
+            std::cout<<"ERROR: sws_convert failed!"<<std::endl;
+            return -1;
+        }
+
+        // Get the required buffer size for the given audio parameters
+        ar_state->resampled_data_size = av_samples_get_buffer_size(
+                &ar_state->out_linesize,
+                ar_state->out_nb_channels,
+                ret,
+                out_sample_fmt,
+                1
+        );
+
+        // Check audio buffer size
+        if (ar_state->resampled_data_size < 0)
+        {
+            std::cout<<"ERROR: av_samples_get_buffersize failed!"<<std::endl;
+            return -1;
+        }
+    }
+    else
+    {
+        std::cout<<"ERROR: sws_ctx is null!"<<std::endl;
+        return -1;
+    }
+
+    // Copy the resampled data to the output buffer
+    memcpy(out_buf, ar_state->resampled_data[0], ar_state->resampled_data_size);
+
+    /*
+        Memory Cleanup.
+    */
+    if (ar_state->resampled_data)
+    {
+        // Free memory block and set pointer to NULL
+        av_freep(&ar_state->resampled_data[0]);
+    }
+
+    av_freep(&ar_state->resampled_data);
+    ar_state->resampled_data = NULL;
+
+    if (ar_state->swr_ctx)
+    {
+        // Free the allocated SwrContext and set the pointer to NULL
+        swr_free(&ar_state->swr_ctx);
+    }
+
+    return ar_state->resampled_data_size;
+}
+
+AudioResamplingState* get_audio_resampling(uint64_t channel_layout){
+    AudioResamplingState * audio_resampling = (AudioResamplingState*)av_mallocz(sizeof(AudioResamplingState));
+
+    audio_resampling->swr_ctx = swr_alloc();
+    audio_resampling->in_channel_layout = channel_layout;
+    audio_resampling->out_channel_layout = AV_CH_LAYOUT_STEREO;
+    audio_resampling->out_nb_channels = 0;
+    audio_resampling->out_linesize = 0;
+    audio_resampling->in_nb_samples = 0;
+    audio_resampling->out_nb_samples = 0;
+    audio_resampling->max_out_nb_samples = 0;
+    audio_resampling->resampled_data = NULL;
+    audio_resampling->resampled_data_size = 0;
+
+    return audio_resampling;
+}
+
+int synchronize_audio(VideoState* videostate, short * samples, int samples_size){
+    int n;
+    double ref_clock;
+
+    n = 2 * videostate->audio_ctx->channels;
+
+    // check if
+    if (videostate->av_sync_type != AV_SYNC_AUDIO_MASTER)
+    {
+        double diff, avg_diff;
+        int wanted_size, min_size, max_size /*, nb_samples */;
+
+        ref_clock = get_master_clock(videostate);
+        diff = get_audio_clock(videostate) - ref_clock;
+
+        if (diff < AV_NOSYNC_THRESHOLD)
+        {
+            // accumulate the diffs
+            videostate->audio_diff_cum = diff + videostate->audio_diff_avg_coef * videostate->audio_diff_cum;
+
+            if (videostate->audio_diff_avg_count < AUDIO_DIFF_AVG_NB)
+            {
+                videostate->audio_diff_avg_count++;
+            }
+            else
+            {
+                avg_diff = videostate->audio_diff_cum * (1.0 - videostate->audio_diff_avg_coef);
+
+                /*
+                    So we're doing pretty well; we know approximately how off the audio
+                    is from the video or whatever we're using for a clock. So let's now
+                    calculate how many samples we need to add or lop off by putting this
+                    code where the "Shrinking/expanding buffer code" section is:
+                */
+                if (fabs(avg_diff) >= videostate->audio_diff_threshold)
+                {
+                    wanted_size = samples_size + ((int)(diff * videostate->audio_ctx->sample_rate) * n);
+                    min_size = samples_size * ((100 - SAMPLE_CORRECTION_PERCENT_MAX) / 100);
+                    max_size = samples_size * ((100 + SAMPLE_CORRECTION_PERCENT_MAX) / 100);
+
+                    if(wanted_size < min_size)
+                    {
+                        wanted_size = min_size;
+                    }
+                    else if (wanted_size > max_size)
+                    {
+                        wanted_size = max_size;
+                    }
+
+                    /*
+                        Now we have to actually correct the audio. You may have noticed that our
+                        synchronize_audio function returns a sample size, which will then tell us
+                        how many bytes to send to the stream. So we just have to adjust the sample
+                        size to the wanted_size. This works for making the sample size smaller.
+                        But if we want to make it bigger, we can't just make the sample size larger
+                        because there's no more data in the buffer! So we have to add it. But what
+                        should we add? It would be foolish to try and extrapolate audio, so let's
+                        just use the audio we already have by padding out the buffer with the
+                        value of the last sample.
+                    */
+                    if(wanted_size < samples_size)
+                    {
+                        /* remove samples */
+                        samples_size = wanted_size;
+                    }
+                    else if(wanted_size > samples_size)
+                    {
+                        uint8_t *samples_end, *q;
+                        int nb;
+
+                        /* add samples by copying final sample*/
+                        nb = (samples_size - wanted_size);
+                        samples_end = (uint8_t *)samples + samples_size - n;
+                        q = samples_end + n;
+
+                        while(nb > 0)
+                        {
+                            memcpy(q, samples_end, n);
+                            q += n;
+                            nb -= n;
+                        }
+
+                        samples_size = wanted_size;
+                    }
+                }
+            }
+        }
+        else
+        {
+            /* difference is TOO big; reset diff stuff */
+            videostate->audio_diff_avg_count = 0;
+            videostate->audio_diff_cum = 0;
+        }
+    }
+
+    return samples_size;
+}
+
+double get_master_clock(VideoState* videostate){
+    if (videostate->av_sync_type == AV_SYNC_VIDEO_MASTER)
+    {
+        return get_video_clock(videostate);
+    }
+    else if (videostate->av_sync_type == AV_SYNC_AUDIO_MASTER)
+    {
+        return get_audio_clock(videostate);
+    }
+    else if (videostate->av_sync_type == AV_SYNC_EXTERNAL_MASTER)
+    {
+        return get_external_clock(videostate);
+    }
+    else
+    {
+        std::cout<<"ERROR: Undefined AVSyncType!"<<std::endl;
+        return -1;
+    }
+}
+
+double get_video_clock(VideoState* videostate){
+    double delta = (av_gettime() - videostate->video_current_pts_time) / 1000000.0;
+
+    return videostate->video_current_pts + delta;
+}
+
+double get_audio_clock(VideoState* videostate){
+    double pts = videostate->audio_clock;
+
+    int hw_buf_size = videostate->audio_buf_size - videostate->audio_buf_index;
+
+    int bytes_per_sec = 0;
+
+    int n = 2 * videostate->audio_ctx->channels;
+
+    if (videostate->audio_stream)
+    {
+        bytes_per_sec = videostate->audio_ctx->sample_rate * n;
+    }
+
+    if (bytes_per_sec)
+    {
+        pts -= (double) hw_buf_size / bytes_per_sec;
+    }
+
+    return pts;
+}
+
+double get_external_clock(VideoState* videostate){
+    videostate->external_clock_time = av_gettime();
+    videostate->external_clock = videostate->external_clock_time / 1000000.0;
+
+    return videostate->external_clock;
+}
 
 
