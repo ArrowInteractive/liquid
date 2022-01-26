@@ -248,6 +248,25 @@ int decode_thread(void * arg){
     }
 
     // Open stream components here
+    // Open video stream component
+    ret = stream_component_open(videostate, videostate->video_stream_index);
+
+    // Check if video codec was opened correctly
+    if (ret < 0)
+    {
+        std::cout<<"ERROR: Could not open video codec!"<<std::endl;
+        return -1;
+    }
+    
+    // Open audio stream component
+    ret = stream_component_open(videostate, videostate->audio_stream_index);
+
+    // check audio codec was opened correctly
+    if (ret < 0)
+    {
+        std::cout<<"ERROR: Could not open audio codec!"<<std::endl;
+        return -1;
+    }
 
     return 0;
 }
@@ -1223,14 +1242,14 @@ int synchronize_audio(VideoState* videostate, short * samples, int samples_size)
     if (videostate->av_sync_type != AV_SYNC_AUDIO_MASTER)
     {
         double diff, avg_diff;
-        int wanted_size, min_size, max_size /*, nb_samples */;
+        int wanted_size, min_size, max_size;
 
         ref_clock = get_master_clock(videostate);
         diff = get_audio_clock(videostate) - ref_clock;
 
         if (diff < AV_NOSYNC_THRESHOLD)
         {
-            // accumulate the diffs
+            // Accumulate the diffs
             videostate->audio_diff_cum = diff + videostate->audio_diff_avg_coef * videostate->audio_diff_cum;
 
             if (videostate->audio_diff_avg_count < AUDIO_DIFF_AVG_NB)
@@ -1275,7 +1294,7 @@ int synchronize_audio(VideoState* videostate, short * samples, int samples_size)
                     */
                     if(wanted_size < samples_size)
                     {
-                        /* remove samples */
+                        /* Remove samples */
                         samples_size = wanted_size;
                     }
                     else if(wanted_size > samples_size)
@@ -1302,7 +1321,7 @@ int synchronize_audio(VideoState* videostate, short * samples, int samples_size)
         }
         else
         {
-            /* difference is TOO big; reset diff stuff */
+            /* Difference is TOO big; reset diff stuff */
             videostate->audio_diff_avg_count = 0;
             videostate->audio_diff_cum = 0;
         }
