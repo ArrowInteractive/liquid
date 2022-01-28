@@ -3,6 +3,15 @@
 void handle_events(SDL_Event* event, VideoState* videostate){
     SDL_PollEvent(event);
 
+    // SDL_Quit
+    if(event->type == SDL_QUIT)
+    {
+        videostate->quit = 1;
+        SDL_CondSignal(videostate->audioq.cond);
+        SDL_CondSignal(videostate->videoq.cond);
+        SDL_Quit();
+    }
+
     // Keydowns
     if(event->type == SDL_KEYDOWN)
     {
