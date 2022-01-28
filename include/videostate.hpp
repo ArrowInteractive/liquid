@@ -149,6 +149,7 @@ struct VideoState
     SDL_mutex*          window_mutex;
     SDL_Texture*        texture;
     SDL_Renderer*       renderer;
+    SDL_Event           event;
 
     // Video picture queue
     VideoPicture        pictq[VIDEO_PICTURE_QUEUE_SIZE];
@@ -178,6 +179,7 @@ struct VideoState
 
     // Flags
     int                 quit;
+    bool                is_fullscreen = false;
 
     // Flush packet
     AVPacket*           flush_pkt;

@@ -47,32 +47,8 @@ int main(int argc, char * argv[])
     av_init_packet(videostate->flush_pkt);
     videostate->flush_pkt->data = 0;
 
-    SDL_Event event;
-    while(true)
-    {
-        SDL_PollEvent(&event);
-        if(event.type == SDL_KEYDOWN)
-        {
-            if(event.key.keysym.sym == SDLK_q)
-            {
-                videostate->quit = 1;
-                SDL_CondSignal(videostate->audioq.cond);
-                SDL_CondSignal(videostate->videoq.cond);
-                SDL_Quit();
-            }
-        }
-
-        if(event.type == FF_REFRESH_EVENT)
-        {
-            video_refresh_timer(event.user.data1);
-        }
-
-        if (videostate->quit)
-        {
-            // exit for loop
-            break;
-        }
+    while(videostate->quit == 0){
+        handle_events(&videostate->event, videostate);
     }
-
     return 0;
 }

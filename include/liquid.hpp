@@ -6,5 +6,6 @@
 #endif
 
 #include "videostate.hpp"
+#include "events.hpp"
 
 #endif
