@@ -16,7 +16,7 @@ sudo pacman -S base-devel cmake ninja ffmpeg sdl2
 
 Then execute ```./build.sh```
 
-### Debain based systems:
+### Debian based systems:
 
 Install the necessary packages through APT by using:
 ```
