@@ -15,15 +15,29 @@ void handle_events(SDL_Event* event, VideoState* videostate){
     // Keydowns
     if(event->type == SDL_KEYDOWN)
     {
-        if(event->key.keysym.sym == SDLK_q){
-            videostate->quit = 1;
-            SDL_CondSignal(videostate->audioq.cond);
-            SDL_CondSignal(videostate->videoq.cond);
-            SDL_Quit();
-        }
-        else if(event->key.keysym.sym == SDLK_f){
-            std::cout<<"Fullscreen: "<<videostate->is_fullscreen<<std::endl;
-            videostate->is_fullscreen = !videostate->is_fullscreen;
+        switch(event->key.keysym.sym)
+        {
+            case SDLK_q:
+            {
+                videostate->quit = 1;
+                SDL_CondSignal(videostate->audioq.cond);
+                SDL_CondSignal(videostate->videoq.cond);
+                SDL_Quit();
+            }
+            break;
+
+            case SDLK_f:
+            {
+                std::cout<<"is_fullscreen status: "<<videostate->is_fullscreen<<std::endl;
+                videostate->is_fullscreen = !videostate->is_fullscreen;
+            }
+            break;
+
+            default:
+            {
+                // Do nothing
+            }
+            break;
         }
     }
 
