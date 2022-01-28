@@ -142,14 +142,13 @@ struct VideoState
     double              audio_diff_threshold;
     int                 audio_diff_avg_count;
 
-    /*
-        Window
-    */
+    // Window, Display Mode, Renderer, Texture, and Events
     SDL_Window*         window;
     SDL_mutex*          window_mutex;
     SDL_Texture*        texture;
     SDL_Renderer*       renderer;
     SDL_Event           event;
+    SDL_DisplayMode     display_mode;
 
     // Video picture queue
     VideoPicture        pictq[VIDEO_PICTURE_QUEUE_SIZE];
@@ -178,8 +177,10 @@ struct VideoState
     const char*         filename;
 
     // Flags
+    int                 ret;
     int                 quit;
     bool                is_fullscreen = false;
+    bool                change_scaling = false;
 
     // Flush packet
     AVPacket*           flush_pkt;

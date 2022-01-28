@@ -28,8 +28,10 @@ void handle_events(SDL_Event* event, VideoState* videostate){
 
             case SDLK_f:
             {
-                std::cout<<"is_fullscreen status: "<<videostate->is_fullscreen<<std::endl;
                 videostate->is_fullscreen = !videostate->is_fullscreen;
+                std::cout<<"is_fullscreen status: "<<videostate->is_fullscreen<<std::endl;
+                videostate->change_scaling = !videostate->change_scaling;
+                std::cout<<"change_scaling status: "<<videostate->change_scaling<<std::endl;
             }
             break;
 

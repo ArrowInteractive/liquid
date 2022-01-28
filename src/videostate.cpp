@@ -78,7 +78,6 @@ int packet_queue_put(PacketQueue* queue, AVPacket* packet){
 }
 
 int packet_queue_get(VideoState* videostate, PacketQueue* queue, AVPacket* packet, int blocking){
-    int ret;
 
     AVPacketList* av_packet_list;
 
@@ -90,7 +89,7 @@ int packet_queue_get(VideoState* videostate, PacketQueue* queue, AVPacket* packe
         // check quit flag
         if (videostate->quit)
         {
-            ret = -1;
+            videostate->ret = -1;
             break;
         }
 
@@ -122,12 +121,12 @@ int packet_queue_get(VideoState* videostate, PacketQueue* queue, AVPacket* packe
             // free memory
             av_free(av_packet_list);
 
-            ret = 1;
+            videostate->ret = 1;
             break;
         }
         else if (!blocking)
         {
-            ret = 0;
+            videostate->ret = 0;
             break;
         }
         else
@@ -140,7 +139,7 @@ int packet_queue_get(VideoState* videostate, PacketQueue* queue, AVPacket* packe
     // unlock mutex
     SDL_UnlockMutex(queue->mutex);
 
-    return ret;
+    return videostate->ret;
 }
 
 void packet_queue_flush(PacketQueue* queue){
@@ -169,10 +168,10 @@ void packet_queue_flush(PacketQueue* queue){
 
 void schedule_refresh(VideoState* videostate, Uint32 delay){
     // schedule an SDL timer
-    int ret = SDL_AddTimer(delay, sdl_refresh_timer_cb, videostate);
+    videostate->ret = SDL_AddTimer(delay, sdl_refresh_timer_cb, videostate);
 
     // check the timer was correctly scheduled
-    if (ret == 0)
+    if (videostate->ret == 0)
     {
         std::cout<<"ERROR: Could not schedule refresh callback!"<<std::endl;
     }
@@ -198,8 +197,8 @@ Uint32 sdl_refresh_timer_cb(Uint32 interval, void * param){
 int decode_info(VideoState* videostate){
     videostate->pformatctx = NULL;
 
-    int ret = avformat_open_input(&videostate->pformatctx, videostate->filename, NULL, NULL);
-    if (ret < 0)
+    videostate->ret = avformat_open_input(&videostate->pformatctx, videostate->filename, NULL, NULL);
+    if (videostate->ret < 0)
     {
         std::cout<<"ERROR: Could not open file!"<<std::endl;
         return -1;
@@ -208,8 +207,8 @@ int decode_info(VideoState* videostate){
     videostate->audio_stream_index = -1;
     videostate->video_stream_index = -1;
 
-    ret = avformat_find_stream_info(videostate->pformatctx, NULL);
-    if (ret < 0)
+    videostate->ret = avformat_find_stream_info(videostate->pformatctx, NULL);
+    if (videostate->ret < 0)
     {
         std::cout<<"ERROR: Could not find any stream information!"<<std::endl;
         return -1;
@@ -253,10 +252,10 @@ int decode_info(VideoState* videostate){
     else
     {
         // Open video stream component codec
-        ret = stream_component_open(videostate, videostate->video_stream_index);
+        videostate->ret = stream_component_open(videostate, videostate->video_stream_index);
 
         // Check video codec was opened correctly
-        if (ret < 0)
+        if (videostate->ret < 0)
         {
             std::cout<<"ERROR: Could not open video codec!"<<std::endl;
             return -1;
@@ -272,10 +271,10 @@ int decode_info(VideoState* videostate){
     else
     {
         // open audio stream component codec
-        ret = stream_component_open(videostate, videostate->audio_stream_index);
+        videostate->ret = stream_component_open(videostate, videostate->audio_stream_index);
 
         // check audio codec was opened correctly
-        if (ret < 0)
+        if (videostate->ret < 0)
         {
             std::cout<<"ERROR: Could not open audio codec!"<<std::endl;
             return -1;
@@ -295,7 +294,7 @@ int decode_info(VideoState* videostate){
 int decode_thread(void * arg){
     // retrieve VideoState reference
     VideoState * videostate = (VideoState *)arg;
-    int ret = 0;
+    videostate->ret = 0;
 
     // Alloc the AVPacket used to read the media file
     AVPacket * packet = av_packet_alloc();
@@ -324,10 +323,10 @@ int decode_thread(void * arg){
         }
 
         // Read data from the AVFormatContext by repeatedly calling av_read_frame()
-        ret = av_read_frame(videostate->pformatctx, packet);
-        if (ret < 0)
+        videostate->ret = av_read_frame(videostate->pformatctx, packet);
+        if (videostate->ret < 0)
         {
-            if (ret == AVERROR_EOF)
+            if (videostate->ret == AVERROR_EOF)
             {
                 // Media EOF reached, quit
                 videostate->quit = 1;
@@ -393,8 +392,8 @@ int stream_component_open(VideoState* videostate, int stream_index){
     // Retreive codec context
     AVCodecContext* codec_ctx = NULL;
     codec_ctx = avcodec_alloc_context3(codec);
-    int ret = avcodec_parameters_to_context(codec_ctx, videostate->pformatctx->streams[stream_index]->codecpar);
-    if(ret != 0){
+    videostate->ret = avcodec_parameters_to_context(codec_ctx, videostate->pformatctx->streams[stream_index]->codecpar);
+    if(videostate->ret != 0){
         std::cout<<"ERROR: Could not copy parameters to context!"<<std::endl;
         return -1;
     }
@@ -424,10 +423,10 @@ int stream_component_open(VideoState* videostate, int stream_index){
             /*
                 NOTE: Deprecated, SDL_OpenAudioDevice() should be used insted
             */
-            ret = SDL_OpenAudio(&wanted_specs, &specs);
+            videostate->ret = SDL_OpenAudio(&wanted_specs, &specs);
 
             // check audio device was correctly opened
-            if (ret < 0)
+            if (videostate->ret < 0)
             {
                 std::cout<<"ERROR: Could not open audio device!"<<std::endl;
                 return -1;
@@ -484,10 +483,8 @@ int stream_component_open(VideoState* videostate, int stream_index){
                 NULL,
                 NULL
             );
-
-            /*
-                NOTE: Seperate into functions
-            */
+            
+            // Window, Renderer, Texture thread
             videostate->render_thd = SDL_CreateThread(render_thread, "Render Thread", videostate);
         }
         break;
@@ -503,6 +500,20 @@ int stream_component_open(VideoState* videostate, int stream_index){
 
 int render_thread(void * arg){
     VideoState* videostate = (VideoState *)arg;
+
+    // SDL Init
+    videostate->ret = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+    if (videostate->ret != 0){
+        std::cout<<"ERROR: Could not initialize SDL!"<<std::endl;
+        return -1;
+    }
+    if (SDL_GetDesktopDisplayMode(0, &videostate->display_mode)){
+        std::cout<<"ERROR: Could not get diplay mode!"<<std::endl;
+        return -1;
+    }
+    std::cout<<"Display 0   Width : "<<videostate->display_mode.w<<std::endl;
+    std::cout<<"Display 0  Height : "<<videostate->display_mode.h<<std::endl;
+
     // Window
     videostate->window = SDL_CreateWindow(
         "Liquid Media Player",
@@ -513,7 +524,7 @@ int render_thread(void * arg){
         SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
     );
 
-    // check window was correctly created
+    // Check if window was successfully created
     if (!videostate->window)
     {
         std::cout<<"ERROR: Could not create window!"<<std::endl;
@@ -522,10 +533,10 @@ int render_thread(void * arg){
 
     SDL_GL_SetSwapInterval(1);
 
-    // initialize global SDL_Surface mutex reference
+    // Initialize window mutex
     videostate->window_mutex = SDL_CreateMutex();
 
-    // create a 2D rendering context for the SDL_Window
+    // Create a renderer
     videostate->renderer = SDL_CreateRenderer(
         videostate->window, -1,
         SDL_RENDERER_ACCELERATED |
@@ -533,7 +544,7 @@ int render_thread(void * arg){
         SDL_RENDERER_TARGETTEXTURE
     );
 
-    // create a texture for a rendering context
+    // Create a texture
     videostate->texture = SDL_CreateTexture(
         videostate->renderer,
         SDL_PIXELFORMAT_YV12,
@@ -571,8 +582,8 @@ int video_thread(void * arg){
 
     for (;;)
     {
-        int ret = packet_queue_get(videostate, &videostate->videoq, packet, 1);
-        if (ret < 0)
+        videostate->ret = packet_queue_get(videostate, &videostate->videoq, packet, 1);
+        if (videostate->ret < 0)
         {
             // Stop getting packets
             break;
@@ -585,24 +596,24 @@ int video_thread(void * arg){
         }
 
         // Send the decoder raw compressed data in an AVPacket
-        ret = avcodec_send_packet(videostate->video_ctx, packet);
-        if (ret < 0)
+        videostate->ret = avcodec_send_packet(videostate->video_ctx, packet);
+        if (videostate->ret < 0)
         {
             std::cout<<"ERROR: Failed to send packet!"<<std::endl;
             return -1;
         }
 
-        while (ret >= 0)
+        while (videostate->ret >= 0)
         {
             // Get data from the decoder
-            ret = avcodec_receive_frame(videostate->video_ctx, d_frame);
+            videostate->ret = avcodec_receive_frame(videostate->video_ctx, d_frame);
 
             // Check if an entire frame was decoded
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            if (videostate->ret == AVERROR(EAGAIN) || videostate->ret == AVERROR_EOF)
             {
                 break;
             }
-            else if(ret < 0)
+            else if(videostate->ret < 0)
             {
                 std::cout<<"ERROR: Failed to decode frame!"<<std::endl;
                 return -1;
@@ -968,32 +979,32 @@ int audio_decode_frame(VideoState* videostate, uint8_t* audio_buf, int buf_size,
             int got_frame = 0;
 
             // Get decoded output data from decoder
-            int ret = avcodec_receive_frame(videostate->audio_ctx, d_frame);
+            videostate->ret = avcodec_receive_frame(videostate->audio_ctx, d_frame);
 
             // check and entire audio frame was decoded
-            if (ret == 0)
+            if (videostate->ret == 0)
             {
                 got_frame = 1;
             }
 
             // Check the decoder needs more AVPackets to be sent
-            if (ret == AVERROR(EAGAIN))
+            if (videostate->ret == AVERROR(EAGAIN))
             {
-                ret = 0;
+                videostate->ret = 0;
             }
 
-            if (ret == 0)
+            if (videostate->ret == 0)
             {
                 // Give the decoder raw compressed data in an AVPacket
-                ret = avcodec_send_packet(videostate->audio_ctx, packet);
+                videostate->ret = avcodec_send_packet(videostate->audio_ctx, packet);
             }
 
             // Check the decoder needs more AVPackets to be sent
-            if (ret == AVERROR(EAGAIN))
+            if (videostate->ret == AVERROR(EAGAIN))
             {
-                ret = 0;
+                videostate->ret = 0;
             }
-            else if (ret < 0)
+            else if (videostate->ret < 0)
             {
                 std::cout<<"ERROR: Decoding failed!"<<std::endl;
                 av_frame_free(&d_frame);
@@ -1059,10 +1070,10 @@ int audio_decode_frame(VideoState* videostate, uint8_t* audio_buf, int buf_size,
         }
 
         // Get more audio AVPacket
-        int ret = packet_queue_get(videostate, &videostate->audioq, packet, 1);
+        videostate->ret = packet_queue_get(videostate, &videostate->audioq, packet, 1);
 
         // If packet_queue_get returns < 0, the global quit flag was set
-        if (ret < 0)
+        if (videostate->ret < 0)
         {
             return -1;
         }
@@ -1182,8 +1193,8 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
     );
 
     // Initialize SWR context after user parameters have been set
-    int ret = swr_init(ar_state->swr_ctx);;
-    if (ret < 0)
+    videostate->ret = swr_init(ar_state->swr_ctx);;
+    if (videostate->ret < 0)
     {
         std::cout<<"ERROR: Could not initialize resampling context!"<<std::endl;
         return -1;
@@ -1208,7 +1219,7 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
 
     // Allocate data pointers array for arState->resampled_data and fill data
     // pointers and linesize accordingly
-    ret = av_samples_alloc_array_and_samples(
+    videostate->ret = av_samples_alloc_array_and_samples(
             &ar_state->resampled_data,
             &ar_state->out_linesize,
             ar_state->out_nb_channels,
@@ -1218,7 +1229,7 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
     );
 
     // Check memory allocation for the resampled data was successful
-    if (ret < 0)
+    if (videostate->ret < 0)
     {
         std::cout<<"ERROR: Could not allocate destination samples!"<<std::endl;
         return -1;
@@ -1245,7 +1256,7 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
         av_free(ar_state->resampled_data[0]);
 
         // Allocate a samples buffer for out_nb_samples samples
-        ret = av_samples_alloc(
+        videostate->ret = av_samples_alloc(
                 ar_state->resampled_data,
                 &ar_state->out_linesize,
                 ar_state->out_nb_channels,
@@ -1255,7 +1266,7 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
         );
 
         // Check samples buffer correctly allocated
-        if (ret < 0)
+        if (videostate->ret < 0)
         {
             std::cout<<"ERROR: av_alloc_frames failed!"<<std::endl;
             return -1;
@@ -1267,16 +1278,16 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
     if (ar_state->swr_ctx)
     {
         // Do the actual audio data resampling
-        ret = swr_convert(
-                ar_state->swr_ctx,
-                ar_state->resampled_data,
-                ar_state->out_nb_samples,
-                (const uint8_t **) decoded_audio_frame->data,
-                decoded_audio_frame->nb_samples
+        videostate->ret = swr_convert(
+            ar_state->swr_ctx,
+            ar_state->resampled_data,
+            ar_state->out_nb_samples,
+            (const uint8_t **) decoded_audio_frame->data,
+            decoded_audio_frame->nb_samples
         );
 
         // Check audio conversion was successful
-        if (ret < 0)
+        if (videostate->ret < 0)
         {
             std::cout<<"ERROR: sws_convert failed!"<<std::endl;
             return -1;
@@ -1286,7 +1297,7 @@ int audio_resampling(VideoState * videostate, AVFrame * decoded_audio_frame, enu
         ar_state->resampled_data_size = av_samples_get_buffer_size(
                 &ar_state->out_linesize,
                 ar_state->out_nb_channels,
-                ret,
+                videostate->ret,
                 out_sample_fmt,
                 1
         );
