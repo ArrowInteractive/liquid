@@ -164,7 +164,7 @@ void packet_queue_flush(PacketQueue* queue){
 }
 
 /*
-    Schedule 
+    Schedule
 */
 
 void schedule_refresh(VideoState* videostate, Uint32 delay){
@@ -238,7 +238,7 @@ int decode_info(VideoState* videostate){
         std::cout<<"ERROR: Could not find any video streams!"<<std::endl;
         return -1;
     }
-    
+
     if(videostate->audio_stream_index == -1){
         std::cout<<"ERROR: Could not find any audio streams!"<<std::endl;
         return -1;
@@ -488,45 +488,7 @@ int stream_component_open(VideoState* videostate, int stream_index){
             /*
                 NOTE: Seperate into functions
             */
-            // Window
-            videostate->window = SDL_CreateWindow(
-                "Liquid Media Player",
-                SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED,
-                codec_ctx->width,
-                codec_ctx->height,
-                SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
-            );
-
-            // check window was correctly created
-            if (!videostate->window)
-            {
-                std::cout<<"ERROR: Could not create window!"<<std::endl;
-                return -1;
-            }
-
-            //
-            SDL_GL_SetSwapInterval(1);
-
-            // initialize global SDL_Surface mutex reference
-            videostate->window_mutex = SDL_CreateMutex();
-
-            // create a 2D rendering context for the SDL_Window
-            videostate->renderer = SDL_CreateRenderer(
-                videostate->window, -1, 
-                SDL_RENDERER_ACCELERATED |
-                SDL_RENDERER_PRESENTVSYNC | 
-                SDL_RENDERER_TARGETTEXTURE
-            );
-
-            // create a texture for a rendering context
-            videostate->texture = SDL_CreateTexture(
-                videostate->renderer,
-                SDL_PIXELFORMAT_YV12,
-                SDL_TEXTUREACCESS_STREAMING,
-                videostate->video_ctx->width,
-                videostate->video_ctx->height
-            );
+            videostate->render_thd = SDL_CreateThread(render_thread, "Render Thread", videostate);
         }
         break;
 
@@ -536,6 +498,50 @@ int stream_component_open(VideoState* videostate, int stream_index){
         }
         break;
     }
+    return 0;
+}
+
+int render_thread(void * arg){
+    VideoState* videostate = (VideoState *)arg;
+    // Window
+    videostate->window = SDL_CreateWindow(
+        "Liquid Media Player",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        videostate->video_ctx->width,
+        videostate->video_ctx->height,
+        SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+    );
+
+    // check window was correctly created
+    if (!videostate->window)
+    {
+        std::cout<<"ERROR: Could not create window!"<<std::endl;
+        return -1;
+    }
+
+    SDL_GL_SetSwapInterval(1);
+
+    // initialize global SDL_Surface mutex reference
+    videostate->window_mutex = SDL_CreateMutex();
+
+    // create a 2D rendering context for the SDL_Window
+    videostate->renderer = SDL_CreateRenderer(
+        videostate->window, -1,
+        SDL_RENDERER_ACCELERATED |
+        SDL_RENDERER_PRESENTVSYNC |
+        SDL_RENDERER_TARGETTEXTURE
+    );
+
+    // create a texture for a rendering context
+    videostate->texture = SDL_CreateTexture(
+        videostate->renderer,
+        SDL_PIXELFORMAT_YV12,
+        SDL_TEXTUREACCESS_STREAMING,
+        videostate->video_ctx->width,
+        videostate->video_ctx->height
+    );
+
     return 0;
 }
 

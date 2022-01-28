@@ -59,7 +59,7 @@ int main(int argc, char * argv[])
                 SDL_CondSignal(videostate->audioq.cond);
                 SDL_CondSignal(videostate->videoq.cond);
                 SDL_Quit();
-            }   
+            }
         }
 
         if(event.type == FF_REFRESH_EVENT)

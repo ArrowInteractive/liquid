@@ -171,6 +171,7 @@ struct VideoState
     // Threads
     SDL_Thread*         decode_thd;
     SDL_Thread*         video_thd;
+    SDL_Thread*         render_thd;
 
     // Input filename
     const char*         filename;
@@ -200,6 +201,9 @@ Uint32 sdl_refresh_timer_cb(Uint32 interval, void * param);
 int decode_info(VideoState* videostate);
 int decode_thread(void * arg);
 int stream_component_open(VideoState* videostate, int stream_index);
+
+// Window, renderer, texture
+int render_thread(void * arg);
 
 // Video
 int video_thread(void * arg);
