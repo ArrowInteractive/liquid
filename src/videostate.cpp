@@ -195,10 +195,7 @@ Uint32 sdl_refresh_timer_cb(Uint32 interval, void * param){
     Decode
 */
 
-int decode_thread(void * arg){
-    // retrieve VideoState reference
-    VideoState * videostate = (VideoState *)arg;
-
+int decode_info(VideoState* videostate){
     videostate->pformatctx = NULL;
 
     int ret = avformat_open_input(&videostate->pformatctx, videostate->filename, NULL, NULL);
@@ -291,6 +288,14 @@ int decode_thread(void * arg){
         std::cout<<"ERROR: Could not open the file!"<<std::endl;
         return -1;
     }
+
+    return 0;
+}
+
+int decode_thread(void * arg){
+    // retrieve VideoState reference
+    VideoState * videostate = (VideoState *)arg;
+    int ret = 0;
 
     // Alloc the AVPacket used to read the media file
     AVPacket * packet = av_packet_alloc();

@@ -27,6 +27,9 @@ int main(int argc, char * argv[])
     schedule_refresh(videostate, 100);
     videostate->av_sync_type = DEFAULT_AV_SYNC_TYPE;
 
+    // Decode info about media
+    decode_info(videostate);
+
     // start the decoding thread to read data from the AVFormatContext
     videostate->decode_thd = SDL_CreateThread(decode_thread, "Decoding Thread", videostate);
 

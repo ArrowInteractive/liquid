@@ -197,6 +197,7 @@ void schedule_refresh(VideoState* videostate, Uint32 delay);
 Uint32 sdl_refresh_timer_cb(Uint32 interval, void * param);
 
 // Decode
+int decode_info(VideoState* videostate);
 int decode_thread(void * arg);
 int stream_component_open(VideoState* videostate, int stream_index);
 
