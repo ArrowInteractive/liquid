@@ -28,10 +28,38 @@ void handle_events(SDL_Event* event, VideoState* videostate){
 
             case SDLK_f:
             {
+                if(videostate->is_fullscreen){
+                    // Make it windowed mode
+                    std::cout<<"Changing into windowed mode."<<std::endl;
+
+                    // Lock mutexes
+                    SDL_LockMutex(videostate->window_mutex);
+
+                    // Change Window size & Scaling
+                    SDL_SetWindowSize(videostate->window, videostate->video_ctx->width, videostate->video_ctx->height);
+                    SDL_SetWindowPosition(videostate->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                    change_scaling(videostate, videostate->video_ctx->width, videostate->video_ctx->height);
+
+                    // Unlock mutexes
+                    SDL_UnlockMutex(videostate->window_mutex);
+                }
+                else{
+                    // Make it windowed mode
+                    std::cout<<"Changing into fullscreen mode."<<std::endl;
+
+                    // Lock mutexes
+                    SDL_LockMutex(videostate->window_mutex);
+
+                    // Change Window size & Scaling
+                    // Use fullscreen function instead, fix tearing and returning back to windowed mode
+                    SDL_SetWindowSize(videostate->window, videostate->display_mode.w, videostate->display_mode.h + 10);
+                    SDL_SetWindowPosition(videostate->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                    change_scaling(videostate, videostate->video_ctx->width, videostate->video_ctx->height);
+
+                    // Unlock mutexes
+                    SDL_UnlockMutex(videostate->window_mutex);
+                }
                 videostate->is_fullscreen = !videostate->is_fullscreen;
-                std::cout<<"is_fullscreen status: "<<videostate->is_fullscreen<<std::endl;
-                videostate->change_scaling = !videostate->change_scaling;
-                std::cout<<"change_scaling status: "<<videostate->change_scaling<<std::endl;
             }
             break;
 
