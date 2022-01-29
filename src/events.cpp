@@ -37,6 +37,8 @@ void handle_events(SDL_Event* event, VideoState* videostate){
 
                     // Change Window size & Scaling
                     SDL_SetWindowFullscreen(videostate->window, 0);
+                    SDL_SetWindowSize(videostate->window, videostate->video_ctx->width, videostate->video_ctx->height);
+                    SDL_SetWindowPosition(videostate->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                     change_scaling(videostate, videostate->video_ctx->width, videostate->video_ctx->height);
 
                     // Unlock mutexes

@@ -515,6 +515,12 @@ int render_thread(void * arg){
     std::cout<<"Display 0  Height : "<<videostate->display_mode.h<<std::endl;
 
     // Window
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    
     videostate->window = SDL_CreateWindow(
         "Liquid Media Player",
         SDL_WINDOWPOS_UNDEFINED,
@@ -531,6 +537,7 @@ int render_thread(void * arg){
         return -1;
     }
 
+    SDL_GL_CreateContext(videostate->window);
     SDL_GL_SetSwapInterval(1);
 
     // Initialize window mutex
