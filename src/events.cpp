@@ -36,8 +36,7 @@ void handle_events(SDL_Event* event, VideoState* videostate){
                     SDL_LockMutex(videostate->window_mutex);
 
                     // Change Window size & Scaling
-                    SDL_SetWindowSize(videostate->window, videostate->video_ctx->width, videostate->video_ctx->height);
-                    SDL_SetWindowPosition(videostate->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                    SDL_SetWindowFullscreen(videostate->window, 0);
                     change_scaling(videostate, videostate->video_ctx->width, videostate->video_ctx->height);
 
                     // Unlock mutexes
@@ -51,9 +50,8 @@ void handle_events(SDL_Event* event, VideoState* videostate){
                     SDL_LockMutex(videostate->window_mutex);
 
                     // Change Window size & Scaling
-                    // Use fullscreen function instead, fix tearing and returning back to windowed mode
-                    SDL_SetWindowSize(videostate->window, videostate->display_mode.w, videostate->display_mode.h + 10);
-                    SDL_SetWindowPosition(videostate->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                    // Fix tearing & Aspect ratio
+                    SDL_SetWindowFullscreen(videostate->window, 1 | SDL_WINDOW_FULLSCREEN_DESKTOP);
                     change_scaling(videostate, videostate->video_ctx->width, videostate->video_ctx->height);
 
                     // Unlock mutexes

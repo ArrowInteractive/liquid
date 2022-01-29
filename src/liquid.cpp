@@ -21,6 +21,8 @@ int main(int argc, char * argv[])
 
     // Decode info about media
     decode_info(videostate);
+    if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
+        SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
 
     // Start the decoding thread to read data from the AVFormatContext
     videostate->decode_thd = SDL_CreateThread(decode_thread, "Decoding Thread", videostate);
