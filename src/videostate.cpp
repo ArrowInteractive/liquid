@@ -1703,4 +1703,3 @@ void video_display(VideoState* videostate){
         SDL_UnlockMutex(videostate->window_mutex);
     }
 }
-
