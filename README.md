@@ -31,7 +31,7 @@ Then execute ```./build.sh```
 Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform for Windows, Then install the necessary packages through Pacman by using:
 
 ```
-pacman -S git base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
+pacman -S base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
 ```
 Then execute ```./cleanbuild.ps1``` (You may want to add the MSYS2 paths to the system environment variables.)
 
