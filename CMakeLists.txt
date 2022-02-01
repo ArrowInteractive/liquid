@@ -18,9 +18,11 @@ add_executable(liquid ${SOURCES})
 
 add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
+add_subdirectory(vendor/glad)
 
 target_link_libraries(liquid
     ffmpeg
     SDL2main
     SDL2-static
+    glad
 )

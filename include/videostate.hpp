@@ -54,6 +54,7 @@ enum
 #include <iostream>
 #include <assert.h>
 #include <SDL2/SDL.h>
+#include "shader.hpp"
 extern "C"
 {
     #include <libavcodec/avcodec.h>

@@ -559,6 +559,10 @@ int render_thread(void * arg){
         videostate->video_ctx->width,
         videostate->video_ctx->height
     );
+    //initialise the glad for shader functions
+    init_glad();
+
+    init_shader("./res/vertex.glsl","./res/fragment.glsl");
 
     return 0;
 }
@@ -1674,6 +1678,9 @@ void video_display(VideoState* videostate){
 
         x = (screen_width - w);
         y = (screen_height - h);
+
+        //function for assign shader
+        //use_shader();
 
         // Lock screen mutex
         SDL_LockMutex(videostate->window_mutex);
