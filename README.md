@@ -1,5 +1,5 @@
 # Liquid Media Player 
-Free and open-source media player written in C++. Currently in development.
+Free and open-source media player written in C++ using FFmpeg and SDL2. Currently in development.
 
 [![CodeQL](https://github.com/ArrowInteractive/liquid/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ArrowInteractive/liquid/actions/workflows/codeql-analysis.yml)
 
@@ -34,5 +34,6 @@ Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform f
 pacman -S base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
 ```
 Add the MSYS2 paths to your system environment variables.
+
 Then execute ```./cleanbuild.ps1```
 
