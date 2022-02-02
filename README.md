@@ -1,5 +1,5 @@
 # Liquid Media Player 
-Free and open-source media player written in C++ using FFmpeg and SDL2. Currently in development.
+Lightweight media player written in C++ using FFmpeg and SDL2. Currently in development.
 
 [![CodeQL](https://github.com/ArrowInteractive/liquid/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ArrowInteractive/liquid/actions/workflows/codeql-analysis.yml)
 
