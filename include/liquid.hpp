@@ -1,11 +1,15 @@
-#ifndef LIQUID
-#define LIQUID
+#pragma once
+
+/*
+*   Macros
+*/
 
 #ifdef __MINGW32__
 #define SDL_MAIN_HANDLED
 #endif
 
-#include "videostate.hpp"
-#include "events.hpp"
+/*
+*   Includes
+*/
 
-#endif
+#include "datastate.hpp"

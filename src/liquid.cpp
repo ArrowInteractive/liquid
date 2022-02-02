@@ -1,50 +1,61 @@
+/*
+*   Includes
+*/
+
 #include "liquid.hpp"
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
     if(argc < 2){
+        std::cout<<"ERROR: Please provide an input file."<<std::endl;
         return -1;
     }
 
-    VideoState* videostate = NULL;
-    videostate = (VideoState*)av_mallocz(sizeof(VideoState));
-    videostate->flush_pkt = av_packet_alloc();
-    videostate->filename = argv[1];
+    int flags;
+    VideoState *videostate;
+    input_filename = argv[1];
+    AVFormatContext* av_format_ctx = avformat_alloc_context();
+    avformat_open_input(&av_format_ctx, input_filename, NULL, NULL);
+    AVInputFormat* input_fmt = av_find_input_format(av_format_ctx->iformat->name);
 
-    // Initialize locks for the display buffer (pictq)
-    videostate->pictq_mutex = SDL_CreateMutex();
-    videostate->pictq_cond = SDL_CreateCond();
+    flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 
-    // Launch threads by pushing an SDL_event of type FF_REFRESH_EVENT
-    schedule_refresh(videostate, 100);
-    videostate->av_sync_type = DEFAULT_AV_SYNC_TYPE;
+    if (display_disable) {
+        video_disable = 1;
+        flags &= ~SDL_INIT_VIDEO;
+    }
+    if (audio_disable)
+        flags &= ~SDL_INIT_AUDIO;
+    else {
+        /* Try to work around an occasional ALSA buffer underflow issue when the
+         * period size is NPOT due to ALSA resampling by forcing the buffer size. */
+        if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
+            SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
+    }
 
-    // Decode info about media
-    decode_info(videostate);
-    if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
-        SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
-
-    // Start the decoding thread to read data from the AVFormatContext
-    videostate->decode_thd = SDL_CreateThread(decode_thread, "Decoding Thread", videostate);
-
-    // Check the decode thread was correctly started
-    if(!videostate->decode_thd)
-    {
-        std::cout<<"ERROR: Could not start decoding thread!"<<std::endl;
-
-        // Free allocated memory before exiting
-        av_free(videostate);
-
+    if (SDL_Init (flags)) {
+        std::cout<<"ERROR: Could not initialize SDL!"<<std::endl;
         return -1;
     }
 
-    av_init_packet(videostate->flush_pkt);
-    videostate->flush_pkt->data = 0;
-    
-    // Main loop
-    while(videostate->quit == 0){
-        handle_events(&videostate->event, videostate);
+    SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
+    SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
+
+#ifdef  SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR
+        SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
+#endif
+
+    if(create_window() != 0){
+        std::cout<<"ERROR: Could not setup a window or renderer!"<<std::endl;
+        return -1;
+    }    
+    videostate = stream_open(input_filename, input_fmt);
+    if(!videostate){
+        std::cout<<"ERROR: Failed to initialize VideoState!"<<std::endl;
+        return -1;
     }
-    
+
+    event_loop(videostate);
+
     return 0;
 }
