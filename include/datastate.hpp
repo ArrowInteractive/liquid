@@ -5,6 +5,7 @@
 */
 
 #include "packetqueue.hpp"
+#include "framequeue.hpp"
 
 /*
 **  Macros
@@ -46,10 +47,6 @@
 /* Scaling method */
 static unsigned sws_flags = SWS_LANCZOS;
 
-#define VIDEO_PICTURE_QUEUE_SIZE 3
-#define SUBPICTURE_QUEUE_SIZE 16
-#define SAMPLE_QUEUE_SIZE 9
-#define FRAME_QUEUE_SIZE FFMAX(SAMPLE_QUEUE_SIZE, FFMAX(VIDEO_PICTURE_QUEUE_SIZE, SUBPICTURE_QUEUE_SIZE))
 #define FFSWAP(type,a,b) do{type SWAP_tmp= b; b= a; a= SWAP_tmp;}while(0)
 #define FF_ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -74,35 +71,6 @@ struct Clock{
     int serial;           /* clock is based on a packet with this serial */
     int paused;
     int *queue_serial;    /* pointer to the current packet queue serial, used for obsolete clock detection */
-};
-
-/* Common struct for handling all types of decoded data and allocated render buffers. */
-struct Frame {
-    AVFrame *frame;
-    AVSubtitle sub;
-    int serial;
-    double pts;           /* presentation timestamp for the frame */
-    double duration;      /* estimated duration of the frame */
-    int64_t pos;          /* byte position of the frame in the input file */
-    int width;
-    int height;
-    int format;
-    AVRational sar;
-    int uploaded;
-    int flip_v;
-};
-
-struct FrameQueue{
-    Frame queue[FRAME_QUEUE_SIZE];
-    int rindex;
-    int windex;
-    int size;
-    int max_size;
-    int keep_last;
-    int rindex_shown;
-    SDL_mutex *mutex;
-    SDL_cond *cond;
-    PacketQueue *pktq;
 };
 
 enum{
@@ -314,21 +282,6 @@ void stream_close(VideoState *videostate);
 int stream_component_open(VideoState *videostate, int stream_index);
 void stream_component_close(VideoState *videostate, int stream_index);
 int stream_has_enough_packets(AVStream *st, int stream_id, PacketQueue *queue);
-
-// FrameQueue functions
-int frame_queue_init(FrameQueue *f, PacketQueue *pktq, int max_size, int keep_last);
-void frame_queue_signal(FrameQueue *f);
-int frame_queue_nb_remaining(FrameQueue *f);
-Frame *frame_queue_peek(FrameQueue *f);
-Frame *frame_queue_peek_readable(FrameQueue *f);
-Frame *frame_queue_peek_writable(FrameQueue *f);
-Frame *frame_queue_peek_next(FrameQueue *f);
-Frame *frame_queue_peek_last(FrameQueue *f);
-int64_t frame_queue_last_pos(FrameQueue *f);
-void frame_queue_push(FrameQueue *f);
-void frame_queue_next(FrameQueue *f);
-void frame_queue_destroy(FrameQueue *f);
-void frame_queue_unref_item(Frame *vp);
 
 // Clock functions
 void init_clock(Clock *c, int *queue_serial);
