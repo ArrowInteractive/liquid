@@ -1,8 +1,13 @@
+/*
+**  Includes
+*/
+
 #include "datastate.hpp"
 
 /*
 **  Stream functions
 */
+
 VideoState *stream_open(char *filename, AVInputFormat *iformat)
 {
     VideoState *videostate;
@@ -300,6 +305,7 @@ int stream_has_enough_packets(AVStream *st, int stream_id, PacketQueue *queue) {
 /*
 **  Clock functions
 */
+
 void init_clock(Clock *c, int *queue_serial)
 {
     c->speed = 1.0;
@@ -1007,7 +1013,8 @@ int create_window(){
         SDL_WINDOWPOS_UNDEFINED, 
         default_width, default_height,
          SDL_WINDOW_OPENGL | 
-         SDL_WINDOW_ALLOW_HIGHDPI
+         SDL_WINDOW_ALLOW_HIGHDPI |
+         SDL_WINDOW_RESIZABLE
     );
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(

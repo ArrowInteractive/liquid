@@ -1,14 +1,24 @@
 #pragma once
 
+/*
+**  Includes
+*/
+
 #include "packetqueue.hpp"
 
-// Macros
+/*
+**  Macros
+*/
+
 #define VIDEO_PICTURE_QUEUE_SIZE 3
 #define SUBPICTURE_QUEUE_SIZE 16
 #define SAMPLE_QUEUE_SIZE 9
 #define FRAME_QUEUE_SIZE FFMAX(SAMPLE_QUEUE_SIZE, FFMAX(VIDEO_PICTURE_QUEUE_SIZE, SUBPICTURE_QUEUE_SIZE))
 
-// Structs
+/*
+**  Structs
+*/
+
 struct Frame {
     AVFrame *frame;
     AVSubtitle sub;
@@ -37,7 +47,10 @@ struct FrameQueue{
     PacketQueue *pktq;
 };
 
-// Functions
+/*
+**  Functions
+*/
+
 int frame_queue_init(FrameQueue *f, PacketQueue *pktq, int max_size, int keep_last);
 void frame_queue_signal(FrameQueue *f);
 int frame_queue_nb_remaining(FrameQueue *f);

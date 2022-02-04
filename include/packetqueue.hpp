@@ -1,6 +1,9 @@
 #pragma once
 
-// Includes
+/*
+**  Includes
+*/
+
 extern "C"{
     #include "libavutil/avstring.h"
     #include "libavutil/channel_layout.h"
@@ -25,7 +28,10 @@ extern "C"{
 #include <iostream>
 #include <SDL2/SDL.h>
 
-// Structs
+/*
+**  Structs
+*/
+
 struct LiquidAVPacketList {
     AVPacket *pkt;
     int serial;
@@ -42,7 +48,10 @@ struct PacketQueue{
     SDL_cond *cond;
 };
 
-// Functions
+/*
+**  Functions
+*/
+
 int packet_queue_init(PacketQueue *q);
 void packet_queue_start(PacketQueue *q);
 int packet_queue_put(PacketQueue *q, AVPacket *pkt);

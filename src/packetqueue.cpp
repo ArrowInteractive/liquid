@@ -1,4 +1,12 @@
+/*
+**  Includes
+*/
+
 #include "packetqueue.hpp"
+
+/*
+**  Functions
+*/
 
 int packet_queue_init(PacketQueue *q)
 {

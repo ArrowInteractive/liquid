@@ -1,7 +1,11 @@
+/*
+**  Includes
+*/
+
 #include "framequeue.hpp"
 
 /*
-**  FrameQueue functions
+**  Functions
 */
 
 int frame_queue_init(FrameQueue *f, PacketQueue *pktq, int max_size, int keep_last)

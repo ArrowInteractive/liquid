@@ -1,8 +1,12 @@
 /*
-*   Includes
+**  Includes
 */
 
 #include "liquid.hpp"
+
+/*
+**  Functions
+*/
 
 int main(int argc, char *argv[])
 {
