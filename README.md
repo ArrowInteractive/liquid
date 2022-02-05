@@ -11,7 +11,7 @@ Lightweight media player written in C++ using FFmpeg and SDL2. Currently in deve
 
 Install the necessary packages through Pacman by using:
 ```
-sudo pacman -S base-devel cmake ninja ffmpeg sdl2
+sudo pacman -S --needed base-devel cmake ninja ffmpeg sdl2
 ```
 
 Then execute ```./build.sh```
@@ -31,7 +31,7 @@ Then execute ```./build.sh```
 Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform for Windows, Then install the necessary packages through Pacman by using:
 
 ```
-pacman -S base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
+pacman -S --needed base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
 ```
 Add the MSYS2 paths to your system environment variables.
 
