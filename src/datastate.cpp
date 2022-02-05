@@ -8,20 +8,25 @@
 **  Stream functions
 */
 
-VideoState *stream_open(char *filename, AVInputFormat *iformat)
+VideoState *stream_open(char *filename)
 {
     VideoState *videostate;
 
     videostate = (VideoState *)av_mallocz(sizeof(VideoState));
     if (!videostate)
         return NULL;
+    
+    AVFormatContext* avformat_ctx = avformat_alloc_context();
+    avformat_open_input(&avformat_ctx, filename, NULL, NULL);
+
     videostate->last_video_stream = videostate->video_stream = -1;
     videostate->last_audio_stream = videostate->audio_stream = -1;
     videostate->last_subtitle_stream = videostate->subtitle_stream = -1;
     videostate->filename = av_strdup(filename);
     if (!videostate->filename)
         goto fail;
-    videostate->iformat = iformat;
+    
+    videostate->iformat = av_find_input_format(avformat_ctx->iformat->name);
     videostate->ytop    = 0;
     videostate->xleft   = 0;
 

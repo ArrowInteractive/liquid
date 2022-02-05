@@ -277,7 +277,7 @@ static const struct TextureFormatEntry {
 */
 
 // Stream functions
-VideoState *stream_open(char *filename, AVInputFormat *iformat);
+VideoState *stream_open(char *filename);
 void stream_close(VideoState *videostate);
 int stream_component_open(VideoState *videostate, int stream_index);
 void stream_component_close(VideoState *videostate, int stream_index);

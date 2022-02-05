@@ -18,9 +18,6 @@ int main(int argc, char *argv[])
     int flags;
     VideoState *videostate;
     input_filename = argv[1];
-    AVFormatContext* av_format_ctx = avformat_alloc_context();
-    avformat_open_input(&av_format_ctx, input_filename, NULL, NULL);
-    AVInputFormat* input_fmt = av_find_input_format(av_format_ctx->iformat->name);
 
     flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 
@@ -53,7 +50,7 @@ int main(int argc, char *argv[])
         std::cout<<"ERROR: Could not setup a window or renderer!"<<std::endl;
         return -1;
     }    
-    videostate = stream_open(input_filename, input_fmt);
+    videostate = stream_open(input_filename);
     if(!videostate){
         std::cout<<"ERROR: Failed to initialize VideoState!"<<std::endl;
         return -1;
