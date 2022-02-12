@@ -5,6 +5,8 @@ project(Liquid)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(imgui_render "SDL")
+
 if (WIN32)
     message(STATUS ">>> Not Linux")
     set(CMAKE_EXE_LINKER_FLAGS "-static")
@@ -18,11 +20,15 @@ add_executable(liquid ${SOURCES})
 
 add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
+add_subdirectory(vendor/imgui)
 add_subdirectory(vendor/glad)
+
+
 
 target_link_libraries(liquid
     ffmpeg
     SDL2main
     SDL2-static
     glad
+    imgui
 )

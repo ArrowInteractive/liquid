@@ -3,6 +3,8 @@
 */
 
 #include "liquid.hpp"
+#include <imgui.h>
+#include <imgui_impl_sdlrenderer.h>
 
 /*
 **  Functions
