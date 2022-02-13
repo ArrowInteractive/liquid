@@ -1031,7 +1031,7 @@ int create_window(){
     if (!window || !renderer){
         return -1; 
     }
-
+    init_imgui(window,renderer);  
     return 0;
 }
 
@@ -1318,13 +1318,13 @@ void video_display(VideoState *videostate)
 {
     if (!videostate->width)
         video_open(videostate);
-
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     if (videostate->audio_st && videostate->show_mode != SHOW_MODE_VIDEO)
         video_audio_display(videostate);
     else if (videostate->video_st)
         video_image_display(videostate);
+    update_imgui(renderer);
     SDL_RenderPresent(renderer);
 }
 
@@ -2002,10 +2002,10 @@ void event_loop(VideoState *videostate)
 {
     SDL_Event event;
     double incr, pos, frac;
-
     for (;;) {
         double x;
         refresh_loop_wait_event(videostate, &event);
+
         switch (event.type) {
         case SDL_KEYDOWN:
             if (exit_on_keydown || event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
@@ -2189,6 +2189,7 @@ void event_loop(VideoState *videostate)
         default:
             break;
         }
+        imgui_event_handler(event);
     }
 }
 
@@ -2360,6 +2361,8 @@ void do_exit(VideoState *videostate)
         SDL_DestroyRenderer(renderer);
     if (window)
         SDL_DestroyWindow(window);
+
+    destroy_imgui_data();
     SDL_Quit();
     exit(0);
 }

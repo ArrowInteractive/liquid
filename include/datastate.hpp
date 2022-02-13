@@ -6,6 +6,7 @@
 
 #include "packetqueue.hpp"
 #include "framequeue.hpp"
+#include "ui.hpp"
 
 /*
 **  Macros
@@ -245,6 +246,7 @@ static SDL_RendererFlip need_flip;
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
+static SDL_GLContext context;
 
 static const struct TextureFormatEntry {
     enum AVPixelFormat format;

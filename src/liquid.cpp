@@ -3,8 +3,7 @@
 */
 
 #include "liquid.hpp"
-#include <imgui.h>
-#include <imgui_impl_sdlrenderer.h>
+#include "ui.hpp"
 
 /*
 **  Functions
@@ -51,14 +50,12 @@ int main(int argc, char *argv[])
     if(create_window() != 0){
         std::cout<<"ERROR: Could not setup a window or renderer!"<<std::endl;
         return -1;
-    }    
+    }  
     videostate = stream_open(input_filename);
     if(!videostate){
         std::cout<<"ERROR: Failed to initialize VideoState!"<<std::endl;
         return -1;
     }
-
     event_loop(videostate);
-
     return 0;
 }
