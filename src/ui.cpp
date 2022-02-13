@@ -57,3 +57,13 @@ void destroy_imgui_data()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
+
+bool want_capture_mouse()
+{
+    return ImGui::GetIO().WantCaptureMouse;
+}
+
+bool want_capture_keyboard()
+{
+    return ImGui::GetIO().WantCaptureKeyboard;
+}

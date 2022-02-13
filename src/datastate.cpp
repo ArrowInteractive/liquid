@@ -2117,18 +2117,21 @@ void event_loop(VideoState *videostate)
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (exit_on_mousedown) {
-                do_exit(videostate);
-                break;
-            }
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                static int64_t last_mouse_left_click = 0;
-                if (av_gettime_relative() - last_mouse_left_click <= 500000) {
-                    toggle_full_screen(videostate);
-                    videostate->force_refresh = 1;
-                    last_mouse_left_click = 0;
-                } else {
-                    last_mouse_left_click = av_gettime_relative();
+            if(!want_capture_mouse())
+            {
+                if (exit_on_mousedown) {
+                    do_exit(videostate);
+                    break;
+                }
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    static int64_t last_mouse_left_click = 0;
+                    if (av_gettime_relative() - last_mouse_left_click <= 500000) {
+                        toggle_full_screen(videostate);
+                        videostate->force_refresh = 1;
+                        last_mouse_left_click = 0;
+                    } else {
+                        last_mouse_left_click = av_gettime_relative();
+                    }
                 }
             }
         case SDL_MOUSEMOTION:
