@@ -1031,7 +1031,8 @@ int create_window(){
     if (!window || !renderer){
         return -1; 
     }
-    init_imgui(window,renderer);  
+    init_imgui(window,renderer);
+    
     return 0;
 }
 
@@ -1270,7 +1271,11 @@ retry:
 display:
         /* display picture */
         if (!display_disable && videostate->force_refresh && videostate->show_mode == SHOW_MODE_VIDEO && videostate->pictq.rindex_shown)
+        {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
             video_display(videostate);
+        }
     }
     videostate->force_refresh = 0;
     if (show_status) {
@@ -1324,8 +1329,6 @@ void video_display(VideoState *videostate)
         video_audio_display(videostate);
     else if (videostate->video_st)
         video_image_display(videostate);
-    update_imgui(renderer);
-    SDL_RenderPresent(renderer);
 }
 
 int video_open(VideoState *videostate)
@@ -2210,6 +2213,10 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         remaining_time = REFRESH_RATE;
         if (videostate->show_mode != SHOW_MODE_NONE && (!videostate->paused || videostate->force_refresh))
             video_refresh(videostate, &remaining_time);
+        
+        // Renderer code here
+        update_imgui(renderer);
+        SDL_RenderPresent(renderer);
         SDL_PumpEvents();
     }
 }

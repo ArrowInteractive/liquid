@@ -105,6 +105,7 @@ struct Decoder{
 
 struct VideoState {
     SDL_Thread *read_tid;
+    SDL_Thread *ui_tid;
     AVInputFormat *iformat;
     int abort_request;
     int force_refresh;
@@ -241,6 +242,7 @@ static int64_t cursor_last_shown;
 static int display_disable;
 static int screen_left = SDL_WINDOWPOS_CENTERED;
 static int screen_top = SDL_WINDOWPOS_CENTERED;
+static int is_ui_init = 0;
 static double rdftspeed = 0.02;
 static SDL_RendererFlip need_flip;
 
