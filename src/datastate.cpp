@@ -2214,9 +2214,15 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         if (videostate->show_mode != SHOW_MODE_NONE && (!videostate->paused || videostate->force_refresh))
             video_refresh(videostate, &remaining_time);
         
-        // Renderer code here
+        // Display last received frame here
+        if(videostate->paused){
+            SDL_RenderClear(renderer);
+            if (videostate->audio_st && videostate->show_mode != SHOW_MODE_VIDEO)
+                video_audio_display(videostate);
+            else if (videostate->video_st)
+                video_image_display(videostate);
+        }
         update_imgui(renderer);
-        SDL_RenderPresent(renderer);
         SDL_PumpEvents();
     }
 }
