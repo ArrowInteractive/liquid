@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include "datastate.hpp"
 
 void init_imgui(SDL_Window* window, SDL_Renderer* renderer);
 

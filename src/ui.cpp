@@ -4,7 +4,8 @@
 #include "imgui_impl_sdlrenderer.h"
 #include <SDL2/SDL_opengl.h>
 
-int counter=0;
+
+int test;
 
 void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
 {
@@ -30,15 +31,41 @@ void update_imgui(SDL_Renderer* renderer)
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
-    //render definition Here
-    ImGui::ShowDemoWindow();
-    ImGui::Begin("Window");
-    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
 
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    //imgui window flags
+    ImGuiWindowFlags flags = 0;
+    flags |= ImGuiWindowFlags_NoTitleBar;
+    flags |= !ImGuiWindowFlags_MenuBar;
+    flags |= ImGuiWindowFlags_NoResize;
+
+    //render definition Here
+    //ImGui::ShowDemoWindow();
+    ImGui::Begin("Window",(bool *)true,flags);
+
+    ImGui::NewLine();
+    ImGui::NewLine();
+    ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
+    ImGui::SliderInt("time",&test,10,100);
+    ImGui::NewLine();
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
+    ImGui::Button("sound",{35,35});
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*40)/100);
+    ImGui::Button("<",{35,35});
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*45)/100);
+    if(ImGui::Button("play",{35,35}))
+    {
+        //toggle_pause(state);  gives error(compiler problem)
+    }
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*50)/100);
+    if(ImGui::Button(">",{35,35}))
+    {
+
+    }
+
     ImGui::End();
     //imgui Rendering stuff
     ImGui::Render();
