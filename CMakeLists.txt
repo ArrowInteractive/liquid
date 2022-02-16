@@ -24,8 +24,6 @@ add_subdirectory(vendor/SDL)
 add_subdirectory(vendor/imgui)
 add_subdirectory(vendor/glad)
 
-
-
 target_link_libraries(liquid
     ffmpeg
     SDL2main

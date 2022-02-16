@@ -353,6 +353,7 @@ int synchronize_audio(VideoState *videostate, int nb_samples);
 void step_to_next_frame(VideoState *videostate);
 void stream_toggle_pause(VideoState *videostate);
 void stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int seek_by_bytes);
+void find_seek_time();
 
 // Event functions
 void event_loop(VideoState *videostate);
