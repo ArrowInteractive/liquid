@@ -37,13 +37,13 @@ void update_imgui(SDL_Renderer* renderer)
     ImGuiWindowFlags flags = 0;
     flags |= ImGuiWindowFlags_NoTitleBar;
     flags |= !ImGuiWindowFlags_MenuBar;
-    flags |= ImGuiWindowFlags_NoResize;
+    flags |= !ImGuiWindowFlags_NoResize;
 
     //imgui child window flags
     ImGuiWindowFlags child_window_flags = 0;
     child_window_flags |= ImGuiWindowFlags_NoTitleBar;
     child_window_flags |= !ImGuiWindowFlags_MenuBar;
-    child_window_flags |= ImGuiWindowFlags_NoResize;
+    child_window_flags |= !ImGuiWindowFlags_NoResize;
     child_window_flags |= ImGuiWindowFlags_NoMove;
 
 
