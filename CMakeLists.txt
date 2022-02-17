@@ -13,21 +13,23 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif (WIN32)
 
+find_package(SDL2 REQUIRED)
+if ( NOT SDL2_FOUND )
+    message ( FATAL_ERROR ">>> SDL2 not found!" )
+endif ( NOT SDL2_FOUND )
+
+include_directories(${GLEW_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIR})
 include_directories(include)
 
 FILE(GLOB SOURCES src/*.cpp)
 
 add_executable(liquid ${SOURCES})
-
 add_subdirectory(vendor/ffmpeg)
-add_subdirectory(vendor/SDL)
 add_subdirectory(vendor/imgui)
-add_subdirectory(vendor/glad)
 
 target_link_libraries(liquid
     ffmpeg
-    SDL2main
-    SDL2-static
-    glad
     imgui
+    ${SDL2_LIBRARY}
 )
