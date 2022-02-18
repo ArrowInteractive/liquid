@@ -106,7 +106,7 @@ struct Decoder{
 struct VideoState {
     SDL_Thread *read_tid;
     SDL_Thread *ui_tid;
-    AVInputFormat *iformat;
+    const AVInputFormat *iformat;
     int abort_request;
     int force_refresh;
     int paused;

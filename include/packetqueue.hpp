@@ -22,6 +22,7 @@ extern "C"{
     #include "libswscale/swscale.h"
     #include "libavutil/opt.h"
     #include "libavcodec/avfft.h"
+    #include "libavcodec/avcodec.h"
     #include "libswresample/swresample.h"
 }
 
