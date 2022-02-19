@@ -13,11 +13,8 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif (WIN32)
 
-find_package(OpenGL REQUIRED)
-
 include_directories(include)
 include_directories(vendor/sdl-gpu/include)
-include_directories(${OPENGL_INCLUDE_DIRS})
 
 FILE(GLOB SOURCES src/*.cpp)
 
@@ -30,7 +27,6 @@ add_subdirectory(vendor/glew-cmake)
 
 target_link_libraries(liquid
     ffmpeg
-    ${OPENGL_LIBRARIES}
     SDL2main
     SDL2-static
     libglew_static
