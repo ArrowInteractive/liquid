@@ -14,12 +14,10 @@ if (WIN32)
 endif (WIN32)
 
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
 
 include_directories(include)
 include_directories(vendor/sdl-gpu/include)
 include_directories(${OPENGL_INCLUDE_DIRS})
-include_directories(${GLEW_INCLUDE_DIRS})
 
 FILE(GLOB SOURCES src/*.cpp)
 
@@ -28,13 +26,14 @@ add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
 add_subdirectory(vendor/sdl-gpu)
 add_subdirectory(vendor/imgui)
+add_subdirectory(vendor/glew-cmake)
 
 target_link_libraries(liquid
     ffmpeg
     ${OPENGL_LIBRARIES}
-    ${GLEW_LIBRARIES}
     SDL2main
     SDL2-static
+    libglew_static
     SDL_gpu
     imgui
 )
