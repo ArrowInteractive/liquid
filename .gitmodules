@@ -4,3 +4,6 @@
 [submodule "vendor/imgui"]
 	path = vendor/imgui
 	url = https://github.com/Curve/imgui-cmake
+[submodule "vendor/sdl-gpu"]
+	path = vendor/sdl-gpu
+	url = https://github.com/grimfang4/sdl-gpu

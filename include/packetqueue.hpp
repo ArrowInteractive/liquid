@@ -28,6 +28,7 @@ extern "C"{
 
 #include <iostream>
 #include "SDL.h"
+#include "SDL_gpu.h"
 
 /*
 **  Structs
