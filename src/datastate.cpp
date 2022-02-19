@@ -1330,6 +1330,8 @@ void video_display(VideoState *videostate)
         video_audio_display(videostate);
     else if (videostate->video_st)
         video_image_display(videostate);
+    update_imgui(renderer);
+    SDL_RenderPresent(renderer);
 }
 
 int video_open(VideoState *videostate)
@@ -2222,8 +2224,10 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
                 video_audio_display(videostate);
             else if (videostate->video_st)
                 video_image_display(videostate);
+            
+            update_imgui(renderer);
+            SDL_RenderPresent(renderer);
         }
-        update_imgui(renderer);
         SDL_PumpEvents();
     }
 }

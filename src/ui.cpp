@@ -39,7 +39,6 @@ void update_imgui(SDL_Renderer* renderer)
     //imgui Rendering stuff
     ImGui::Render();
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-    SDL_RenderPresent(renderer);
 }
 
 void imgui_event_handler(SDL_Event& event){
