@@ -18,12 +18,12 @@ find_package(GLEW REQUIRED)
 
 include_directories(include)
 include_directories(vendor/sdl-gpu/include)
+include_directories(${OPENGL_INCLUDE_DIRS})
 include_directories(${GLEW_INCLUDE_DIRS})
 
 FILE(GLOB SOURCES src/*.cpp)
 
 add_executable(liquid ${SOURCES})
-
 add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
 add_subdirectory(vendor/sdl-gpu)
@@ -31,7 +31,7 @@ add_subdirectory(vendor/imgui)
 
 target_link_libraries(liquid
     ffmpeg
-    ${OPENGL_gl_LIBRARY}
+    ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
     SDL2main
     SDL2-static
