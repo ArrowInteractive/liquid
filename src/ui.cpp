@@ -1,9 +1,20 @@
+/*
+**  Includes
+*/
+
 #include "ui.hpp"
+
+/*
+**  Globals
+*/
 
 int counter=0;
 
-void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
-{
+/*
+**  Functions
+*/
+
+void init_imgui(SDL_Window* window, SDL_Renderer* renderer){
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -20,8 +31,7 @@ void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
     ImGui_ImplSDLRenderer_Init(renderer);
 }
 
-void update_imgui(SDL_Renderer* renderer)
-{   
+void update_imgui(SDL_Renderer* renderer){   
     // Start the Dear ImGui frame
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -29,7 +39,7 @@ void update_imgui(SDL_Renderer* renderer)
     //render definition Here
     ImGui::ShowDemoWindow();
     ImGui::Begin("Window");
-    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+    if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
         counter++;
     ImGui::SameLine();
     ImGui::Text("counter = %d", counter);
@@ -45,20 +55,17 @@ void imgui_event_handler(SDL_Event& event){
     ImGui_ImplSDL2_ProcessEvent(&event);
 }
 
-void destroy_imgui_data()
-{
+void destroy_imgui_data(){
     // Cleanup
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
 
-bool want_capture_mouse()
-{
+bool want_capture_mouse(){
     return ImGui::GetIO().WantCaptureMouse;
 }
 
-bool want_capture_keyboard()
-{
+bool want_capture_keyboard(){
     return ImGui::GetIO().WantCaptureKeyboard;
 }

@@ -1022,6 +1022,9 @@ int create_window(){
          SDL_WINDOW_ALLOW_HIGHDPI |
          SDL_WINDOW_RESIZABLE
     );
+
+    GPU_Init(640, 480, GPU_DEFAULT_INIT_FLAGS);
+
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(
         window, 
