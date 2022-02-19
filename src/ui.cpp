@@ -1,8 +1,4 @@
 #include <ui.hpp>
-#include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include "imgui_impl_sdlrenderer.h"
-#include <SDL2/SDL_opengl.h>
 
 int counter=0;
 

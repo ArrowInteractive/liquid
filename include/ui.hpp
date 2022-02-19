@@ -1,6 +1,11 @@
 #pragma once
 
-#include <SDL2/SDL.h>
+#include "SDL.h"
+#include "ui.hpp"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdlrenderer.h"
+#include "SDL_opengl.h"
 
 void init_imgui(SDL_Window* window, SDL_Renderer* renderer);
 
