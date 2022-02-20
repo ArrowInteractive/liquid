@@ -22,7 +22,7 @@ add_executable(liquid ${SOURCES})
 add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
 add_subdirectory(vendor/sdl-gpu)
-add_subdirectory(vendor/imgui)
+add_subdirectory(vendor/imgui-cmake)
 add_subdirectory(vendor/glew-cmake)
 
 target_link_libraries(liquid
