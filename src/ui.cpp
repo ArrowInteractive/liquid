@@ -1,29 +1,25 @@
-/*
-**  Includes
-*/
+#include <ui.hpp>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include "imgui_impl_sdlrenderer.h"
+#include <SDL2/SDL_opengl.h>
 
-#include "ui.hpp"
 
-/*
-**  Globals
-*/
+int test;
+int soundvar;
+bool stay = false;
+static bool first = true;
 
-int counter=0;
-
-/*
-**  Functions
-*/
-
-void init_imgui(SDL_Window* window, SDL_Renderer* renderer){
+void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
+{
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-
+    io.IniFilename = NULL;
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-
     // Setup Platform/Renderer bindings
     // window is the SDL_Window*
     // context is the SDL_GLContext
@@ -31,41 +27,127 @@ void init_imgui(SDL_Window* window, SDL_Renderer* renderer){
     ImGui_ImplSDLRenderer_Init(renderer);
 }
 
-void update_imgui(SDL_Renderer* renderer){   
+void update_imgui(SDL_Renderer* renderer, int width, int height)
+{   
     // Start the Dear ImGui frame
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
-    //render definition Here
-    ImGui::ShowDemoWindow();
-    ImGui::Begin("Window");
-    if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
 
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    //imgui window flags
+    ImGuiWindowFlags flags = 0;
+    flags |= ImGuiWindowFlags_NoTitleBar;
+    flags |= !ImGuiWindowFlags_MenuBar;
+    flags |= !ImGuiWindowFlags_NoResize;
+
+    //imgui child window flags
+    ImGuiWindowFlags child_window_flags = 0;
+    child_window_flags |= ImGuiWindowFlags_NoTitleBar;
+    child_window_flags |= !ImGuiWindowFlags_MenuBar;
+    child_window_flags |= ImGuiWindowFlags_NoResize;
+    child_window_flags |= ImGuiWindowFlags_NoMove;
+
+
+    //imgui style flags
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 12;
+    style.ChildRounding = 12;
+    style.TabRounding = 12;
+    style.FrameRounding = 12;
+    style.GrabRounding = 12;
+
+    ImVec2 win_pos;
+    ImVec2 main_win_pos;
+    ImVec2 win_size;
+    //render definition Here
+    //ImGui::ShowDemoWindow(); //uncomment to show imgui demo window
+    ImGui::Begin("Window",(bool *)true,flags);
+    if (first)
+    {
+        ImVec2 window_size;
+        window_size.x = (width)*80/100;
+        window_size.y = (height)*17/100;
+        ImGui::SetWindowSize(window_size);
+    }
+    win_size = ImGui::GetWindowSize();
+    main_win_pos = {(float)(width*10)/100 ,(float)(height*80)/100 };
+    ImGui::SetWindowPos(main_win_pos);
+    win_pos = ImGui::GetWindowPos();
+    win_pos.x += 120;
+    win_pos.y -= 110;
+    ImGui::NewLine();
+    ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
+    ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
+    ImGui::SliderInt(" ",&test,10,100);
+    ImGui::NewLine();
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
+    if(ImGui::Button("S", {(win_size.x*4)/100, 20}))
+    {
+        stay = !stay;
+    }
+    if(stay)
+    {
+        ImGui::Begin("sound_window",nullptr,child_window_flags);
+        ImGui::SetWindowPos(win_pos);
+        ImGui::PushItemWidth((ImGui::GetWindowWidth()*90)/100);
+        ImGui::VSliderInt("##int",{20,80},&soundvar,0,100);
+        ImGui::End();
+    }
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
+    if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
+    {
+
+    }
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*47.5)/100);
+    if(ImGui::Button("P",{(win_size.x*4)/100, 20}))
+    {
+        //toggle_pause(state);  gives error(compiler problem)
+    }
+
+    ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
+    if(ImGui::Button(">",{(win_size.x*4)/100, 20}))
+    {
+
+    }
+
     ImGui::End();
     //imgui Rendering stuff
     ImGui::Render();
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    //SDL_RenderPresent(renderer);
 }
 
 void imgui_event_handler(SDL_Event& event){
     ImGui_ImplSDL2_ProcessEvent(&event);
 }
 
-void destroy_imgui_data(){
+void destroy_imgui_data()
+{
     // Cleanup
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
 
-bool want_capture_mouse(){
+bool want_capture_mouse()
+{
     return ImGui::GetIO().WantCaptureMouse;
 }
 
-bool want_capture_keyboard(){
+bool want_capture_keyboard()
+{
     return ImGui::GetIO().WantCaptureKeyboard;
+}
+
+void change_imgui_win_size()
+{
+    first = true;
+}
+
+void end_win_size_change()
+{
+    first = false;
 }

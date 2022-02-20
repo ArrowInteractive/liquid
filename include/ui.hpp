@@ -1,23 +1,19 @@
 #pragma once
 
-/*
-**  Includes
-*/
-
-#include "SDL.h"
-#include "ui.hpp"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_sdlrenderer.h"
-#include "SDL_opengl.h"
-
-/*
-**  Functions
-*/
+#include <SDL2/SDL.h>
 
 void init_imgui(SDL_Window* window, SDL_Renderer* renderer);
-void update_imgui(SDL_Renderer* renderer);
+
+void update_imgui(SDL_Renderer* renderer, int width, int height);
+
 void destroy_imgui_data();
+
 void imgui_event_handler(SDL_Event& event);
+
 bool want_capture_mouse();
+
 bool want_capture_keyboard();
+
+void change_imgui_win_size();
+
+void end_win_size_change();

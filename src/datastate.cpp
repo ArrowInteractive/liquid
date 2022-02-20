@@ -1329,7 +1329,7 @@ void video_display(VideoState *videostate)
     SDL_RenderClear(renderer);
     if (videostate->video_st)
         video_image_display(videostate);
-    update_imgui(renderer);
+    update_imgui(renderer, videostate->width, videostate->height);
     SDL_RenderPresent(renderer);
 }
 
@@ -2075,7 +2075,7 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             if (videostate->video_st)
                 video_image_display(videostate);
             
-            update_imgui(renderer);
+            update_imgui(renderer, videostate->width, videostate->height);
             SDL_RenderPresent(renderer);
         }
         SDL_PumpEvents();
