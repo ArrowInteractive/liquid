@@ -1,8 +1,9 @@
-#include <ui.hpp>
+#include "ui.hpp"
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include "imgui_impl_sdlrenderer.h"
 #include <SDL2/SDL_opengl.h>
+#include <iostream>
 
 
 int test;
@@ -38,7 +39,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
     ImGuiWindowFlags flags = 0;
     flags |= ImGuiWindowFlags_NoTitleBar;
     flags |= !ImGuiWindowFlags_MenuBar;
-    flags |= !ImGuiWindowFlags_NoResize;
+    flags |= ImGuiWindowFlags_NoResize;
 
     //imgui child window flags
     ImGuiWindowFlags child_window_flags = 0;
@@ -50,7 +51,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
 
     //imgui style flags
     ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = 12;
+    style.WindowRounding = 5;
     style.ChildRounding = 12;
     style.TabRounding = 12;
     style.FrameRounding = 12;
@@ -59,18 +60,17 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
     ImVec2 win_pos;
     ImVec2 main_win_pos;
     ImVec2 win_size;
+    ImVec2 window_size;
     //render definition Here
     //ImGui::ShowDemoWindow(); //uncomment to show imgui demo window
     ImGui::Begin("Window",(bool *)true,flags);
     if (first)
     {
-        ImVec2 window_size;
-        window_size.x = (width)*80/100;
-        window_size.y = (height)*17/100;
+        window_size = { 384 , 61 };
         ImGui::SetWindowSize(window_size);
     }
     win_size = ImGui::GetWindowSize();
-    main_win_pos = {(float)(width*10)/100 ,(float)(height*80)/100 };
+    main_win_pos = {(float)(width/2) - (window_size.x/2), (float)height - 65};
     ImGui::SetWindowPos(main_win_pos);
     win_pos = ImGui::GetWindowPos();
     win_pos.x += 120;
