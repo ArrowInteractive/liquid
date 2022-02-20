@@ -99,8 +99,6 @@ void stream_close(VideoState *videostate)
     sws_freeContext(videostate->img_convert_ctx);
     sws_freeContext(videostate->sub_convert_ctx);
     av_free(videostate->filename);
-    if (videostate->vis_texture)
-        SDL_DestroyTexture(videostate->vis_texture);
     if (videostate->vid_texture)
         SDL_DestroyTexture(videostate->vid_texture);
     if (videostate->sub_texture)
@@ -1329,9 +1327,7 @@ void video_display(VideoState *videostate)
         video_open(videostate);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    if (videostate->audio_st && videostate->show_mode != SHOW_MODE_VIDEO)
-        video_audio_display(videostate);
-    else if (videostate->video_st)
+    if (videostate->video_st)
         video_image_display(videostate);
     update_imgui(renderer);
     SDL_RenderPresent(renderer);
@@ -1358,148 +1354,6 @@ int video_open(VideoState *videostate)
     videostate->height = h;
 
     return 0;
-}
-
-void video_audio_display(VideoState *videostate)
-{
-    int i, i_start, x, y1, y, ys, delay, n, nb_display_channels;
-    int ch, channels, h, h2;
-    int64_t time_diff;
-    int rdft_bits, nb_freq;
-
-    for (rdft_bits = 1; (1 << rdft_bits) < 2 * videostate->height; rdft_bits++)
-        ;
-    nb_freq = 1 << (rdft_bits - 1);
-
-    /* compute display index : center on currently output samples */
-    channels = videostate->audio_tgt.channels;
-    nb_display_channels = channels;
-    if (!videostate->paused) {
-        int data_used= videostate->show_mode == SHOW_MODE_WAVES ? videostate->width : (2*nb_freq);
-        n = 2 * channels;
-        delay = videostate->audio_write_buf_size;
-        delay /= n;
-
-        /* to be more precise, we take into account the time spent since
-           the last buffer computation */
-        if (audio_callback_time) {
-            time_diff = av_gettime_relative() - audio_callback_time;
-            delay -= (time_diff * videostate->audio_tgt.freq) / 1000000;
-        }
-
-        delay += 2 * data_used;
-        if (delay < data_used)
-            delay = data_used;
-
-        i_start= x = compute_mod(videostate->sample_array_index - delay * channels, SAMPLE_ARRAY_SIZE);
-        if (videostate->show_mode == SHOW_MODE_WAVES) {
-            h = INT_MIN;
-            for (i = 0; i < 1000; i += channels) {
-                int idx = (SAMPLE_ARRAY_SIZE + x - i) % SAMPLE_ARRAY_SIZE;
-                int a = videostate->sample_array[idx];
-                int b = videostate->sample_array[(idx + 4 * channels) % SAMPLE_ARRAY_SIZE];
-                int c = videostate->sample_array[(idx + 5 * channels) % SAMPLE_ARRAY_SIZE];
-                int d = videostate->sample_array[(idx + 9 * channels) % SAMPLE_ARRAY_SIZE];
-                int score = a - d;
-                if (h < score && (b ^ c) < 0) {
-                    h = score;
-                    i_start = idx;
-                }
-            }
-        }
-
-        videostate->last_i_start = i_start;
-    } else {
-        i_start = videostate->last_i_start;
-    }
-
-    if (videostate->show_mode == SHOW_MODE_WAVES) {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-
-        /* total height for one channel */
-        h = videostate->height / nb_display_channels;
-        /* graph height / 2 */
-        h2 = (h * 9) / 20;
-        for (ch = 0; ch < nb_display_channels; ch++) {
-            i = i_start + ch;
-            y1 = videostate->ytop + ch * h + (h / 2); /* position of center line */
-            for (x = 0; x < videostate->width; x++) {
-                y = (videostate->sample_array[i] * h2) >> 15;
-                if (y < 0) {
-                    y = -y;
-                    ys = y1 - y;
-                } else {
-                    ys = y1;
-                }
-                fill_rectangle(videostate->xleft + x, ys, 1, y);
-                i += channels;
-                if (i >= SAMPLE_ARRAY_SIZE)
-                    i -= SAMPLE_ARRAY_SIZE;
-            }
-        }
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-
-        for (ch = 1; ch < nb_display_channels; ch++) {
-            y = videostate->ytop + ch * h;
-            fill_rectangle(videostate->xleft, y, videostate->width, 1);
-        }
-    } else {
-        if (realloc_texture(&videostate->vis_texture, SDL_PIXELFORMAT_ARGB8888, videostate->width, videostate->height, SDL_BLENDMODE_NONE, 1) < 0)
-            return;
-
-        if (videostate->xpos >= videostate->width)
-            videostate->xpos = 0;
-        nb_display_channels= FFMIN(nb_display_channels, 2);
-        if (rdft_bits != videostate->rdft_bits) {
-            av_rdft_end(videostate->rdft);
-            av_free(videostate->rdft_data);
-            videostate->rdft = av_rdft_init(rdft_bits, DFT_R2C);
-            videostate->rdft_bits = rdft_bits;
-            videostate->rdft_data = (FFTSample *)av_malloc_array(nb_freq, 4 *sizeof(*videostate->rdft_data));
-        }
-        if (!videostate->rdft || !videostate->rdft_data){
-            std::cout<<"ERROR: Failed to allocate buffers for RDFT, switching to waves display."<<std::endl;
-            videostate->show_mode = SHOW_MODE_WAVES;
-        } else {
-            FFTSample *data[2];
-            SDL_Rect rect = {.x = videostate->xpos, .y = 0, .w = 1, .h = videostate->height};
-            uint32_t *pixels;
-            int pitch;
-            for (ch = 0; ch < nb_display_channels; ch++) {
-                data[ch] = videostate->rdft_data + 2 * nb_freq * ch;
-                i = i_start + ch;
-                for (x = 0; x < 2 * nb_freq; x++) {
-                    double w = (x-nb_freq) * (1.0 / nb_freq);
-                    data[ch][x] = videostate->sample_array[i] * (1.0 - w * w);
-                    i += channels;
-                    if (i >= SAMPLE_ARRAY_SIZE)
-                        i -= SAMPLE_ARRAY_SIZE;
-                }
-                av_rdft_calc(videostate->rdft, data[ch]);
-            }
-            /* Least efficient way to do this, we should of course
-             * directly access it but it is more than fast enough. */
-            if (!SDL_LockTexture(videostate->vis_texture, &rect, (void **)&pixels, &pitch)) {
-                pitch >>= 2;
-                pixels += pitch * videostate->height;
-                for (y = 0; y < videostate->height; y++) {
-                    double w = 1 / sqrt(nb_freq);
-                    int a = sqrt(w * sqrt(data[0][2 * y + 0] * data[0][2 * y + 0] + data[0][2 * y + 1] * data[0][2 * y + 1]));
-                    int b = (nb_display_channels == 2 ) ? sqrt(w * hypot(data[1][2 * y + 0], data[1][2 * y + 1]))
-                                                        : a;
-                    a = FFMIN(a, 255);
-                    b = FFMIN(b, 255);
-                    pixels -= pitch;
-                    *pixels = (a << 16) + (b << 8) + ((a+b) >> 1);
-                }
-                SDL_UnlockTexture(videostate->vis_texture);
-            }
-            SDL_RenderCopy(renderer, videostate->vis_texture, NULL, NULL);
-        }
-        if (!videostate->paused)
-            videostate->xpos++;
-    }
 }
 
 void fill_rectangle(int x, int y, int w, int h)
@@ -2068,9 +1922,6 @@ void event_loop(VideoState *videostate)
             case SDLK_t:
                 stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
                 break;
-            case SDLK_w:
-                toggle_audio_display(videostate);
-                break;
             case SDLK_PAGEUP:
                 if (videostate->ic->nb_chapters <= 1) {
                     incr = 600.0;
@@ -2186,15 +2037,13 @@ void event_loop(VideoState *videostate)
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     screen_width  = videostate->width  = event.window.data1;
                     screen_height = videostate->height = event.window.data2;
-                    if (videostate->vis_texture) {
-                        SDL_DestroyTexture(videostate->vis_texture);
-                        videostate->vis_texture = NULL;
-                    }
                 case SDL_WINDOWEVENT_EXPOSED:
                     videostate->force_refresh = 1;
             }
             break;
         case SDL_QUIT:
+            do_exit(videostate);
+            break;
         case FF_QUIT_EVENT:
             do_exit(videostate);
             break;
@@ -2223,9 +2072,7 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         // Display last received frame here
         if(videostate->paused){
             SDL_RenderClear(renderer);
-            if (videostate->audio_st && videostate->show_mode != SHOW_MODE_VIDEO)
-                video_audio_display(videostate);
-            else if (videostate->video_st)
+            if (videostate->video_st)
                 video_image_display(videostate);
             
             update_imgui(renderer);
@@ -2331,18 +2178,6 @@ void stream_cycle_channel(VideoState *videostate, int codec_type)
     std::cout<<"LOG: Switching stream from "<<old_index<<" to "<<stream_index<<std::endl;
     stream_component_close(videostate, old_index);
     stream_component_open(videostate, stream_index);
-}
-
-void toggle_audio_display(VideoState *videostate)
-{
-    int next = videostate->show_mode;
-    do {
-        next = (next + 1) % SHOW_MODE_NB;
-    } while (next != videostate->show_mode && (next == SHOW_MODE_VIDEO && !videostate->video_st || next != SHOW_MODE_VIDEO && !videostate->audio_st));
-    if (videostate->show_mode != next) {
-        videostate->force_refresh = 1;
-        videostate->show_mode = static_cast<ShowMode>(next);
-    }
 }
 
 void seek_chapter(VideoState *videostate, int incr)

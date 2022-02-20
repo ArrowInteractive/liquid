@@ -170,7 +170,6 @@ struct VideoState {
     FFTSample *rdft_data;
     int xpos;
     double last_vis_time;
-    SDL_Texture *vis_texture;
     SDL_Texture *sub_texture;
     SDL_Texture *vid_texture;
 
@@ -334,7 +333,6 @@ void video_refresh(void *arg, double *remaining_time);
 void update_video_pts(VideoState *videostate, double pts, int64_t pos, int serial);
 void video_display(VideoState *videostate);
 int video_open(VideoState *videostate);
-void video_audio_display(VideoState *videostate);
 void fill_rectangle(int x, int y, int w, int h);
 int compute_mod(int a, int b);
 int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, int new_height, SDL_BlendMode blendmode, int init_texture);
@@ -362,7 +360,6 @@ void toggle_pause(VideoState *videostate);
 void toggle_mute(VideoState *videostate);
 void update_volume(VideoState *videostate, int sign, double step);
 void stream_cycle_channel(VideoState *videostate, int codec_type);
-void toggle_audio_display(VideoState *videostate);
 void seek_chapter(VideoState *videostate, int incr);
 
 // Exit functions
