@@ -113,6 +113,13 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
 
     }
 
+    ImGui::SameLine((ImGui::GetWindowWidth()*80)/100);
+    if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
+    {
+
+    }
+
+
     ImGui::End();
     //imgui Rendering stuff
     ImGui::Render();
