@@ -1020,7 +1020,7 @@ int create_window(){
          SDL_WINDOW_ALLOW_HIGHDPI |
          SDL_WINDOW_RESIZABLE
     );
-    
+
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(
         window, 
@@ -2076,6 +2076,13 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             update_imgui(renderer, videostate->width, videostate->height);
             SDL_RenderPresent(renderer);
         }
+
+        // Handle UI events
+        if(req_pause){
+            toggle_pause(videostate);
+            req_pause = !req_pause;
+        }
+
         SDL_PumpEvents();
     }
 }

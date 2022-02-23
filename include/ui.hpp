@@ -12,6 +12,12 @@
 #include <iostream>
 
 /*
+**  Globals
+*/
+
+extern bool req_pause;
+
+/*
 **  Functions
 */
 

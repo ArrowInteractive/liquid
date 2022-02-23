@@ -4,6 +4,7 @@ int test;
 int soundvar;
 bool stay = false;
 static bool first = true;
+bool req_pause = false;
 
 void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
 {
@@ -98,7 +99,8 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
     ImGui::SameLine((ImGui::GetWindowWidth()*47.5)/100);
     if(ImGui::Button("P",{(win_size.x*4)/100, 20}))
     {
-        //toggle_pause(state);  gives error(compiler problem)
+        req_pause = !req_pause;
+        std::cout<<"Requesting pause through UI."<<std::endl;
     }
 
     ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
@@ -118,7 +120,6 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
     //imgui Rendering stuff
     ImGui::Render();
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-    //SDL_RenderPresent(renderer);
 }
 
 void imgui_event_handler(SDL_Event& event){
