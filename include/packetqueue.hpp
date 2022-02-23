@@ -26,8 +26,8 @@ extern "C"{
     #include "libswresample/swresample.h"
 }
 
-#include <iostream>
 #include "SDL.h"
+#include <iostream>
 
 /*
 **  Structs

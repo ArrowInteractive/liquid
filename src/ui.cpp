@@ -1,10 +1,22 @@
+/*
+**  Includes
+*/
+
 #include "ui.hpp"
+
+/*
+**  Globals
+*/
 
 int test;
 int soundvar;
 bool stay = false;
 static bool first = true;
 bool req_pause = false;
+
+/*
+**  Functions
+*/
 
 void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
 {

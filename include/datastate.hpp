@@ -4,9 +4,9 @@
 **  Includes
 */
 
+#include "ui.hpp"
 #include "packetqueue.hpp"
 #include "framequeue.hpp"
-#include "ui.hpp"
 
 /*
 **  Macros

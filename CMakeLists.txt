@@ -5,9 +5,6 @@ project(Liquid)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(imgui_render "SDL")
-set(imgui_backend "SDL")
-
 if (WIN32)
     message(STATUS ">>> Not Linux")
     set(CMAKE_EXE_LINKER_FLAGS "-static")
