@@ -14,22 +14,17 @@ if (WIN32)
 endif (WIN32)
 
 include_directories(include)
-include_directories(vendor/sdl-gpu/include)
 
 FILE(GLOB SOURCES src/*.cpp)
 
 add_executable(liquid ${SOURCES})
 add_subdirectory(vendor/ffmpeg)
 add_subdirectory(vendor/SDL)
-add_subdirectory(vendor/sdl-gpu)
 add_subdirectory(vendor/imgui-cmake)
-add_subdirectory(vendor/glew-cmake)
 
 target_link_libraries(liquid
     ffmpeg
     SDL2main
     SDL2-static
-    libglew_static
-    SDL_gpu
     imgui
 )

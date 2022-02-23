@@ -1,12 +1,6 @@
 [submodule "vendor/SDL"]
 	path = vendor/SDL
 	url = https://github.com/libsdl-org/SDL
-[submodule "vendor/sdl-gpu"]
-	path = vendor/sdl-gpu
-	url = https://github.com/grimfang4/sdl-gpu
-[submodule "vendor/glew-cmake"]
-	path = vendor/glew-cmake
-	url = https://github.com/Perlmint/glew-cmake
 [submodule "vendor/imgui-cmake"]
 	path = vendor/imgui-cmake
 	url = https://github.com/5trange/imgui-cmake
