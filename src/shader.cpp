@@ -137,12 +137,7 @@ static SDL_bool InitShaders()
             glLinkProgramARB &&
             glShaderSourceARB &&
             glUniform1iARB &&
-            glUseProgramObjectARB) {
-            shaders_supported = SDL_TRUE;
-        }
-    }
-
-    if (!shaders_supported) {
+            glUseProgramObjectARB) void InitGL(int Width, int Height) 
         return SDL_FALSE;
     }
 
@@ -172,7 +167,7 @@ static int
 power_of_two(int input)
 {
     int value = 1;
-
+void InitGL(int Width, int Height) 
     while (value < input) {
         value <<= 1;
     }
@@ -259,5 +254,65 @@ void InitGL(int Width, int Height)                    /* We call this right afte
     glMatrixMode(GL_MODELVIEW);
 }
 
+/* The main drawing function. */
+void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat * texcoord)
+{
+    /* Texture coordinate lookup, to make it simple */
+    enum {
+        MINX,
+        MINY,
+        MAXX,
+        MAXY
+    };
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);        /* Clear The Screen And The Depth Buffer */
+    glLoadIdentity();                /* Reset The View */
+
+    glTranslatef(-1.5f,0.0f,0.0f);        /* Move Left 1.5 Units */
+
+    /* draw a triangle (in smooth coloring mode) */
+    glBegin(GL_POLYGON);                /* start drawing a polygon */
+    glColor3f(1.0f,0.0f,0.0f);            /* Set The Color To Red */
+    glVertex3f( 0.0f, 1.0f, 0.0f);        /* Top */
+    glColor3f(0.0f,1.0f,0.0f);            /* Set The Color To Green */
+    glVertex3f( 1.0f,-1.0f, 0.0f);        /* Bottom Right */
+    glColor3f(0.0f,0.0f,1.0f);            /* Set The Color To Blue */
+    glVertex3f(-1.0f,-1.0f, 0.0f);        /* Bottom Left */
+    glEnd();                    /* we're done with the polygon (smooth color interpolation) */
+
+    glTranslatef(3.0f,0.0f,0.0f);         /* Move Right 3 Units */
+
+    /* Enable blending */
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    /* draw a textured square (quadrilateral) */
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glColor3f(1.0f,1.0f,1.0f);
+    if (shaders_supported) {
+        glUseProgramObjectARB(shaders[current_shader].program);
+    }
+
+    glBegin(GL_QUADS);                /* start drawing a polygon (4 sided) */
+    glTexCoord2f(texcoord[MINX], texcoord[MINY]);
+    glVertex3f(-1.0f, 1.0f, 0.0f);        /* Top Left */
+    glTexCoord2f(texcoord[MAXX], texcoord[MINY]);
+    glVertex3f( 1.0f, 1.0f, 0.0f);        /* Top Right */
+    glTexCoord2f(texcoord[MAXX], texcoord[MAXY]);
+    glVertex3f( 1.0f,-1.0f, 0.0f);        /* Bottom Right */
+    glTexCoord2f(texcoord[MINX], texcoord[MAXY]);
+    glVertex3f(-1.0f,-1.0f, 0.0f);        /* Bottom Left */
+    glEnd();                    /* done with the polygon */
+
+    if (shaders_supported) {
+        glUseProgramObjectARB(0);
+    }
+    glDisable(GL_TEXTURE_2D);
+
+    /* swap buffers to display, since we're double buffered. */
+    SDL_GL_SwapWindow(window);
+}
 
 #endif

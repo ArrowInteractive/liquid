@@ -32,3 +32,5 @@ static void QuitShaders();
 GLuint SDL_GL_LoadTexture(SDL_Surface * surface, GLfloat * texcoord);
 
 void InitGL(int Width, int Height);
+
+void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat * texcoord);
