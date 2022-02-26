@@ -7,6 +7,7 @@
 #include "ui.hpp"
 #include "packetqueue.hpp"
 #include "framequeue.hpp"
+#include "shader.hpp"
 
 /*
 **  Macros
@@ -50,7 +51,6 @@ static unsigned sws_flags = SWS_LANCZOS;
 
 #define FFSWAP(type,a,b) do{type SWAP_tmp= b; b= a; a= SWAP_tmp;}while(0)
 #define FF_ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
-
 /*
 **  Structs
 */

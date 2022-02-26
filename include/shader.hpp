@@ -1,36 +1,66 @@
 #pragma once
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 
-static SDL_bool shaders_supported;
+/*
+**  Includes
+*/
 
-enum {
+#include "SDL.h"
+#include "SDL_opengl.h"
+
+/*
+**  Enums
+*/
+
+enum{
     SHADER_COLOR,
     SHADER_TEXTURE,
     SHADER_TEXCOORDS,
     NUM_SHADERS
 };
 
-typedef struct {
+/*
+**  Structs
+*/
+
+struct ShaderData{
     GLhandleARB program;
     GLhandleARB vert_shader;
     GLhandleARB frag_shader;
     const char *vert_source;
     const char *frag_source;
-} ShaderData;
+};
 
-static SDL_bool CompileShader(GLhandleARB shader, const char *source);
+/*
+**  Gloabls
+*/
 
-static SDL_bool CompileShaderProgram(ShaderData *data);
+extern PFNGLATTACHOBJECTARBPROC glAttachObjectARB;
+extern PFNGLCOMPILESHADERARBPROC glCompileShaderARB;
+extern PFNGLCREATEPROGRAMOBJECTARBPROC glCreateProgramObjectARB;
+extern PFNGLCREATESHADEROBJECTARBPROC glCreateShaderObjectARB;
+extern PFNGLDELETEOBJECTARBPROC glDeleteObjectARB;
+extern PFNGLGETINFOLOGARBPROC glGetInfoLogARB;
+extern PFNGLGETOBJECTPARAMETERIVARBPROC glGetObjectParameterivARB;
+extern PFNGLGETUNIFORMLOCATIONARBPROC glGetUniformLocationARB;
+extern PFNGLLINKPROGRAMARBPROC glLinkProgramARB;
+extern PFNGLSHADERSOURCEARBPROC glShaderSourceARB;
+extern PFNGLUNIFORM1IARBPROC glUniform1iARB;
+extern PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
+extern ShaderData shaders[NUM_SHADERS];
 
-static void DestroyShaderProgram(ShaderData *data);
+/*
+**  Functions
+*/
 
-static SDL_bool InitShaders();
+bool compile_shader(GLhandleARB shader, const char *source);
+bool compile_shader_program(ShaderData *data);
+void destroy_shader_program(ShaderData *data);
+bool init_shaders();
+int power_of_two(int input);
+void quit_shaders();
+GLuint SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord);
+void init_gl(int width, int height);
+void draw_gl_scene(SDL_Window *window, GLuint texture, GLfloat * texcoord);
 
-static void QuitShaders();
 
-GLuint SDL_GL_LoadTexture(SDL_Surface * surface, GLfloat * texcoord);
 
-void InitGL(int Width, int Height);
-
-void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat * texcoord);

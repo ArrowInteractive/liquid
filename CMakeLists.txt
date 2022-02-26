@@ -10,7 +10,10 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif (WIN32)
 
+find_package(OpenGL REQUIRED)
+
 include_directories(include)
+include_directories(${OPENGL_INCLUDE_DIRS})
 
 FILE(GLOB SOURCES src/*.cpp)
 
@@ -23,4 +26,5 @@ target_link_libraries(liquid
     SDL2main
     SDL2-static
     imgui
+    ${OPENGL_LIBRARIES}
 )

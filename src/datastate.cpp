@@ -1021,6 +1021,9 @@ int create_window(){
          SDL_WINDOW_RESIZABLE
     );
 
+    SDL_GL_CreateContext(window);
+    init_gl(640, 480);
+
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(
         window, 
