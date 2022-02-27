@@ -47,6 +47,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
     flags |= ImGuiWindowFlags_NoTitleBar;
     flags |= !ImGuiWindowFlags_MenuBar;
     flags |= ImGuiWindowFlags_NoResize;
+    flags |= ImGuiWindowFlags_NoMove;
 
     //imgui child window flags
     ImGuiWindowFlags child_window_flags = 0;
@@ -69,7 +70,6 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
     ImVec2 win_size;
     ImVec2 window_size;
     //render definition Here
-    //ImGui::ShowDemoWindow(); //uncomment to show imgui demo window
     ImGui::Begin("Window",(bool *)true,flags);
     if (first)
     {
