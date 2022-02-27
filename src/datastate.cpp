@@ -50,6 +50,7 @@ int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int is_ui_init = 0;
 double rdftspeed = 0.02;
+double pos;
 SDL_RendererFlip need_flip;
 
 SDL_Window *window;
@@ -1911,6 +1912,34 @@ void stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int seek_by_b
     }
 }
 
+void execute_seek(VideoState *videostate, double incr)
+{
+    if (seek_by_bytes) {
+        pos = -1;
+        if (pos < 0 && videostate->video_stream >= 0)
+            pos = frame_queue_last_pos(&videostate->pictq);
+        if (pos < 0 && videostate->audio_stream >= 0)
+            pos = frame_queue_last_pos(&videostate->sampq);
+        if (pos < 0)
+            pos = avio_tell(videostate->ic->pb);
+        if (videostate->ic->bit_rate)
+            incr *= videostate->ic->bit_rate / 8.0;
+        else
+            incr *= 180000.0;
+        pos += incr;
+        stream_seek(videostate, pos, incr, 1);
+    } 
+    else {
+        pos = get_master_clock(videostate);
+        if (isnan(pos))
+            pos = (double)videostate->seek_pos / AV_TIME_BASE;
+        pos += incr;
+        if (videostate->ic->start_time != AV_NOPTS_VALUE && pos < videostate->ic->start_time / (double)AV_TIME_BASE)
+            pos = videostate->ic->start_time / (double)AV_TIME_BASE;
+        stream_seek(videostate, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    }
+}
+
 /*
 **  Event functions
 */
@@ -1918,7 +1947,7 @@ void stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int seek_by_b
 void event_loop(VideoState *videostate)
 {
     SDL_Event event;
-    double incr, pos, frac;
+    double incr, frac;
     for (;;) {
         double x;
         refresh_loop_wait_event(videostate, &event);
@@ -1992,10 +2021,10 @@ void event_loop(VideoState *videostate)
                 break;
             case SDLK_LEFT:
                 incr = seek_interval ? -seek_interval : -10.0;
-                goto do_seek;
+                execute_seek(videostate, incr);
             case SDLK_RIGHT:
                 incr = seek_interval ? seek_interval : 10.0;
-                goto do_seek;
+                execute_seek(videostate, incr);
             case SDLK_UP:
                 incr = 60.0;
                 goto do_seek;
