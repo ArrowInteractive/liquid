@@ -92,7 +92,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::SliderInt(" ",&test,10,100);
         ImGui::NewLine();
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
+        ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
         if(ImGui::Button("S", {(win_size.x*4)/100, 20}))
         {
             stay = !stay;
@@ -106,10 +106,17 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             ImGui::End();
         }
 
+        ImGui::SameLine((ImGui::GetWindowWidth()*36)/100);
+        if(ImGui::Button("<<",{(win_size.x*5)/100, 20}))
+        {
+            ui_incr = -60.0;
+            req_seek = true;
+        }
+
         ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
         if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
         {
-            ui_incr = -10.0;
+            ui_incr = 10.0;
             req_seek = true;
         }
 
@@ -127,12 +134,24 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*80)/100);
-        if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*58)/100);
+        if(ImGui::Button(">>",{(win_size.x*5)/100, 20}))
+        {
+            ui_incr = 60.0;
+            req_seek = true;
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*65)/100);
+        if(ImGui::Button("M",{(win_size.x*4)/100, 20}))
         {
 
         }
 
+        ImGui::SameLine((ImGui::GetWindowWidth()*86)/100);
+        if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
+        {
+
+        }
 
         ImGui::End();
         //imgui Rendering stuff
