@@ -2148,6 +2148,11 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             req_seek = !req_seek;
         }
 
+        if(req_mute){
+            toggle_mute(videostate);
+            req_mute = !req_mute;
+        }
+        
         SDL_PumpEvents();
     }
 }

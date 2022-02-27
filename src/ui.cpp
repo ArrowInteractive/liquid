@@ -14,6 +14,7 @@ bool stay = false;
 static bool first = true;
 bool req_pause = false;
 bool req_seek = false;
+bool req_mute = false;
 bool draw_ui = true;
 double ui_incr;
 
@@ -109,7 +110,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
         if(ImGui::Button("M",{(win_size.x*4)/100, 20}))
         {
-
+            req_mute = true;
         }
 
         ImGui::SameLine((ImGui::GetWindowWidth()*36)/100);
@@ -122,7 +123,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
         if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
         {
-            ui_incr = 10.0;
+            ui_incr = -10.0;
             req_seek = true;
         }
 
@@ -130,7 +131,6 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         if(ImGui::Button("P",{(win_size.x*4)/100, 20}))
         {
             req_pause = !req_pause;
-            std::cout<<"Requesting pause through UI."<<std::endl;
         }
 
         ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
