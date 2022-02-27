@@ -2051,9 +2051,10 @@ void event_loop(VideoState *videostate)
         case SDL_MOUSEMOTION:
             SDL_RemoveTimer(ui_draw_timer);
             draw_ui = true;
+            cursor_hidden = 1;
             ui_draw_timer = SDL_AddTimer(3000, hide_ui, (void *)false);
             if (cursor_hidden) {
-                SDL_ShowCursor(1);
+                SDL_ShowCursor(SDL_ENABLE);
                 cursor_hidden = 0;
             }
             cursor_last_shown = av_gettime_relative();
@@ -2274,6 +2275,7 @@ void seek_chapter(VideoState *videostate, int incr)
 Uint32 hide_ui(Uint32 interval,void* param)
 {
     draw_ui = false;
+    SDL_ShowCursor(SDL_DISABLE);
     return 0;
 }
 
