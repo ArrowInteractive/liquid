@@ -14,7 +14,9 @@
 */
 
 extern bool req_pause;
+extern bool req_seek;
 extern bool draw_ui;
+extern double ui_incr;
 
 /*
 **  Functions

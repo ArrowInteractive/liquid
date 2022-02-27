@@ -13,7 +13,9 @@ int soundvar;
 bool stay = false;
 static bool first = true;
 bool req_pause = false;
+bool req_seek = false;
 bool draw_ui = true;
+double ui_incr;
 
 /*
 **  Functions
@@ -107,7 +109,8 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
         if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
         {
-
+            ui_incr = -10.0;
+            req_seek = true;
         }
 
         ImGui::SameLine((ImGui::GetWindowWidth()*47.5)/100);
@@ -120,7 +123,8 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
         if(ImGui::Button(">",{(win_size.x*4)/100, 20}))
         {
-
+            ui_incr = 10.0;
+            req_seek = true;
         }
 
         ImGui::SameLine((ImGui::GetWindowWidth()*80)/100);

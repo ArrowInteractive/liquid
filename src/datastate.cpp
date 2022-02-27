@@ -742,9 +742,10 @@ int read_thread(void *arg)
             // of the seek_pos/seek_rel variables
 
             ret = avformat_seek_file(videostate->ic, -1, seek_min, seek_target, seek_max, videostate->seek_flags);
-            if (ret < 0) {
+            if (ret < 0){
                 std::cout<<"ERROR: Could not seek: "<<videostate->ic->url<<std::endl;
-            } else {
+            } 
+            else{
                 if (videostate->audio_stream >= 0)
                     packet_queue_flush(&videostate->audioq);
                 if (videostate->subtitle_stream >= 0)
@@ -819,6 +820,7 @@ int read_thread(void *arg)
         } else {
             videostate->eof = 0;
         }
+        
         /* check if packet videostate in play range specified by user, then queue, otherwise discard */
         stream_start_time = ic->streams[pkt->stream_index]->start_time;
         pkt_ts = pkt->pts == AV_NOPTS_VALUE ? pkt->dts : pkt->pts;
@@ -2139,6 +2141,11 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         if(req_pause){
             toggle_pause(videostate);
             req_pause = !req_pause;
+        }
+
+        if(req_seek){
+            execute_seek(videostate, ui_incr);
+            req_seek = !req_seek;
         }
 
         SDL_PumpEvents();
