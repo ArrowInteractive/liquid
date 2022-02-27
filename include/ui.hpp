@@ -14,6 +14,7 @@
 */
 
 extern bool req_pause;
+extern bool draw_ui;
 
 /*
 **  Functions

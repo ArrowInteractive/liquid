@@ -55,6 +55,7 @@ SDL_RendererFlip need_flip;
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_GLContext context;
+SDL_TimerID ui_draw_timer;
 
 /*
 **  Stream functions
@@ -2051,6 +2052,8 @@ void event_loop(VideoState *videostate)
             if (cursor_hidden) {
                 SDL_ShowCursor(1);
                 cursor_hidden = 0;
+                draw_ui = true;
+                ui_draw_timer = SDL_AddTimer(5000, hide_ui, (void *)false);
             }
             cursor_last_shown = av_gettime_relative();
             if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -2265,6 +2268,13 @@ void seek_chapter(VideoState *videostate, int incr)
     std::cout<<"LOG: Seeking to chapter "<<i<<std::endl;
     stream_seek(videostate, av_rescale_q(videostate->ic->chapters[i]->start, videostate->ic->chapters[i]->time_base,
                                  AV_TIME_BASE_Q), 0, 0);
+}
+
+Uint32 hide_ui(Uint32 interval,void* param)
+{
+    std::cout<<"LOG: Set draw_ui to false."<<std::endl;
+    draw_ui = false;
+    return 0;
 }
 
 /*

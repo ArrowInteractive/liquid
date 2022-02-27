@@ -362,6 +362,7 @@ void toggle_mute(VideoState *videostate);
 void update_volume(VideoState *videostate, int sign, double step);
 void stream_cycle_channel(VideoState *videostate, int codec_type);
 void seek_chapter(VideoState *videostate, int incr);
+Uint32 hide_ui(Uint32 interval,void* param);
 
 // Exit functions
 void do_exit(VideoState *videostate);

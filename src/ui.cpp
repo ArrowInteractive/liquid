@@ -13,6 +13,7 @@ int soundvar;
 bool stay = false;
 static bool first = true;
 bool req_pause = false;
+bool draw_ui = true;
 
 /*
 **  Functions
