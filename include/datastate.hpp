@@ -51,6 +51,7 @@ static unsigned sws_flags = SWS_LANCZOS;
 
 #define FFSWAP(type,a,b) do{type SWAP_tmp= b; b= a; a= SWAP_tmp;}while(0)
 #define FF_ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
+
 /*
 **  Structs
 */
@@ -201,53 +202,53 @@ struct VideoState {
 **  Globals
 */
 
-static int startup_volume = 100;
-static int av_sync_type = AV_SYNC_AUDIO_MASTER;
-static SDL_AudioDeviceID audio_dev;
-static int genpts = 0;
-static int find_stream_info = 1;
-static int seek_by_bytes = -1;
-static char *window_title;
-static char *input_filename;
-static int64_t start_time = AV_NOPTS_VALUE;
-static int64_t duration = AV_NOPTS_VALUE;
-static int show_status = -1;
-static char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
-static int video_disable;
-static int audio_disable;
-static int subtitle_disable;
-static enum ShowMode show_mode = SHOW_MODE_NONE;
-static int screen_width  = 0;
-static int screen_height = 0;
-static int default_width  = 640;
-static int default_height = 480;
-static int lowres = 0;
-static const char *audio_codec_name;
-static const char *subtitle_codec_name;
-static const char *video_codec_name;
-static int64_t audio_callback_time;
-static int fast = 0;
-static int infinite_buffer = -1;
-static int loop = 1;
-static int autoexit;
-static int framedrop = -1;
-static int decoder_reorder_pts = -1;
-static int exit_on_keydown;
-static int is_full_screen;
-static float seek_interval = 10;
-static int exit_on_mousedown;
-static int cursor_hidden = 0;
-static int64_t cursor_last_shown;
-static int display_disable;
-static int screen_left = SDL_WINDOWPOS_CENTERED;
-static int screen_top = SDL_WINDOWPOS_CENTERED;
-static int is_ui_init = 0;
-static double rdftspeed = 0.02;
-static SDL_RendererFlip need_flip;
+extern int startup_volume;
+extern int av_sync_type;
+extern SDL_AudioDeviceID audio_dev;
+extern int genpts;
+extern int find_stream_info;
+extern int seek_by_bytes;
+extern char *window_title;
+extern char *input_filename;
+extern int64_t start_time;
+extern int64_t duration;
+extern int show_status;
+extern char* wanted_stream_spec[AVMEDIA_TYPE_NB];
+extern int video_disable;
+extern int audio_disable;
+extern int subtitle_disable;
+extern enum ShowMode show_mode;
+extern int screen_width;
+extern int screen_height;
+extern int default_width;
+extern int default_height;
+extern int lowres;
+extern const char *audio_codec_name;
+extern const char *subtitle_codec_name;
+extern const char *video_codec_name;
+extern int64_t audio_callback_time;
+extern int fast;
+extern int infinite_buffer;
+extern int loop;
+extern int autoexit;
+extern int framedrop;
+extern int decoder_reorder_pts;
+extern int exit_on_keydown;
+extern int is_full_screen;
+extern float seek_interval;
+extern int exit_on_mousedown;
+extern int cursor_hidden;
+extern int64_t cursor_last_shown;
+extern int display_disable;
+extern int screen_left;
+extern int screen_top;
+extern int is_ui_init;
+extern double rdftspeed;
+extern SDL_RendererFlip need_flip;
 
-static SDL_Window *window;
-static SDL_Renderer *renderer;
-static SDL_GLContext context;
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+extern SDL_GLContext context;
 
 static const struct TextureFormatEntry {
     enum AVPixelFormat format;

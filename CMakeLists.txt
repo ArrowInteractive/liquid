@@ -4,6 +4,7 @@ project(Liquid)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(OpenGL_GL_PREFERENCE GLVND)
 
 if (WIN32)
     message(STATUS ">>> Not Linux")
