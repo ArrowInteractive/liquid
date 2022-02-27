@@ -1229,7 +1229,11 @@ void video_refresh(void *arg, double *remaining_time)
 retry:
         if (frame_queue_nb_remaining(&videostate->pictq) == 0) {
             // nothing to do, no picture to display in the queue
-        } else {
+            SDL_RenderClear(renderer);
+            update_imgui(renderer, videostate->width, videostate->height);
+            SDL_RenderPresent(renderer);
+        } 
+        else {
             double last_duration, duration, delay;
             Frame *vp, *lastvp;
 
@@ -1319,7 +1323,7 @@ retry:
         }
 display:
         /* display picture */
-        if (!display_disable && videostate->force_refresh && videostate->show_mode == SHOW_MODE_VIDEO && videostate->pictq.rindex_shown)
+        if (!display_disable && videostate->force_refresh && videostate->show_mode == SHOW_MODE_VIDEO)
         {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
@@ -2152,7 +2156,7 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             toggle_mute(videostate);
             req_mute = !req_mute;
         }
-        
+
         SDL_PumpEvents();
     }
 }
