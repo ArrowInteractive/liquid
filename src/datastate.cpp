@@ -49,7 +49,6 @@ int display_disable;
 int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int is_ui_init = 0;
-double rdftspeed = 0.02;
 double pos;
 SDL_RendererFlip need_flip;
 
@@ -1224,15 +1223,6 @@ void video_refresh(void *arg, double *remaining_time)
     if (!videostate->paused && get_master_sync_type(videostate) == AV_SYNC_EXTERNAL_CLOCK && videostate->realtime)
         check_external_clock_speed(videostate);
 
-    if (!display_disable && videostate->show_mode != SHOW_MODE_VIDEO && videostate->audio_st) {
-        time = av_gettime_relative() / 1000000.0;
-        if (videostate->force_refresh || videostate->last_vis_time + rdftspeed < time) {
-            video_display(videostate);
-            videostate->last_vis_time = time;
-        }
-        *remaining_time = FFMIN(*remaining_time, videostate->last_vis_time + rdftspeed - time);
-    }
-
     if (videostate->video_st) {
 retry:
         if (frame_queue_nb_remaining(&videostate->pictq) == 0) {
@@ -1999,8 +1989,7 @@ void event_loop(VideoState *videostate)
                 **  Work around for channel switch distortion 
                 */
                 incr = seek_interval ? -seek_interval : -1.0;
-                goto do_seek;
-
+                execute_seek(videostate, incr);
                 break;
             case SDLK_t:
                 stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
@@ -2008,52 +1997,32 @@ void event_loop(VideoState *videostate)
             case SDLK_PAGEUP:
                 if (videostate->ic->nb_chapters <= 1) {
                     incr = 600.0;
-                    goto do_seek;
+                    execute_seek(videostate, incr);
                 }
                 seek_chapter(videostate, 1);
                 break;
             case SDLK_PAGEDOWN:
                 if (videostate->ic->nb_chapters <= 1) {
                     incr = -600.0;
-                    goto do_seek;
+                    execute_seek(videostate, incr);
                 }
                 seek_chapter(videostate, -1);
                 break;
             case SDLK_LEFT:
                 incr = seek_interval ? -seek_interval : -10.0;
                 execute_seek(videostate, incr);
+                break;
             case SDLK_RIGHT:
                 incr = seek_interval ? seek_interval : 10.0;
                 execute_seek(videostate, incr);
+                break;
             case SDLK_UP:
                 incr = 60.0;
-                goto do_seek;
+                execute_seek(videostate, incr);
+                break;
             case SDLK_DOWN:
                 incr = -60.0;
-            do_seek:
-                    if (seek_by_bytes) {
-                        pos = -1;
-                        if (pos < 0 && videostate->video_stream >= 0)
-                            pos = frame_queue_last_pos(&videostate->pictq);
-                        if (pos < 0 && videostate->audio_stream >= 0)
-                            pos = frame_queue_last_pos(&videostate->sampq);
-                        if (pos < 0)
-                            pos = avio_tell(videostate->ic->pb);
-                        if (videostate->ic->bit_rate)
-                            incr *= videostate->ic->bit_rate / 8.0;
-                        else
-                            incr *= 180000.0;
-                        pos += incr;
-                        stream_seek(videostate, pos, incr, 1);
-                    } else {
-                        pos = get_master_clock(videostate);
-                        if (isnan(pos))
-                            pos = (double)videostate->seek_pos / AV_TIME_BASE;
-                        pos += incr;
-                        if (videostate->ic->start_time != AV_NOPTS_VALUE && pos < videostate->ic->start_time / (double)AV_TIME_BASE)
-                            pos = videostate->ic->start_time / (double)AV_TIME_BASE;
-                        stream_seek(videostate, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
-                    }
+                execute_seek(videostate, incr);
                 break;
             default:
                 break;

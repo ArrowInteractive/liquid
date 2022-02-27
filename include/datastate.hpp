@@ -243,7 +243,7 @@ extern int display_disable;
 extern int screen_left;
 extern int screen_top;
 extern int is_ui_init;
-extern double rdftspeed;
+extern double pos;
 extern SDL_RendererFlip need_flip;
 
 extern SDL_Window *window;
