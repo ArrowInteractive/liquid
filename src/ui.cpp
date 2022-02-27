@@ -106,6 +106,12 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             ImGui::End();
         }
 
+        ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
+        if(ImGui::Button("M",{(win_size.x*4)/100, 20}))
+        {
+
+        }
+
         ImGui::SameLine((ImGui::GetWindowWidth()*36)/100);
         if(ImGui::Button("<<",{(win_size.x*5)/100, 20}))
         {
@@ -139,12 +145,6 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         {
             ui_incr = 60.0;
             req_seek = true;
-        }
-
-        ImGui::SameLine((ImGui::GetWindowWidth()*65)/100);
-        if(ImGui::Button("M",{(win_size.x*4)/100, 20}))
-        {
-
         }
 
         ImGui::SameLine((ImGui::GetWindowWidth()*86)/100);
