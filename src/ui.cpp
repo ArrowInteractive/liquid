@@ -38,101 +38,103 @@ void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
 
 void update_imgui(SDL_Renderer* renderer, int width, int height)
 {   
-    // Start the Dear ImGui frame
-    ImGui_ImplSDLRenderer_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
+    if(draw_ui){
+        // Start the Dear ImGui frame
+        ImGui_ImplSDLRenderer_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
 
-    //imgui window flags
-    ImGuiWindowFlags flags = 0;
-    flags |= ImGuiWindowFlags_NoTitleBar;
-    flags |= !ImGuiWindowFlags_MenuBar;
-    flags |= ImGuiWindowFlags_NoResize;
-    flags |= ImGuiWindowFlags_NoMove;
+        //imgui window flags
+        ImGuiWindowFlags flags = 0;
+        flags |= ImGuiWindowFlags_NoTitleBar;
+        flags |= !ImGuiWindowFlags_MenuBar;
+        flags |= ImGuiWindowFlags_NoResize;
+        flags |= ImGuiWindowFlags_NoMove;
 
-    //imgui child window flags
-    ImGuiWindowFlags child_window_flags = 0;
-    child_window_flags |= ImGuiWindowFlags_NoTitleBar;
-    child_window_flags |= !ImGuiWindowFlags_MenuBar;
-    child_window_flags |= ImGuiWindowFlags_NoResize;
-    child_window_flags |= ImGuiWindowFlags_NoMove;
+        //imgui child window flags
+        ImGuiWindowFlags child_window_flags = 0;
+        child_window_flags |= ImGuiWindowFlags_NoTitleBar;
+        child_window_flags |= !ImGuiWindowFlags_MenuBar;
+        child_window_flags |= ImGuiWindowFlags_NoResize;
+        child_window_flags |= ImGuiWindowFlags_NoMove;
 
 
-    //imgui style flags
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = 5;
-    style.ChildRounding = 12;
-    style.TabRounding = 12;
-    style.FrameRounding = 12;
-    style.GrabRounding = 12;
+        //imgui style flags
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.WindowRounding = 5;
+        style.ChildRounding = 12;
+        style.TabRounding = 12;
+        style.FrameRounding = 12;
+        style.GrabRounding = 12;
 
-    ImVec2 win_pos;
-    ImVec2 main_win_pos;
-    ImVec2 win_size;
-    ImVec2 window_size;
-    //render definition Here
-    ImGui::Begin("Window",(bool *)true,flags);
-    if (first)
-    {
-        window_size = { 384 , 61 };
-        ImGui::SetWindowSize(window_size);
-    }
-    win_size = ImGui::GetWindowSize();
-    main_win_pos = {(float)(width/2) - (window_size.x/2), (float)height - 65};
-    ImGui::SetWindowPos(main_win_pos);
-    win_pos = ImGui::GetWindowPos();
-    win_pos.x += 120;
-    win_pos.y -= 110;
-    ImGui::NewLine();
-    ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
-    ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
-    ImGui::SliderInt(" ",&test,10,100);
-    ImGui::NewLine();
+        ImVec2 win_pos;
+        ImVec2 main_win_pos;
+        ImVec2 win_size;
+        ImVec2 window_size;
+        //render definition Here
+        ImGui::Begin("Window",(bool *)true,flags);
+        if (first)
+        {
+            window_size = { 384 , 61 };
+            ImGui::SetWindowSize(window_size);
+        }
+        win_size = ImGui::GetWindowSize();
+        main_win_pos = {(float)(width/2) - (window_size.x/2), (float)height - 65};
+        ImGui::SetWindowPos(main_win_pos);
+        win_pos = ImGui::GetWindowPos();
+        win_pos.x += 120;
+        win_pos.y -= 110;
+        ImGui::NewLine();
+        ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
+        ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
+        ImGui::SliderInt(" ",&test,10,100);
+        ImGui::NewLine();
 
-    ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
-    if(ImGui::Button("S", {(win_size.x*4)/100, 20}))
-    {
-        stay = !stay;
-    }
-    if(stay)
-    {
-        ImGui::Begin("sound_window",nullptr,child_window_flags);
-        ImGui::SetWindowPos(win_pos);
-        ImGui::PushItemWidth((ImGui::GetWindowWidth()*90)/100);
-        ImGui::VSliderInt("##int",{20,80},&soundvar,0,100);
+        ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
+        if(ImGui::Button("S", {(win_size.x*4)/100, 20}))
+        {
+            stay = !stay;
+        }
+        if(stay)
+        {
+            ImGui::Begin("sound_window",nullptr,child_window_flags);
+            ImGui::SetWindowPos(win_pos);
+            ImGui::PushItemWidth((ImGui::GetWindowWidth()*90)/100);
+            ImGui::VSliderInt("##int",{20,80},&soundvar,0,100);
+            ImGui::End();
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
+        if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
+        {
+
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*47.5)/100);
+        if(ImGui::Button("P",{(win_size.x*4)/100, 20}))
+        {
+            req_pause = !req_pause;
+            std::cout<<"Requesting pause through UI."<<std::endl;
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
+        if(ImGui::Button(">",{(win_size.x*4)/100, 20}))
+        {
+
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*80)/100);
+        if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
+        {
+
+        }
+
+
         ImGui::End();
+        //imgui Rendering stuff
+        ImGui::Render();
+        ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     }
-
-    ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
-    if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
-    {
-
-    }
-
-    ImGui::SameLine((ImGui::GetWindowWidth()*47.5)/100);
-    if(ImGui::Button("P",{(win_size.x*4)/100, 20}))
-    {
-        req_pause = !req_pause;
-        std::cout<<"Requesting pause through UI."<<std::endl;
-    }
-
-    ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
-    if(ImGui::Button(">",{(win_size.x*4)/100, 20}))
-    {
-
-    }
-
-    ImGui::SameLine((ImGui::GetWindowWidth()*80)/100);
-    if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
-    {
-
-    }
-
-
-    ImGui::End();
-    //imgui Rendering stuff
-    ImGui::Render();
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 }
 
 void imgui_event_handler(SDL_Event& event){
