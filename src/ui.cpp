@@ -15,6 +15,7 @@ static bool first = true;
 bool req_pause = false;
 bool req_seek = false;
 bool req_mute = false;
+bool req_trk_chnge = false;
 bool draw_ui = true;
 double ui_incr;
 
@@ -150,7 +151,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::SameLine((ImGui::GetWindowWidth()*86)/100);
         if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
         {
-
+            req_trk_chnge = true;
         }
 
         ImGui::End();

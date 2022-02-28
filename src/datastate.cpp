@@ -50,6 +50,8 @@ int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int is_ui_init = 0;
 double pos;
+double incr;
+double frac;
 SDL_RendererFlip need_flip;
 
 SDL_Window *window;
@@ -2155,6 +2157,19 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         if(req_mute){
             toggle_mute(videostate);
             req_mute = !req_mute;
+        }
+
+        if(req_trk_chnge){
+            stream_cycle_channel(videostate, AVMEDIA_TYPE_VIDEO);
+            stream_cycle_channel(videostate, AVMEDIA_TYPE_AUDIO);
+            stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
+
+            /*
+            **  Work around for channel switch distortion 
+            */
+            incr = seek_interval ? -seek_interval : -1.0;
+            execute_seek(videostate, incr);
+            req_trk_chnge = !req_trk_chnge;
         }
 
         SDL_PumpEvents();

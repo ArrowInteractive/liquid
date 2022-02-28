@@ -244,6 +244,8 @@ extern int screen_left;
 extern int screen_top;
 extern int is_ui_init;
 extern double pos;
+extern double incr;
+extern double frac;
 extern SDL_RendererFlip need_flip;
 
 extern SDL_Window *window;
