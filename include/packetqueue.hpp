@@ -24,6 +24,9 @@ extern "C"{
     #include "libavcodec/avfft.h"
     #include "libavcodec/avcodec.h"
     #include "libswresample/swresample.h"
+    #include "libavformat/avformat.h"
+    #include "libavfilter/buffersink.h"
+    #include "libavfilter/buffersrc.h"
 }
 
 #include "SDL.h"

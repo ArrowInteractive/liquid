@@ -9,6 +9,7 @@
 */
 
 int startup_volume = 100;
+int step;
 int av_sync_type = AV_SYNC_AUDIO_MASTER;
 SDL_AudioDeviceID audio_dev;
 int genpts = 0;
@@ -1606,6 +1607,15 @@ void get_sdl_pix_fmt_and_blendmode(int format, Uint32 *sdl_pix_fmt, SDL_BlendMod
 }
 
 /*
+**  Filtering functions
+*/
+
+int init_filters(const char *filters_descr){
+    // Dummy
+    return 0;
+}
+
+/*
 **  Audio functions
 */
 
@@ -1973,11 +1983,13 @@ void event_loop(VideoState *videostate)
                 break;
             case SDLK_KP_MULTIPLY:
             case SDLK_0:
-                update_volume(videostate, 1, SDL_VOLUME_STEP);
+                step = 1;
+                update_volume(videostate);
                 break;
             case SDLK_KP_DIVIDE:
             case SDLK_9:
-                update_volume(videostate, -1, SDL_VOLUME_STEP);
+                step = -1;
+                update_volume(videostate);
                 break;
             case SDLK_s: // S: Step to next frame
                 step_to_next_frame(videostate);
@@ -2172,6 +2184,11 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             req_trk_chnge = !req_trk_chnge;
         }
 
+        if(vol_change){
+            videostate->audio_volume = sound_var;
+            vol_change = false;
+        }
+
         SDL_PumpEvents();
     }
 }
@@ -2193,11 +2210,21 @@ void toggle_mute(VideoState *videostate)
     videostate->muted = !videostate->muted;
 }
 
-void update_volume(VideoState *videostate, int sign, double step)
+void update_volume(VideoState *videostate)
 {
-    double volume_level = videostate->audio_volume ? (20 * log(videostate->audio_volume / (double)SDL_MIX_MAXVOLUME) / log(10)) : -1000.0;
-    int new_volume = lrint(SDL_MIX_MAXVOLUME * pow(10.0, (volume_level + sign * step) / 20.0));
-    videostate->audio_volume = av_clip(videostate->audio_volume == new_volume ? (videostate->audio_volume + sign) : new_volume, 0, SDL_MIX_MAXVOLUME);
+    if(step == -1 && videostate->audio_volume > 0){
+        // Decrease the volume
+        videostate->audio_volume--;
+    }
+    else if(step == 1 && videostate->audio_volume < SDL_MIX_MAXVOLUME){
+        // Increase volume
+        videostate->audio_volume++;
+    }
+    
+    // Update UI sound var
+    sound_var = videostate->audio_volume;
+
+    step = 0;
 }
 
 void stream_cycle_channel(VideoState *videostate, int codec_type)

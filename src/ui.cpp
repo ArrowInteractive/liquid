@@ -8,8 +8,9 @@
 **  Globals
 */
 
-int test;
-int soundvar;
+int progressvar;
+int sound_var = 128;
+bool vol_change = false;
 bool stay = false;
 static bool first = true;
 bool req_pause = false;
@@ -86,12 +87,11 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         main_win_pos = {(float)(width/2) - (window_size.x/2), (float)height - 65};
         ImGui::SetWindowPos(main_win_pos);
         win_pos = ImGui::GetWindowPos();
-        win_pos.x += 120;
         win_pos.y -= 110;
         ImGui::NewLine();
         ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
-        ImGui::SliderInt(" ",&test,10,100);
+        ImGui::SliderInt(" ",&progressvar,10,100);
         ImGui::NewLine();
 
         ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
@@ -104,7 +104,11 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             ImGui::Begin("sound_window",nullptr,child_window_flags);
             ImGui::SetWindowPos(win_pos);
             ImGui::PushItemWidth((ImGui::GetWindowWidth()*90)/100);
-            ImGui::VSliderInt("##int",{20,80},&soundvar,0,100);
+
+            // Update volume based on soundvar
+            if(ImGui::VSliderInt("##int",{20,80},&sound_var,0,128)){
+                vol_change = true;
+            }
             ImGui::End();
         }
 

@@ -19,6 +19,8 @@ extern bool req_mute;
 extern bool req_trk_chnge;
 extern bool draw_ui;
 extern double ui_incr;
+extern int sound_var;
+extern bool vol_change;
 
 /*
 **  Functions

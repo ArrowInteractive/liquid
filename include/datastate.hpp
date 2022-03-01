@@ -119,6 +119,9 @@ struct VideoState {
     int64_t seek_rel;
     int read_pause_return;
     AVFormatContext *ic;
+    AVFilterContext *buffersink_ctx;
+    AVFilterContext *buffersrc_ctx;
+    AVFilterGraph *filter_graph;
     int realtime;
 
     Clock audclk;
@@ -152,7 +155,7 @@ struct VideoState {
     unsigned int audio_buf1_size;
     int audio_buf_index;            /* in bytes */
     int audio_write_buf_size;
-    int audio_volume;
+    uint audio_volume;
     int muted;
     struct AudioParams audio_src;
 
@@ -344,6 +347,9 @@ int upload_texture(SDL_Texture **tex, AVFrame *frame, struct SwsContext **img_co
 void set_sdl_yuv_conversion_mode(AVFrame *frame);
 void get_sdl_pix_fmt_and_blendmode(int format, Uint32 *sdl_pix_fmt, SDL_BlendMode *sdl_blendmode);
 
+// Filtering functions
+int init_filters(const char *filters_descr);
+
 // Audio functions
 int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams *audio_hw_params);
 void sdl_audio_callback(void *opaque, Uint8 *stream, int len);
@@ -362,7 +368,7 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event);
 void toggle_full_screen(VideoState *videostate);
 void toggle_pause(VideoState *videostate);
 void toggle_mute(VideoState *videostate);
-void update_volume(VideoState *videostate, int sign, double step);
+void update_volume(VideoState *videostate);
 void stream_cycle_channel(VideoState *videostate, int codec_type);
 void seek_chapter(VideoState *videostate, int incr);
 Uint32 hide_ui(Uint32 interval,void* param);
