@@ -11,7 +11,7 @@ Lightweight media player written in C++ using FFmpeg and SDL2. Currently in deve
 
 Install the necessary packages through Pacman by using:
 ```
-sudo pacman -S --needed base-devel cmake ninja ffmpeg sdl2
+sudo pacman -S --needed base-devel cmake ninja ffmpeg
 ```
 
 Then execute ```./build.sh```
@@ -20,7 +20,7 @@ Then execute ```./build.sh```
 
 Install the necessary packages through APT by using:
 ```
-sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev libsdl2-dev cmake ninja-build
+sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev cmake ninja-build
 ```
 
 Then execute ```./build.sh```
