@@ -10,6 +10,7 @@
 
 int progressvar;
 int sound_var = 128;
+int sound_tmp;
 bool vol_change = false;
 bool stay = false;
 static bool first = true;
@@ -103,7 +104,18 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
 
         ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*20)/100);
-        if(ImGui::SliderInt("  ",&sound_var,0,120)){
+        if(ImGui::SliderInt("  ",&sound_var,0,120) || ImGui::IsItemHovered()){
+            if(ImGui::GetIO().MouseWheel){
+                if((0 <= sound_var) && (sound_var <= 128)){
+                    sound_tmp = sound_var + ImGui::GetIO().MouseWheel;
+                    if((sound_tmp < 0) || (sound_tmp > 128)){
+                        // Do nothing, already at the limits
+                    }
+                    else{
+                        sound_var = sound_tmp;
+                    }
+                }
+            }
             vol_change = true;
         }
 
