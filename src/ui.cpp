@@ -104,7 +104,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
 
         ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*20)/100);
-        if(ImGui::SliderInt("  ",&sound_var,0,120) || ImGui::IsItemHovered()){
+        if(ImGui::SliderInt("  ",&sound_var,0,128) || ImGui::IsItemHovered()){
             if(ImGui::GetIO().MouseWheel){
                 if((0 <= sound_var) && (sound_var <= 128)){
                     sound_tmp = sound_var + ImGui::GetIO().MouseWheel;
