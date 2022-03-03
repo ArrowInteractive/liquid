@@ -82,7 +82,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::Begin("Window",(bool *)true,flags);
         if (first)
         {
-            window_size = { 645 , 61 };
+            window_size = {645, 61};
             ImGui::SetWindowSize(window_size);
         }
         win_size = ImGui::GetWindowSize();
@@ -92,25 +92,25 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         win_pos.y -= 110;
         ImGui::NewLine();
         // Fixme: Bad code
-        ImGui::SameLine((ImGui::GetWindowWidth()*0.5)/100);
+        ImGui::SameLine((ImGui::GetWindowWidth()*0.5) / 100);
         ImGui::LabelText("",label_text);
-        ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
-        ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
-        ImGui::SliderInt(" ",&progressvar,10,100);
-        ImGui::SameLine((ImGui::GetWindowWidth()*90)/100);
+        ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
+        ImGui::PushItemWidth((ImGui::GetWindowWidth()*80) / 100);
+        ImGui::SliderInt(" ",&progressvar, 0, 100);
+        ImGui::SameLine((ImGui::GetWindowWidth()*90) / 100);
         ImGui::LabelText("",label_text);
         ImGui::NewLine();
 
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
-        if(ImGui::Button("M",{(win_size.x*4)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
+        if(ImGui::Button("M",{(win_size.x*4) / 100, 20}))
         {
             req_mute = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*15)/100);
-        ImGui::PushItemWidth((ImGui::GetWindowWidth()*20)/100);
-        if(ImGui::SliderInt("  ",&sound_var,0,128) || ImGui::IsItemHovered()){
+        ImGui::SameLine((ImGui::GetWindowWidth()*15) / 100);
+        ImGui::PushItemWidth((ImGui::GetWindowWidth()*20) / 100);
+        if(ImGui::SliderInt("  ",&sound_var, 0, 128) || ImGui::IsItemHovered()){
             if(ImGui::GetIO().MouseWheel){
                 if((0 <= sound_var) && (sound_var <= 128)){
                     sound_tmp = sound_var + ImGui::GetIO().MouseWheel;
@@ -125,42 +125,42 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             vol_change = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*36)/100);
-        if(ImGui::Button("<<",{(win_size.x*5)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*36) / 100);
+        if(ImGui::Button("<<",{(win_size.x*5) /100, 20}))
         {
             ui_incr = -60.0;
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*42)/100);
-        if(ImGui::Button("<",{(win_size.x*4)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*42) / 100);
+        if(ImGui::Button("<",{(win_size.x*4) / 100, 20}))
         {
             ui_incr = -10.0;
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*47.5)/100);
-        if(ImGui::Button("P",{(win_size.x*4)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*47.5) / 100);
+        if(ImGui::Button("P",{(win_size.x*4) / 100, 20}))
         {
             req_pause = !req_pause;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*53)/100);
-        if(ImGui::Button(">",{(win_size.x*4)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*53) / 100);
+        if(ImGui::Button(">",{(win_size.x*4) / 100, 20}))
         {
             ui_incr = 10.0;
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*58)/100);
-        if(ImGui::Button(">>",{(win_size.x*5)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*58) / 100);
+        if(ImGui::Button(">>",{(win_size.x*5) /100, 20}))
         {
             ui_incr = 60.0;
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*86)/100);
-        if(ImGui::Button("T",{(win_size.x*4)/100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*86) / 100);
+        if(ImGui::Button("T",{(win_size.x*4) / 100, 20}))
         {
             req_trk_chnge = true;
         }
