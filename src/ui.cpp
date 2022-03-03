@@ -91,11 +91,14 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         win_pos = ImGui::GetWindowPos();
         win_pos.y -= 110;
         ImGui::NewLine();
-        ImGui::SameLine((ImGui::GetWindowWidth()*1)/100);
+        // Fixme: Bad code
+        ImGui::SameLine((ImGui::GetWindowWidth()*0.5)/100);
         ImGui::LabelText("",label_text);
         ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
-        ImGui::SliderInt("00:00:00",&progressvar,10,100);
+        ImGui::SliderInt(" ",&progressvar,10,100);
+        ImGui::SameLine((ImGui::GetWindowWidth()*90)/100);
+        ImGui::LabelText("",label_text);
         ImGui::NewLine();
 
 
