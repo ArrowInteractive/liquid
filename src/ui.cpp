@@ -86,7 +86,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             ImGui::SetWindowSize(window_size);
         }
         win_size = ImGui::GetWindowSize();
-        main_win_pos = {(float)(width/2) - (window_size.x/2), (float)height - 65};
+        main_win_pos = {(float)(width/2) - (window_size.x/2), (float)height - 60};
         ImGui::SetWindowPos(main_win_pos);
         win_pos = ImGui::GetWindowPos();
         win_pos.y -= 110;
