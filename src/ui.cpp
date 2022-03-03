@@ -20,6 +20,7 @@ bool req_mute = false;
 bool req_trk_chnge = false;
 bool draw_ui = true;
 double ui_incr;
+const char* label_text ="00:00:00";
 
 /*
 **  Functions
@@ -81,7 +82,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::Begin("Window",(bool *)true,flags);
         if (first)
         {
-            window_size = { 384 , 61 };
+            window_size = { 645 , 61 };
             ImGui::SetWindowSize(window_size);
         }
         win_size = ImGui::GetWindowSize();
@@ -90,9 +91,11 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         win_pos = ImGui::GetWindowPos();
         win_pos.y -= 110;
         ImGui::NewLine();
+        ImGui::SameLine((ImGui::GetWindowWidth()*1)/100);
+        ImGui::LabelText("",label_text);
         ImGui::SameLine((ImGui::GetWindowWidth()*10)/100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80)/100);
-        ImGui::SliderInt(" ",&progressvar,10,100);
+        ImGui::SliderInt("00:00:00",&progressvar,10,100);
         ImGui::NewLine();
 
 
