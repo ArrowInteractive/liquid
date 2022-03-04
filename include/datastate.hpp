@@ -4,9 +4,10 @@
 **  Includes
 */
 
+#include "ui.hpp"
 #include "packetqueue.hpp"
 #include "framequeue.hpp"
-#include "ui.hpp"
+#include "shader.hpp"
 
 /*
 **  Macros
@@ -118,6 +119,9 @@ struct VideoState {
     int64_t seek_rel;
     int read_pause_return;
     AVFormatContext *ic;
+    AVFilterContext *buffersink_ctx;
+    AVFilterContext *buffersrc_ctx;
+    AVFilterGraph *filter_graph;
     int realtime;
 
     Clock audclk;
@@ -170,7 +174,6 @@ struct VideoState {
     FFTSample *rdft_data;
     int xpos;
     double last_vis_time;
-    SDL_Texture *vis_texture;
     SDL_Texture *sub_texture;
     SDL_Texture *vid_texture;
 
@@ -202,53 +205,55 @@ struct VideoState {
 **  Globals
 */
 
-static int startup_volume = 100;
-static int av_sync_type = AV_SYNC_AUDIO_MASTER;
-static SDL_AudioDeviceID audio_dev;
-static int genpts = 0;
-static int find_stream_info = 1;
-static int seek_by_bytes = -1;
-static char *window_title;
-static char *input_filename;
-static int64_t start_time = AV_NOPTS_VALUE;
-static int64_t duration = AV_NOPTS_VALUE;
-static int show_status = -1;
-static char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
-static int video_disable;
-static int audio_disable;
-static int subtitle_disable;
-static enum ShowMode show_mode = SHOW_MODE_NONE;
-static int screen_width  = 0;
-static int screen_height = 0;
-static int default_width  = 640;
-static int default_height = 480;
-static int lowres = 0;
-static const char *audio_codec_name;
-static const char *subtitle_codec_name;
-static const char *video_codec_name;
-static int64_t audio_callback_time;
-static int fast = 0;
-static int infinite_buffer = -1;
-static int loop = 1;
-static int autoexit;
-static int framedrop = -1;
-static int decoder_reorder_pts = -1;
-static int exit_on_keydown;
-static int is_full_screen;
-static float seek_interval = 10;
-static int exit_on_mousedown;
-static int cursor_hidden = 0;
-static int64_t cursor_last_shown;
-static int display_disable;
-static int screen_left = SDL_WINDOWPOS_CENTERED;
-static int screen_top = SDL_WINDOWPOS_CENTERED;
-static int is_ui_init = 0;
-static double rdftspeed = 0.02;
-static SDL_RendererFlip need_flip;
+extern int startup_volume;
+extern int av_sync_type;
+extern SDL_AudioDeviceID audio_dev;
+extern int genpts;
+extern int find_stream_info;
+extern int seek_by_bytes;
+extern char *window_title;
+extern char *input_filename;
+extern int64_t start_time;
+extern int64_t duration;
+extern int show_status;
+extern char* wanted_stream_spec[AVMEDIA_TYPE_NB];
+extern int video_disable;
+extern int audio_disable;
+extern int subtitle_disable;
+extern enum ShowMode show_mode;
+extern int screen_width;
+extern int screen_height;
+extern int default_width;
+extern int default_height;
+extern int lowres;
+extern const char *audio_codec_name;
+extern const char *subtitle_codec_name;
+extern const char *video_codec_name;
+extern int64_t audio_callback_time;
+extern int fast;
+extern int infinite_buffer;
+extern int loop;
+extern int autoexit;
+extern int framedrop;
+extern int decoder_reorder_pts;
+extern int exit_on_keydown;
+extern int is_full_screen;
+extern float seek_interval;
+extern int exit_on_mousedown;
+extern int cursor_hidden;
+extern int64_t cursor_last_shown;
+extern int display_disable;
+extern int screen_left;
+extern int screen_top;
+extern int is_ui_init;
+extern double pos;
+extern double incr;
+extern double frac;
+extern SDL_RendererFlip need_flip;
 
-static SDL_Window *window;
-static SDL_Renderer *renderer;
-static SDL_GLContext context;
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+extern SDL_GLContext context;
 
 static const struct TextureFormatEntry {
     enum AVPixelFormat format;
@@ -334,7 +339,6 @@ void video_refresh(void *arg, double *remaining_time);
 void update_video_pts(VideoState *videostate, double pts, int64_t pos, int serial);
 void video_display(VideoState *videostate);
 int video_open(VideoState *videostate);
-void video_audio_display(VideoState *videostate);
 void fill_rectangle(int x, int y, int w, int h);
 int compute_mod(int a, int b);
 int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, int new_height, SDL_BlendMode blendmode, int init_texture);
@@ -342,6 +346,9 @@ void video_image_display(VideoState *videostate);
 int upload_texture(SDL_Texture **tex, AVFrame *frame, struct SwsContext **img_convert_ctx);
 void set_sdl_yuv_conversion_mode(AVFrame *frame);
 void get_sdl_pix_fmt_and_blendmode(int format, Uint32 *sdl_pix_fmt, SDL_BlendMode *sdl_blendmode);
+
+// Filtering functions
+int init_filters(const char *filters_descr);
 
 // Audio functions
 int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams *audio_hw_params);
@@ -353,6 +360,7 @@ int synchronize_audio(VideoState *videostate, int nb_samples);
 void step_to_next_frame(VideoState *videostate);
 void stream_toggle_pause(VideoState *videostate);
 void stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int seek_by_bytes);
+void execute_seek(VideoState *videostate, double incr);
 
 // Event functions
 void event_loop(VideoState *videostate);
@@ -360,10 +368,10 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event);
 void toggle_full_screen(VideoState *videostate);
 void toggle_pause(VideoState *videostate);
 void toggle_mute(VideoState *videostate);
-void update_volume(VideoState *videostate, int sign, double step);
+void update_volume(VideoState *videostate);
 void stream_cycle_channel(VideoState *videostate, int codec_type);
-void toggle_audio_display(VideoState *videostate);
 void seek_chapter(VideoState *videostate, int incr);
+Uint32 hide_ui(Uint32 interval,void* param);
 
 // Exit functions
 void do_exit(VideoState *videostate);

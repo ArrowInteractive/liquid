@@ -1,6 +1,3 @@
-[submodule "vendor/SDL"]
-	path = vendor/SDL
-	url = https://github.com/libsdl-org/SDL
-[submodule "vendor/imgui"]
-	path = vendor/imgui
-	url = https://github.com/Curve/imgui-cmake
+[submodule "vendor/imgui-cmake"]
+	path = vendor/imgui-cmake
+	url = https://github.com/5trange/imgui-cmake

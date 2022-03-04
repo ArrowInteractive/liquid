@@ -16,6 +16,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    if (!std::filesystem::exists(argv[1])){
+        std::cout<<"The input file is not valid!"<<std::endl;
+        return -1;
+    }
+
     int flags;
     VideoState *videostate;
     input_filename = argv[1];
