@@ -53,6 +53,10 @@ int is_ui_init = 0;
 double pos;
 double incr;
 double frac;
+std::string hour;
+std::string min;
+std::string sec;
+
 std::string max_video_duration;
 SDL_RendererFlip need_flip;
 
@@ -99,7 +103,37 @@ VideoState *stream_open(char *filename)
         hours = mins / 60;   
         mins %= 60;
     }
-    max_video_duration = std::to_string(hours)+":"+std::to_string(mins)+":"+std::to_string(secs);
+
+
+    if(hours < 10)
+    {
+        hour = "0"+std::to_string(hours);
+    }
+    else
+    {
+        hour = std::to_string(hours);
+    }
+
+    if(mins < 10)
+    {
+        min = "0"+std::to_string(mins);
+    }
+    else
+    {
+        min = std::to_string(mins);
+    }
+
+    if(secs < 10)
+    {
+        sec = "0"+std::to_string(secs);
+    }
+    else
+    {
+        sec = std::to_string(secs);
+    }
+
+    max_video_duration = hour+":"+min+":"+sec;
+
 
     /* start video display */
     if (frame_queue_init(&videostate->pictq, &videostate->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0)
