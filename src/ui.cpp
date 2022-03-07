@@ -98,7 +98,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80) / 100);
         ImGui::SliderInt(" ",&progressvar, 0, 100);
         ImGui::SameLine((ImGui::GetWindowWidth()*90) / 100);
-        ImGui::LabelText("",label_text);
+        ImGui::LabelText("",max_video_duration.c_str());
         ImGui::NewLine();
 
 

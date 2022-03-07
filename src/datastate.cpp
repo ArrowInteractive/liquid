@@ -53,6 +53,7 @@ int is_ui_init = 0;
 double pos;
 double incr;
 double frac;
+std::string max_video_duration;
 SDL_RendererFlip need_flip;
 
 SDL_Window *window;
@@ -85,6 +86,20 @@ VideoState *stream_open(char *filename)
     videostate->iformat = av_find_input_format(avformat_ctx->iformat->name);
     videostate->ytop    = 0;
     videostate->xleft   = 0;
+
+    int hours, mins, secs, us;
+
+    if (avformat_ctx->duration != AV_NOPTS_VALUE) {
+        
+        int64_t duration = avformat_ctx->duration + 5000;
+        secs  = duration / AV_TIME_BASE;
+        us    = duration % AV_TIME_BASE;
+        mins  = secs / 60;   
+        secs %= 60;          
+        hours = mins / 60;   
+        mins %= 60;
+    }
+    max_video_duration = std::to_string(hours)+":"+std::to_string(mins)+":"+std::to_string(secs);
 
     /* start video display */
     if (frame_queue_init(&videostate->pictq, &videostate->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0)
@@ -1317,7 +1332,7 @@ retry:
                     }
                 }
             }
-
+            
             frame_queue_next(&videostate->pictq);
             videostate->force_refresh = 1;
 

@@ -21,6 +21,7 @@ extern bool draw_ui;
 extern double ui_incr;
 extern int sound_var;
 extern bool vol_change;
+extern std::string max_video_duration;
 
 /*
 **  Functions
