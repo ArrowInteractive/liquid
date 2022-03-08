@@ -20,6 +20,10 @@ bool req_mute = false;
 bool req_trk_chnge = false;
 bool draw_ui = true;
 double ui_incr;
+double cur_tim;
+int cur_sec;
+int cur_min;
+int cur_hur;
 const char* label_text ="00:00:00";
 
 /*

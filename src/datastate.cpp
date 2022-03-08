@@ -2238,6 +2238,15 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             vol_change = false;
         }
 
+        // Calculate clock values
+        cur_hur = get_master_clock(videostate)/3600;
+        cur_tim = ((int)get_master_clock(videostate))%3600;
+        cur_min = cur_tim/60;
+        cur_tim = ((int)cur_tim)%60;
+        cur_sec = cur_tim;
+        
+        std::cout<<cur_hur<<" : "<<cur_min<<" : "<<cur_sec<<std::endl;
+
         SDL_PumpEvents();
     }
 }
