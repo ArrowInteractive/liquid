@@ -26,6 +26,7 @@ extern int cur_sec;
 extern int cur_min;
 extern int cur_hur;
 extern std::string max_video_duration;
+extern std::string current_time;
 
 /*
 **  Functions

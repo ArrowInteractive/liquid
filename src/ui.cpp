@@ -24,7 +24,6 @@ double cur_tim;
 int cur_sec;
 int cur_min;
 int cur_hur;
-const char* label_text ="00:00:00";
 
 /*
 **  Functions
@@ -97,7 +96,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::NewLine();
         // Fixme: Bad code
         ImGui::SameLine((ImGui::GetWindowWidth()*0.5) / 100);
-        ImGui::LabelText("",label_text);
+        ImGui::LabelText("",current_time.c_str());
         ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80) / 100);
         ImGui::SliderInt(" ",&progressvar, 0, 100);

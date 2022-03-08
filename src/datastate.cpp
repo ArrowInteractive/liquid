@@ -53,10 +53,16 @@ int is_ui_init = 0;
 double pos;
 double incr;
 double frac;
+
 std::string hour;
 std::string min;
 std::string sec;
 
+std::string current_hour;
+std::string current_min;
+std::string current_sec;
+
+std::string current_time;
 std::string max_video_duration;
 SDL_RendererFlip need_flip;
 
@@ -2245,7 +2251,34 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         cur_tim = ((int)cur_tim)%60;
         cur_sec = cur_tim;
         
-        std::cout<<cur_hur<<" : "<<cur_min<<" : "<<cur_sec<<std::endl;
+        if (cur_hur < 10)
+        {
+            current_hour = "0" + std::to_string(cur_hur);
+        }
+        else
+        {
+            current_hour = std::to_string(cur_hur);
+        }
+
+        if(cur_min < 10)
+        {
+            current_min = "0" + std::to_string(cur_min);
+        }
+        else
+        {
+            current_min = std::to_string(cur_min);
+        }
+
+        if(cur_sec < 10)
+        {
+            current_sec = "0" + std::to_string(cur_sec);
+        }
+        else
+        {
+            current_sec = std::to_string(cur_sec);
+        }
+
+        current_time = current_hour + ":" + current_min + ":" + current_sec;
 
         SDL_PumpEvents();
     }
