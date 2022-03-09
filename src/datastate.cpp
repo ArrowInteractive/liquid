@@ -53,6 +53,7 @@ int is_ui_init = 0;
 double pos;
 double incr;
 double frac;
+AVFormatContext* avformat_ctx;
 
 std::string hour;
 std::string min;
@@ -83,7 +84,7 @@ VideoState *stream_open(char *filename)
     if (!videostate)
         return NULL;
     
-    AVFormatContext* avformat_ctx = avformat_alloc_context();
+    avformat_ctx = avformat_alloc_context();
     avformat_open_input(&avformat_ctx, filename, NULL, NULL);
 
     videostate->last_video_stream = videostate->video_stream = -1;
@@ -2245,11 +2246,13 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         }
 
         // Calculate clock values
-        cur_hur = get_master_clock(videostate)/3600;
-        cur_tim = ((int)get_master_clock(videostate))%3600;
-        cur_min = cur_tim/60;
-        cur_tim = ((int)cur_tim)%60;
-        cur_sec = cur_tim;
+        if(get_master_clock(videostate) <= (double)avformat_ctx->duration/1000000){
+            cur_hur = get_master_clock(videostate)/3600;
+            cur_tim = ((int)get_master_clock(videostate))%3600;
+            cur_min = cur_tim/60;
+            cur_tim = ((int)cur_tim)%60;
+            cur_sec = cur_tim;
+        }
         
         if (cur_hur < 10)
         {

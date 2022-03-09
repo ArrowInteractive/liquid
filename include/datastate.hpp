@@ -249,6 +249,7 @@ extern int is_ui_init;
 extern double pos;
 extern double incr;
 extern double frac;
+extern AVFormatContext* avformat_ctx;
 extern SDL_RendererFlip need_flip;
 
 extern SDL_Window *window;
