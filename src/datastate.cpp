@@ -50,6 +50,7 @@ int display_disable;
 int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int is_ui_init = 0;
+float progressvar;
 double pos;
 double incr;
 double frac;
@@ -2282,7 +2283,7 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         }
 
         current_time = current_hour + ":" + current_min + ":" + current_sec;
-
+        progressvar = (float)(get_master_clock(videostate) * 100 ) / ((double)avformat_ctx->duration/1000000);
         SDL_PumpEvents();
     }
 }

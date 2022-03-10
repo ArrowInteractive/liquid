@@ -8,7 +8,7 @@
 **  Globals
 */
 
-int progressvar;
+
 int sound_var = 128;
 int sound_tmp;
 bool vol_change = false;
@@ -99,7 +99,10 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::LabelText("",current_time.c_str());
         ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80) / 100);
-        ImGui::SliderInt(" ",&progressvar, 0, 100);
+        if(ImGui::SliderFloat("## ",&progressvar, 0.0f, 100.0f,"",ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput))
+        {
+
+        }
         ImGui::SameLine((ImGui::GetWindowWidth()*90) / 100);
         ImGui::LabelText("",max_video_duration.c_str());
         ImGui::NewLine();
