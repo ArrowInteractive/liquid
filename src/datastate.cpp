@@ -114,31 +114,19 @@ VideoState *stream_open(char *filename)
 
 
     if(hours < 10)
-    {
         hour = "0"+std::to_string(hours);
-    }
     else
-    {
         hour = std::to_string(hours);
-    }
 
     if(mins < 10)
-    {
         min = "0"+std::to_string(mins);
-    }
     else
-    {
         min = std::to_string(mins);
-    }
 
     if(secs < 10)
-    {
         sec = "0"+std::to_string(secs);
-    }
     else
-    {
         sec = std::to_string(secs);
-    }
 
     max_video_duration = hour+":"+min+":"+sec;
 
@@ -1136,8 +1124,11 @@ int create_window(){
          SDL_WINDOW_RESIZABLE
     );
 
+    // OpenGL Context
+    /*
     SDL_GL_CreateContext(window);
     init_gl(640, 480);
+    */
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(
@@ -1449,6 +1440,8 @@ int video_open(VideoState *videostate)
     int w,h;
 
     w = screen_width ? screen_width : default_width;
+    if(w < 645)
+        w = 645;
     h = screen_height ? screen_height : default_height;
 
     if (!window_title)
