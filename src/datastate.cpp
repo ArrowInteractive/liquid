@@ -644,7 +644,7 @@ int read_thread(void *arg)
     }
     ic->interrupt_callback.callback = decode_interrupt_cb;
     ic->interrupt_callback.opaque = videostate;
-    // Compilation fails if FFmpeg < 5 here if we dont do casting
+    // Casting here to make it work with both FFmpeg 5 and 4
     err = avformat_open_input(&ic, videostate->filename, (AVInputFormat *)videostate->iformat, NULL);
     if (err < 0) {
         ret = -1;

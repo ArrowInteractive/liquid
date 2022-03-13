@@ -51,6 +51,11 @@ int main(int argc, char *argv[])
         std::cout<<"ERROR: Failed to initialize VideoState!"<<std::endl;
         return -1;
     }
+
+    // FIXME : Window sizing workaround
+    toggle_full_screen(videostate);
+    videostate->force_refresh = 1;
+
     event_loop(videostate);
     return 0;
 }
