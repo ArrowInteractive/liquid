@@ -21,9 +21,6 @@ int64_t start_time = AV_NOPTS_VALUE;
 int64_t duration = AV_NOPTS_VALUE;
 int show_status = -1;
 char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
-int video_disable;
-int audio_disable;
-int subtitle_disable;
 enum ShowMode show_mode = SHOW_MODE_NONE;
 int screen_width  = 0;
 int screen_height = 0;
@@ -35,7 +32,9 @@ const char *subtitle_codec_name;
 const char *video_codec_name;
 int64_t audio_callback_time;
 int fast = 0;
-int infinite_buffer = -1;
+int infinite_buffer = -1;extern int video_disable;
+extern int audio_disable;
+extern int subtitle_disable;
 int loop = 1;
 int autoexit;
 int framedrop = -1;
@@ -718,24 +717,22 @@ int read_thread(void *arg)
         }
     }
 
-    if (!video_disable)
-        st_index[AVMEDIA_TYPE_VIDEO] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
-                                st_index[AVMEDIA_TYPE_VIDEO], -1, NULL, 0);
-    if (!audio_disable)
-        st_index[AVMEDIA_TYPE_AUDIO] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,
-                                st_index[AVMEDIA_TYPE_AUDIO],
-                                st_index[AVMEDIA_TYPE_VIDEO],
-                                NULL, 0);
-    if (!video_disable && !subtitle_disable)
-        st_index[AVMEDIA_TYPE_SUBTITLE] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE,
-                                st_index[AVMEDIA_TYPE_SUBTITLE],
-                                (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ?
-                                 st_index[AVMEDIA_TYPE_AUDIO] :
-                                 st_index[AVMEDIA_TYPE_VIDEO]),
-                                NULL, 0);
+    st_index[AVMEDIA_TYPE_VIDEO] = av_find_best_stream( ic, AVMEDIA_TYPE_VIDEO, 
+                                                        st_index[AVMEDIA_TYPE_VIDEO], 
+                                                        -1, NULL, 0
+                                                    );
+    st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream( ic, AVMEDIA_TYPE_AUDIO,
+                                                        st_index[AVMEDIA_TYPE_AUDIO],
+                                                        st_index[AVMEDIA_TYPE_VIDEO],
+                                                        NULL, 0
+                                                    );
+    st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(  ic, AVMEDIA_TYPE_SUBTITLE,
+                                                            st_index[AVMEDIA_TYPE_SUBTITLE],
+                                                            (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ?
+                                                            st_index[AVMEDIA_TYPE_AUDIO] :
+                                                            st_index[AVMEDIA_TYPE_VIDEO]),
+                                                            NULL, 0
+                                                        );
 
     videostate->show_mode = show_mode;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
