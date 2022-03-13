@@ -1134,8 +1134,8 @@ int create_window(){
     renderer = SDL_CreateRenderer(
         window, 
         -1, 
-        SDL_RENDERER_ACCELERATED 
-        | SDL_RENDERER_PRESENTVSYNC
+        SDL_RENDERER_ACCELERATED | 
+        SDL_RENDERER_PRESENTVSYNC
     );
     if (!window || !renderer){
         return -1; 
@@ -1374,12 +1374,8 @@ retry:
         }
 display:
         /* display picture */
-        if (!display_disable && videostate->force_refresh && videostate->show_mode == SHOW_MODE_VIDEO)
-        {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderClear(renderer);
+        if (!display_disable && videostate->force_refresh)
             video_display(videostate);
-        }
     }
     videostate->force_refresh = 0;
     if (show_status) {
@@ -2249,31 +2245,19 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         }
         
         if (cur_hur < 10)
-        {
             current_hour = "0" + std::to_string(cur_hur);
-        }
         else
-        {
             current_hour = std::to_string(cur_hur);
-        }
 
         if(cur_min < 10)
-        {
             current_min = "0" + std::to_string(cur_min);
-        }
         else
-        {
             current_min = std::to_string(cur_min);
-        }
 
         if(cur_sec < 10)
-        {
             current_sec = "0" + std::to_string(cur_sec);
-        }
         else
-        {
             current_sec = std::to_string(cur_sec);
-        }
 
         current_time = current_hour + ":" + current_min + ":" + current_sec;
         progressvar = (float)(get_master_clock(videostate) * 100 ) / ((double)avformat_ctx->duration/1000000);
