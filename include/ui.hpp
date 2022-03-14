@@ -18,6 +18,7 @@ extern bool req_seek;
 extern bool req_mute;
 extern bool req_trk_chnge;
 extern bool draw_ui;
+extern bool req_seek_progress;
 extern double ui_incr;
 extern int sound_var;
 extern bool vol_change;
@@ -25,7 +26,7 @@ extern double cur_tim;
 extern int cur_sec;
 extern int cur_min;
 extern int cur_hur;
-extern float progressvar;
+extern float progress_var;
 extern std::string max_video_duration;
 extern std::string current_time;
 

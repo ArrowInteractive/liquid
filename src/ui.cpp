@@ -19,11 +19,13 @@ bool req_seek = false;
 bool req_mute = false;
 bool req_trk_chnge = false;
 bool draw_ui = true;
+bool req_seek_progress = false;
 double ui_incr;
 double cur_tim;
 int cur_sec;
 int cur_min;
 int cur_hur;
+float progress_var;
 
 /*
 **  Functions
@@ -99,15 +101,18 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::LabelText("",current_time.c_str());
         ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80) / 100);
-        if(ImGui::SliderFloat("## ",&progressvar, 0.0f, 100.0f,"",ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput))
+        if(ImGui::SliderFloat("## ",&progress_var, 0.0f, 100.0f,"",ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput))
         {
-
+            if(ImGui::IsMouseClicked(0))
+            {
+                std::cout<<"Requesting seek to: "<<progress_var<<std::endl;
+                req_seek_progress = true;
+            }
         }
+
         ImGui::SameLine((ImGui::GetWindowWidth()*90) / 100);
         ImGui::LabelText("",max_video_duration.c_str());
         ImGui::NewLine();
-
-
         ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
         if(ImGui::Button("M",{(win_size.x*4) / 100, 20}))
         {
@@ -172,7 +177,6 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         }
 
         ImGui::End();
-        //imgui Rendering stuff
         ImGui::Render();
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     }

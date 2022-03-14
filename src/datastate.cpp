@@ -47,10 +47,10 @@ int display_disable;
 int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int is_ui_init = 0;
-float progressvar;
 double pos;
 double incr;
 double frac;
+double seek_time;
 AVFormatContext* avformat_ctx;
 
 std::string hour;
@@ -2225,6 +2225,22 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             req_trk_chnge = !req_trk_chnge;
         }
 
+        if(req_seek_progress){
+            seek_time = ((progress_var * avformat_ctx->duration/1000000)/100);
+            std::cout<<"Need to seek to :"<<seek_time<<std::endl;
+            if(seek_time < get_master_clock(videostate)){
+                seek_time = get_master_clock(videostate) - seek_time;
+                std::cout<<"Time diff : "<<-seek_time<<std::endl;
+                execute_seek(videostate, -seek_time);
+            }   
+            else if(seek_time > get_master_clock(videostate)){
+                seek_time = seek_time - get_master_clock(videostate);
+                std::cout<<"Time diff : "<<seek_time<<std::endl;
+                execute_seek(videostate, seek_time);
+            }
+            req_seek_progress = !req_seek_progress;
+        }
+
         if(vol_change){
             videostate->audio_volume = sound_var;
             vol_change = false;
@@ -2255,7 +2271,7 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             current_sec = std::to_string(cur_sec);
 
         current_time = current_hour + ":" + current_min + ":" + current_sec;
-        progressvar = (float)(get_master_clock(videostate) * 100 ) / ((double)avformat_ctx->duration/1000000);
+        progress_var = (float)(get_master_clock(videostate) * 100 ) / ((double)avformat_ctx->duration/1000000);
         SDL_PumpEvents();
     }
 }
