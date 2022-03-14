@@ -51,6 +51,7 @@ double pos;
 double incr;
 double frac;
 double seek_time;
+double master_clock;
 AVFormatContext* avformat_ctx;
 
 std::string hour;
@@ -2227,15 +2228,13 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
 
         if(req_seek_progress){
             seek_time = ((progress_var * avformat_ctx->duration/1000000)/100);
-            std::cout<<"Need to seek to :"<<seek_time<<std::endl;
-            if(seek_time < get_master_clock(videostate)){
-                seek_time = get_master_clock(videostate) - seek_time;
-                std::cout<<"Time diff : "<<-seek_time<<std::endl;
+            master_clock = get_master_clock(videostate);
+            if(seek_time < master_clock){
+                seek_time = master_clock - seek_time;
                 execute_seek(videostate, -seek_time);
             }   
-            else if(seek_time > get_master_clock(videostate)){
-                seek_time = seek_time - get_master_clock(videostate);
-                std::cout<<"Time diff : "<<seek_time<<std::endl;
+            else if(seek_time > master_clock){
+                seek_time = seek_time - master_clock;
                 execute_seek(videostate, seek_time);
             }
             req_seek_progress = !req_seek_progress;
