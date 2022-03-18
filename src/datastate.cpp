@@ -1120,12 +1120,6 @@ int create_window(){
          SDL_WINDOW_RESIZABLE
     );
 
-    // OpenGL Context
-    /*
-    SDL_GL_CreateContext(window);
-    init_gl(640, 480);
-    */
-
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(
         window, 
@@ -1295,9 +1289,6 @@ retry:
 
             if (lastvp->serial != vp->serial)
                 videostate->frame_timer = av_gettime_relative() / 1000000.0;
-
-            if (videostate->paused)
-                goto display;
 
             /* compute nominal last_duration */
             last_duration = vp_duration(videostate, lastvp, vp);
