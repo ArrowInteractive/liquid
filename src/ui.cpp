@@ -170,10 +170,16 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*86) / 100);
-        if(ImGui::Button("T",{(win_size.x*4) / 100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*81) / 100);
+        if(ImGui::Button("A",{(win_size.x*4) / 100, 20}))
         {
-            req_trk_chnge = true;
+
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*86) / 100);
+        if(ImGui::Button("S",{(win_size.x*4) / 100, 20}))
+        {
+
         }
 
         ImGui::End();
