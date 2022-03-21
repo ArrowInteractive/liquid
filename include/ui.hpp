@@ -16,9 +16,10 @@
 extern bool req_pause;
 extern bool req_seek;
 extern bool req_mute;
-extern bool req_trk_chnge;
-extern bool draw_ui;
 extern bool req_seek_progress;
+extern bool req_audio_track_change;
+extern bool req_sub_track_change;
+extern bool draw_ui;
 extern double ui_incr;
 extern int sound_var;
 extern bool vol_change;

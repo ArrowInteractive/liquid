@@ -2191,30 +2191,27 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         // Handle UI events
         if(req_pause){
             toggle_pause(videostate);
-            req_pause = !req_pause;
+            req_pause = false;
         }
 
         if(req_seek){
             execute_seek(videostate, ui_incr);
-            req_seek = !req_seek;
+            req_seek = false;
         }
 
         if(req_mute){
             toggle_mute(videostate);
-            req_mute = !req_mute;
+            req_mute = false;
         }
 
-        if(req_trk_chnge){
-            stream_cycle_channel(videostate, AVMEDIA_TYPE_VIDEO);
+        if(req_audio_track_change){
             stream_cycle_channel(videostate, AVMEDIA_TYPE_AUDIO);
-            stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
+            req_audio_track_change = false;
+        }
 
-            /*
-            **  Work around for channel switch distortion 
-            */
-            incr = seek_interval ? -seek_interval : -1.0;
-            execute_seek(videostate, incr);
-            req_trk_chnge = !req_trk_chnge;
+        if(req_sub_track_change){
+            stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
+            req_sub_track_change = false;
         }
 
         if(req_seek_progress){
