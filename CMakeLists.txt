@@ -15,6 +15,8 @@ find_package(OpenGL REQUIRED)
 
 include_directories(include)
 include_directories(${OPENGL_INCLUDE_DIRS})
+include_directories(vendor/imgui-cmake/imgui)
+include_directories(vendor/imgui-cmake/imgui/backends)
 
 FILE(GLOB SOURCES src/*.cpp)
 

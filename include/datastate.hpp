@@ -217,9 +217,6 @@ extern int64_t start_time;
 extern int64_t duration;
 extern int show_status;
 extern char* wanted_stream_spec[AVMEDIA_TYPE_NB];
-extern int video_disable;
-extern int audio_disable;
-extern int subtitle_disable;
 extern enum ShowMode show_mode;
 extern int screen_width;
 extern int screen_height;
@@ -249,6 +246,7 @@ extern int is_ui_init;
 extern double pos;
 extern double incr;
 extern double frac;
+extern AVFormatContext* avformat_ctx;
 extern SDL_RendererFlip need_flip;
 
 extern SDL_Window *window;

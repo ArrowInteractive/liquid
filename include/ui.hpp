@@ -16,11 +16,20 @@
 extern bool req_pause;
 extern bool req_seek;
 extern bool req_mute;
-extern bool req_trk_chnge;
+extern bool req_seek_progress;
+extern bool req_audio_track_change;
+extern bool req_sub_track_change;
 extern bool draw_ui;
 extern double ui_incr;
 extern int sound_var;
 extern bool vol_change;
+extern double cur_tim;
+extern int cur_sec;
+extern int cur_min;
+extern int cur_hur;
+extern float progress_var;
+extern std::string max_video_duration;
+extern std::string current_time;
 
 /*
 **  Functions

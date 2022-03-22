@@ -21,9 +21,6 @@ int64_t start_time = AV_NOPTS_VALUE;
 int64_t duration = AV_NOPTS_VALUE;
 int show_status = -1;
 char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
-int video_disable;
-int audio_disable;
-int subtitle_disable;
 enum ShowMode show_mode = SHOW_MODE_NONE;
 int screen_width  = 0;
 int screen_height = 0;
@@ -53,6 +50,20 @@ int is_ui_init = 0;
 double pos;
 double incr;
 double frac;
+double seek_time;
+double master_clock;
+AVFormatContext* avformat_ctx;
+
+std::string hour;
+std::string min;
+std::string sec;
+
+std::string current_hour;
+std::string current_min;
+std::string current_sec;
+
+std::string current_time;
+std::string max_video_duration;
 SDL_RendererFlip need_flip;
 
 SDL_Window *window;
@@ -72,7 +83,7 @@ VideoState *stream_open(char *filename)
     if (!videostate)
         return NULL;
     
-    AVFormatContext* avformat_ctx = avformat_alloc_context();
+    avformat_ctx = avformat_alloc_context();
     avformat_open_input(&avformat_ctx, filename, NULL, NULL);
 
     videostate->last_video_stream = videostate->video_stream = -1;
@@ -85,6 +96,38 @@ VideoState *stream_open(char *filename)
     videostate->iformat = av_find_input_format(avformat_ctx->iformat->name);
     videostate->ytop    = 0;
     videostate->xleft   = 0;
+
+    int hours, mins, secs, us;
+
+    if (avformat_ctx->duration != AV_NOPTS_VALUE) {
+        
+        int64_t duration = avformat_ctx->duration + 5000;
+        secs  = duration / AV_TIME_BASE;
+        us    = duration % AV_TIME_BASE;
+        mins  = secs / 60;   
+        secs %= 60;          
+        hours = mins / 60;   
+        mins %= 60;
+    }
+
+
+    if(hours < 10)
+        hour = "0"+std::to_string(hours);
+    else
+        hour = std::to_string(hours);
+
+    if(mins < 10)
+        min = "0"+std::to_string(mins);
+    else
+        min = std::to_string(mins);
+
+    if(secs < 10)
+        sec = "0"+std::to_string(secs);
+    else
+        sec = std::to_string(secs);
+
+    max_video_duration = hour+":"+min+":"+sec;
+
 
     /* start video display */
     if (frame_queue_init(&videostate->pictq, &videostate->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0)
@@ -602,7 +645,7 @@ int read_thread(void *arg)
     }
     ic->interrupt_callback.callback = decode_interrupt_cb;
     ic->interrupt_callback.opaque = videostate;
-    // Compilation fails if FFmpeg < 5 here if we dont do casting
+    // Casting here to make it work with both FFmpeg 5 and 4
     err = avformat_open_input(&ic, videostate->filename, (AVInputFormat *)videostate->iformat, NULL);
     if (err < 0) {
         ret = -1;
@@ -673,24 +716,22 @@ int read_thread(void *arg)
         }
     }
 
-    if (!video_disable)
-        st_index[AVMEDIA_TYPE_VIDEO] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
-                                st_index[AVMEDIA_TYPE_VIDEO], -1, NULL, 0);
-    if (!audio_disable)
-        st_index[AVMEDIA_TYPE_AUDIO] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,
-                                st_index[AVMEDIA_TYPE_AUDIO],
-                                st_index[AVMEDIA_TYPE_VIDEO],
-                                NULL, 0);
-    if (!video_disable && !subtitle_disable)
-        st_index[AVMEDIA_TYPE_SUBTITLE] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE,
-                                st_index[AVMEDIA_TYPE_SUBTITLE],
-                                (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ?
-                                 st_index[AVMEDIA_TYPE_AUDIO] :
-                                 st_index[AVMEDIA_TYPE_VIDEO]),
-                                NULL, 0);
+    st_index[AVMEDIA_TYPE_VIDEO] = av_find_best_stream( ic, AVMEDIA_TYPE_VIDEO, 
+                                                        st_index[AVMEDIA_TYPE_VIDEO], 
+                                                        -1, NULL, 0
+                                                    );
+    st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream( ic, AVMEDIA_TYPE_AUDIO,
+                                                        st_index[AVMEDIA_TYPE_AUDIO],
+                                                        st_index[AVMEDIA_TYPE_VIDEO],
+                                                        NULL, 0
+                                                    );
+    st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(  ic, AVMEDIA_TYPE_SUBTITLE,
+                                                            st_index[AVMEDIA_TYPE_SUBTITLE],
+                                                            (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ?
+                                                            st_index[AVMEDIA_TYPE_AUDIO] :
+                                                            st_index[AVMEDIA_TYPE_VIDEO]),
+                                                            NULL, 0
+                                                        );
 
     videostate->show_mode = show_mode;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
@@ -1079,15 +1120,12 @@ int create_window(){
          SDL_WINDOW_RESIZABLE
     );
 
-    SDL_GL_CreateContext(window);
-    init_gl(640, 480);
-
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     renderer = SDL_CreateRenderer(
         window, 
         -1, 
-        SDL_RENDERER_ACCELERATED 
-        | SDL_RENDERER_PRESENTVSYNC
+        SDL_RENDERER_ACCELERATED | 
+        SDL_RENDERER_PRESENTVSYNC
     );
     if (!window || !renderer){
         return -1; 
@@ -1252,9 +1290,6 @@ retry:
             if (lastvp->serial != vp->serial)
                 videostate->frame_timer = av_gettime_relative() / 1000000.0;
 
-            if (videostate->paused)
-                goto display;
-
             /* compute nominal last_duration */
             last_duration = vp_duration(videostate, lastvp, vp);
             delay = compute_target_delay(last_duration, videostate);
@@ -1317,7 +1352,7 @@ retry:
                     }
                 }
             }
-
+            
             frame_queue_next(&videostate->pictq);
             videostate->force_refresh = 1;
 
@@ -1326,12 +1361,8 @@ retry:
         }
 display:
         /* display picture */
-        if (!display_disable && videostate->force_refresh && videostate->show_mode == SHOW_MODE_VIDEO)
-        {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderClear(renderer);
+        if (!display_disable && videostate->force_refresh)
             video_display(videostate);
-        }
     }
     videostate->force_refresh = 0;
     if (show_status) {
@@ -1392,6 +1423,8 @@ int video_open(VideoState *videostate)
     int w,h;
 
     w = screen_width ? screen_width : default_width;
+    if(w < 645)
+        w = 645;
     h = screen_height ? screen_height : default_height;
 
     if (!window_title)
@@ -2158,30 +2191,41 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         // Handle UI events
         if(req_pause){
             toggle_pause(videostate);
-            req_pause = !req_pause;
+            req_pause = false;
         }
 
         if(req_seek){
             execute_seek(videostate, ui_incr);
-            req_seek = !req_seek;
+            req_seek = false;
         }
 
         if(req_mute){
             toggle_mute(videostate);
-            req_mute = !req_mute;
+            req_mute = false;
         }
 
-        if(req_trk_chnge){
-            stream_cycle_channel(videostate, AVMEDIA_TYPE_VIDEO);
+        if(req_audio_track_change){
             stream_cycle_channel(videostate, AVMEDIA_TYPE_AUDIO);
-            stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
+            req_audio_track_change = false;
+        }
 
-            /*
-            **  Work around for channel switch distortion 
-            */
-            incr = seek_interval ? -seek_interval : -1.0;
-            execute_seek(videostate, incr);
-            req_trk_chnge = !req_trk_chnge;
+        if(req_sub_track_change){
+            stream_cycle_channel(videostate, AVMEDIA_TYPE_SUBTITLE);
+            req_sub_track_change = false;
+        }
+
+        if(req_seek_progress){
+            seek_time = ((progress_var * avformat_ctx->duration/1000000)/100);
+            master_clock = get_master_clock(videostate);
+            if(seek_time < master_clock){
+                seek_time = master_clock - seek_time;
+                execute_seek(videostate, -seek_time);
+            }   
+            else if(seek_time > master_clock){
+                seek_time = seek_time - master_clock;
+                execute_seek(videostate, seek_time);
+            }
+            req_seek_progress = !req_seek_progress;
         }
 
         if(vol_change){
@@ -2189,6 +2233,32 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
             vol_change = false;
         }
 
+        // Calculate clock values
+        if(get_master_clock(videostate) <= (double)avformat_ctx->duration/1000000){
+            cur_hur = get_master_clock(videostate)/3600;
+            cur_tim = ((int)get_master_clock(videostate))%3600;
+            cur_min = cur_tim/60;
+            cur_tim = ((int)cur_tim)%60;
+            cur_sec = cur_tim;
+        }
+        
+        if (cur_hur < 10)
+            current_hour = "0" + std::to_string(cur_hur);
+        else
+            current_hour = std::to_string(cur_hur);
+
+        if(cur_min < 10)
+            current_min = "0" + std::to_string(cur_min);
+        else
+            current_min = std::to_string(cur_min);
+
+        if(cur_sec < 10)
+            current_sec = "0" + std::to_string(cur_sec);
+        else
+            current_sec = std::to_string(cur_sec);
+
+        current_time = current_hour + ":" + current_min + ":" + current_sec;
+        progress_var = (float)(get_master_clock(videostate) * 100 ) / ((double)avformat_ctx->duration/1000000);
         SDL_PumpEvents();
     }
 }

@@ -8,7 +8,7 @@
 **  Globals
 */
 
-int progressvar;
+
 int sound_var = 128;
 int sound_tmp;
 bool vol_change = false;
@@ -17,10 +17,16 @@ static bool first = true;
 bool req_pause = false;
 bool req_seek = false;
 bool req_mute = false;
-bool req_trk_chnge = false;
+bool req_audio_track_change = false;
+bool req_sub_track_change = false;
 bool draw_ui = true;
+bool req_seek_progress = false;
 double ui_incr;
-const char* label_text ="00:00:00";
+double cur_tim;
+int cur_sec;
+int cur_min;
+int cur_hur;
+float progress_var;
 
 /*
 **  Functions
@@ -93,15 +99,21 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
         ImGui::NewLine();
         // Fixme: Bad code
         ImGui::SameLine((ImGui::GetWindowWidth()*0.5) / 100);
-        ImGui::LabelText("",label_text);
+        ImGui::LabelText("",current_time.c_str());
         ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
         ImGui::PushItemWidth((ImGui::GetWindowWidth()*80) / 100);
-        ImGui::SliderInt(" ",&progressvar, 0, 100);
+        if(ImGui::SliderFloat("## ",&progress_var, 0.0f, 100.0f,"",ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput))
+        {
+            if(ImGui::IsMouseClicked(0))
+            {
+                std::cout<<"Requesting seek to: "<<progress_var<<std::endl;
+                req_seek_progress = true;
+            }
+        }
+
         ImGui::SameLine((ImGui::GetWindowWidth()*90) / 100);
-        ImGui::LabelText("",label_text);
+        ImGui::LabelText("",max_video_duration.c_str());
         ImGui::NewLine();
-
-
         ImGui::SameLine((ImGui::GetWindowWidth()*10) / 100);
         if(ImGui::Button("M",{(win_size.x*4) / 100, 20}))
         {
@@ -159,14 +171,19 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
             req_seek = true;
         }
 
-        ImGui::SameLine((ImGui::GetWindowWidth()*86) / 100);
-        if(ImGui::Button("T",{(win_size.x*4) / 100, 20}))
+        ImGui::SameLine((ImGui::GetWindowWidth()*81) / 100);
+        if(ImGui::Button("A",{(win_size.x*4) / 100, 20}))
         {
-            req_trk_chnge = true;
+
+        }
+
+        ImGui::SameLine((ImGui::GetWindowWidth()*86) / 100);
+        if(ImGui::Button("S",{(win_size.x*4) / 100, 20}))
+        {
+
         }
 
         ImGui::End();
-        //imgui Rendering stuff
         ImGui::Render();
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     }
