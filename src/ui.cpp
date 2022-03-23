@@ -50,7 +50,7 @@ void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
 }
 
 void update_imgui(SDL_Renderer* renderer, int width, int height)
-{   
+{ 
     if(draw_ui){
         // Start the Dear ImGui frame
         ImGui_ImplSDLRenderer_NewFrame();
