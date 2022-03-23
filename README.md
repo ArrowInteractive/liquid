@@ -18,7 +18,7 @@ Then execute ```./build.sh```
 
 ### RPM based distributions(Fedora, RHEL, etc.):
 
-Install the necessary packages using DNF:
+Install the necessary packages using DNF(Incomplete list):
 ```
 sudo dnf install ffmpeg ffmpeg-devel g++ gdb mesa-libGL-devel mesa-libGLU-devel mesa-libGLw-devel mesa-libOSMesa-devel libXext-devel alsa-lib-devel
 ```
