@@ -7,18 +7,27 @@ Lightweight media player written in C++ using FFmpeg and SDL2. Currently in deve
 
 ## Linux 
 
-### Arch based systems:
+### Arch based distributions:
 
-Install the necessary packages through Pacman by using:
+Install the necessary packages using PACMAN:
 ```
 sudo pacman -S --needed base-devel cmake ninja ffmpeg
 ```
 
 Then execute ```./build.sh```
 
-### Debian based systems:
+### RPM based distributions(Fedora, RHEL, etc.):
 
-Install the necessary packages through APT by using:
+Install the necessary packages using DNF:
+```
+sudo dnf install ffmpeg ffmpeg-devel g++ gdb mesa-libGL-devel mesa-libGLU-devel mesa-libGLw-devel mesa-libOSMesa-devel libXext-devel alsa-lib-devel
+```
+
+Then execute ```./build.sh```
+
+### Debian based distributions:
+
+Install the necessary packages using APT:
 ```
 sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev cmake ninja-build
 ```
