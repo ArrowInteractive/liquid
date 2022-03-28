@@ -34,6 +34,15 @@ sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevi
 
 Then execute ```./build.sh```
 
+### Void Linux
+
+Install the necessary packages using XBPS:
+```
+sudo xbps-install cmake ninja ffmpeg ffmpeg-devel pkg-config gdb SDL2-devel
+```
+
+Then execute ```./build.sh```
+
 
 ## Windows
 

@@ -4,17 +4,13 @@ project(Liquid)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(OpenGL_GL_PREFERENCE GLVND)
 
 if (WIN32)
     message(STATUS ">>> Not Linux")
     set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif (WIN32)
 
-find_package(OpenGL REQUIRED)
-
 include_directories(include)
-include_directories(${OPENGL_INCLUDE_DIRS})
 include_directories(vendor/imgui-cmake/imgui)
 include_directories(vendor/imgui-cmake/imgui/backends)
 
@@ -29,5 +25,4 @@ target_link_libraries(liquid
     SDL2main
     SDL2-static
     imgui
-    ${OPENGL_LIBRARIES}
 )
