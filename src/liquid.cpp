@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
     if (SDL_Init (flags)) {
         std::cout<<"ERROR: Could not initialize SDL!"<<std::endl;
+        std::cout<<SDL_GetError()<<std::endl;
         return -1;
     }
 

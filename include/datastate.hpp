@@ -7,7 +7,6 @@
 #include "ui.hpp"
 #include "packetqueue.hpp"
 #include "framequeue.hpp"
-#include "shader.hpp"
 
 /*
 **  Macros

@@ -1270,7 +1270,6 @@ void video_refresh(void *arg, double *remaining_time)
 retry:
         if (frame_queue_nb_remaining(&videostate->pictq) == 0) {
             // nothing to do, no picture to display in the queue
-            SDL_RenderClear(renderer);
             update_imgui(renderer, videostate->width, videostate->height);
             SDL_RenderPresent(renderer);
         } 
@@ -1772,7 +1771,9 @@ int audio_decode_frame(VideoState *videostate)
     Frame *af;
 
     if (videostate->paused)
+    {
         return -1;
+    }
 
     do {
 #if defined(_WIN32)
@@ -2180,7 +2181,6 @@ void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event)
         
         // Display last received frame here
         if(videostate->paused){
-            SDL_RenderClear(renderer);
             if (videostate->video_st)
                 video_image_display(videostate);
             
