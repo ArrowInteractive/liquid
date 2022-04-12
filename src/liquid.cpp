@@ -4,6 +4,9 @@
 
 #include "liquid.hpp"
 #include "ui.hpp"
+#include "Stream.hpp"
+#include "Window.hpp"
+#include "Event.hpp"
 
 
 Liquid::Liquid(int argc, char *argv[])
