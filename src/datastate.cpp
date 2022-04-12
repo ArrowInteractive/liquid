@@ -49,9 +49,6 @@ int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 
 AVFormatContext* avformat_ctx;
-
-
-
 std::string current_time;
 std::string max_video_duration;
 SDL_RendererFlip need_flip;
@@ -59,13 +56,6 @@ SDL_RendererFlip need_flip;
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_GLContext context;
-
-
-
-/*
-**  Event functions
-*/
-
 
 
 /*

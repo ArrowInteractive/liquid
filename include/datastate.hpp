@@ -282,14 +282,6 @@ static const struct TextureFormatEntry {
 **  Functions
 */
 
-
-
-// Seek & Pause class
-
-
-// Event class 
-
-
 // Filtering functions
 int init_filters(const char *filters_descr);
 
