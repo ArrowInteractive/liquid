@@ -64,7 +64,7 @@ struct AudioParams{
     int bytes_per_sec;
 };
 
-struct Clock{
+struct ClockBase{
     double pts;           /* clock base */
     double pts_drift;     /* clock base minus time at which we updated the clock */
     double last_updated;
@@ -88,7 +88,7 @@ enum ShowMode{
         SHOW_MODE_NB
 };
 
-struct Decoder{
+struct DecoderBase{
     AVPacket *pkt;
     PacketQueue *queue;
     AVCodecContext *avctx;
@@ -123,17 +123,17 @@ struct VideoState {
     AVFilterGraph *filter_graph;
     int realtime;
 
-    Clock audclk;
-    Clock vidclk;
-    Clock extclk;
+    ClockBase audclk;
+    ClockBase vidclk;
+    ClockBase extclk;
 
     FrameQueue pictq;
     FrameQueue subpq;
     FrameQueue sampq;
 
-    Decoder auddec;
-    Decoder viddec;
-    Decoder subdec;
+    DecoderBase auddec;
+    DecoderBase viddec;
+    DecoderBase subdec;
 
     int audio_stream;
 
@@ -282,93 +282,8 @@ static const struct TextureFormatEntry {
 **  Functions
 */
 
-// Stream functions
-VideoState *stream_open(char *filename);
-void stream_close(VideoState *videostate);
-int stream_component_open(VideoState *videostate, int stream_index);
-void stream_component_close(VideoState *videostate, int stream_index);
-int stream_has_enough_packets(AVStream *st, int stream_id, PacketQueue *queue);
-
-// Clock functions
-void init_clock(Clock *c, int *queue_serial);
-void set_clock(Clock *c, double pts, int serial);
-void set_clock_at(Clock *c, double pts, int serial, double time);
-double get_clock(Clock *c);
-int is_realtime(AVFormatContext *s);
-void sync_clock_to_slave(Clock *c, Clock *slave);
-int get_master_sync_type(VideoState *videostate);
-double get_master_clock(VideoState *videostate);
-void check_external_clock_speed(VideoState *videostate);
-void set_clock_speed(Clock *c, double speed);
-double vp_duration(VideoState *videostate, Frame *vp, Frame *nextvp);
-double compute_target_delay(double delay, VideoState *videostate);
-
-// Decoder functions
-int decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond);
-int decoder_start(Decoder *d, int (*fn)(void *), const char *thread_name, void* arg);
-void decoder_abort(Decoder *d, FrameQueue *fq);
-void decoder_destroy(Decoder *d);
-
-// Thread functions
-int read_thread(void *arg);
-int video_thread(void *arg);
-int audio_thread(void *arg);
-int subtitle_thread(void *arg);
-
-// Decode functions
-int decode_interrupt_cb(void *ctx);
-int decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub);
-
-// Window functions
-int create_window();
-void set_default_window_size(int width, int height, AVRational sar);
-void calculate_display_rect(
-    SDL_Rect *rect, int scr_xleft, 
-    int scr_ytop, int scr_width, int scr_height,
-    int pic_width, int pic_height, AVRational pic_sar
-);
-void update_sample_display(VideoState *videostate, short *samples, int samples_size);
-
-// Video functions
-int get_video_frame(VideoState *videostate, AVFrame *frame);
-int queue_picture(VideoState *videostate, AVFrame *src_frame, double pts, double duration, int64_t pos, int serial);
-void video_refresh(void *arg, double *remaining_time);
-void update_video_pts(VideoState *videostate, double pts, int64_t pos, int serial);
-void video_display(VideoState *videostate);
-int video_open(VideoState *videostate);
-void fill_rectangle(int x, int y, int w, int h);
-int compute_mod(int a, int b);
-int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, int new_height, SDL_BlendMode blendmode, int init_texture);
-void video_image_display(VideoState *videostate);
-int upload_texture(SDL_Texture **tex, AVFrame *frame, struct SwsContext **img_convert_ctx);
-void set_sdl_yuv_conversion_mode(AVFrame *frame);
-void get_sdl_pix_fmt_and_blendmode(int format, Uint32 *sdl_pix_fmt, SDL_BlendMode *sdl_blendmode);
-
 // Filtering functions
 int init_filters(const char *filters_descr);
-
-// Audio functions
-int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams *audio_hw_params);
-void sdl_audio_callback(void *opaque, Uint8 *stream, int len);
-int audio_decode_frame(VideoState *videostate);
-int synchronize_audio(VideoState *videostate, int nb_samples);
-
-// Seek & Pause functions
-void step_to_next_frame(VideoState *videostate);
-void stream_toggle_pause(VideoState *videostate);
-void stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int seek_by_bytes);
-void execute_seek(VideoState *videostate, double incr);
-
-// Event functions
-void event_loop(VideoState *videostate);
-void refresh_loop_wait_event(VideoState *videostate, SDL_Event *event);
-void toggle_full_screen(VideoState *videostate);
-void toggle_pause(VideoState *videostate);
-void toggle_mute(VideoState *videostate);
-void update_volume(VideoState *videostate);
-void stream_cycle_channel(VideoState *videostate, int codec_type);
-void seek_chapter(VideoState *videostate, int incr);
-Uint32 hide_ui(Uint32 interval,void* param);
 
 // Exit functions
 void do_exit(VideoState *videostate);
