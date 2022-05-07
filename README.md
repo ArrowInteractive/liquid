@@ -53,5 +53,5 @@ pacman -S --needed base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja ming
 ```
 Add the MSYS2 paths to your system environment variables.
 
-Then execute ```./cleanbuild.ps1```
+Then execute ```.\build.ps1```
 
