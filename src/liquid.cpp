@@ -61,8 +61,6 @@ void Liquid::run()
     return;
 }
 
-
-
 int main(int argc, char *argv[])
 {
     Liquid *liquid = new Liquid(argc,argv);

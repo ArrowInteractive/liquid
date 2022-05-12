@@ -23,13 +23,13 @@ void SeekPause::stream_toggle_pause(VideoState *videostate)
     videostate->paused = videostate->audclk.paused = videostate->vidclk.paused = videostate->extclk.paused = !videostate->paused;
 }
 
-void SeekPause::stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int seek_by_bytes)
+void SeekPause::stream_seek(VideoState *videostate, int64_t pos, int64_t rel, int by_bytes)
 {
     if (!videostate->seek_req) {
         videostate->seek_pos = pos;
         videostate->seek_rel = rel;
         videostate->seek_flags &= ~AVSEEK_FLAG_BYTE;
-        if (seek_by_bytes)
+        if (by_bytes)
             videostate->seek_flags |= AVSEEK_FLAG_BYTE;
         videostate->seek_req = 1;
         SDL_CondSignal(videostate->continue_read_thread);

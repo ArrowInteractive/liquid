@@ -20,7 +20,7 @@ Then execute ```./build.sh```
 
 Install the necessary packages using DNF(Incomplete list):
 ```
-sudo dnf install ffmpeg ffmpeg-devel g++ gdb mesa-libGL-devel mesa-libGLU-devel mesa-libGLw-devel mesa-libOSMesa-devel libXext-devel alsa-lib-devel
+sudo dnf install ffmpeg ffmpeg-devel g++ gdb mesa-libGL-devel mesa-libGLU-devel mesa-libGLw-devel mesa-libOSMesa-devel libXext-devel alsa-lib-devel cmake ninja-build
 ```
 
 Then execute ```./build.sh```
@@ -56,5 +56,5 @@ Add the MSYS2 paths to your system environment variables.
 They may look like this:
 <b>C:\msys64\usr\bin and C:\msys64\mingw64\bin</b>
 
-Then execute ```./cleanbuild.ps1```
+Then execute ```.\build.ps1```
 
