@@ -56,5 +56,7 @@ Add the MSYS2 paths to your system environment variables.
 They may look like this:
 <b>C:\msys64\usr\bin and C:\msys64\mingw64\bin</b>
 
+Open a PowerShell prompt as administrator and execute ```Set-ExecutionPolicy Unrestricted -Force``` to enable execution of PowerShell scripts.
+
 Then execute ```.\build.ps1```
 
