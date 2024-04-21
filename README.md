@@ -7,42 +7,63 @@ Lightweight media player written in C++ using FFmpeg and SDL2. Currently in deve
 
 ## Linux 
 
-### Arch based distributions:
+### Installing Dependency
+
+#### Arch based distributions:
 
 Install the necessary packages using PACMAN:
 ```
-sudo pacman -S --needed base-devel cmake ninja ffmpeg
+sudo pacman -S --needed base-devel make cmake ninja ffmpeg
 ```
 
-Then execute ```./build.sh```
-
-### RPM based distributions(Fedora, RHEL, etc.):
+#### RPM based distributions(Fedora, RHEL, etc.):
 
 Install the necessary packages using DNF(Incomplete list):
 ```
-sudo dnf install ffmpeg ffmpeg-devel g++ gdb mesa-libGL-devel mesa-libGLU-devel mesa-libGLw-devel mesa-libOSMesa-devel libXext-devel alsa-lib-devel cmake ninja-build
+sudo dnf install ffmpeg ffmpeg-devel g++ gdb mesa-libGL-devel mesa-libGLU-devel mesa-libGLw-devel mesa-libOSMesa-devel libXext-devel alsa-lib-devel make cmake ninja-build
 ```
 
-Then execute ```./build.sh```
-
-### Debian based distributions:
+#### Debian based distributions:
 
 Install the necessary packages using APT:
 ```
-sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev cmake ninja-build
+sudo apt install ffmpeg libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswresample-dev libswscale-dev make cmake ninja-build
 ```
 
-Then execute ```./build.sh```
-
-### Void Linux
+#### Void Linux
 
 Install the necessary packages using XBPS:
 ```
-sudo xbps-install cmake ninja ffmpeg ffmpeg-devel pkg-config gdb SDL2-devel
+sudo xbps-install cmake make ninja ffmpeg ffmpeg-devel pkg-config gdb SDL2-devel
 ```
 
-Then execute ```./build.sh```
+### Building
 
+To build the project:
+
+ninja:
+```
+make build_ninja
+```
+or
+
+make
+```
+make build_make
+```
+
+### Install
+
+To Install to local binary:
+
+ninja:
+```
+make install_ninja
+```
+make:
+```
+make install_make
+```
 
 ## Windows
 
