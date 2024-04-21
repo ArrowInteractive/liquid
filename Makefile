@@ -2,11 +2,15 @@ PROJ_DIR = $(shell pwd)
 BUILD_DIR = $(PROJ_DIR)/build
 
 list:
+	@echo ""
+	@echo "Makefiles commands  "
+	@echo ""
 	@echo "configure_dir : configure the build directory"
 	@echo "build_ninja : configure the cmake and build with ninja file"
 	@echo "build_make : configure the cmake and build with make files"
 	@echo "install_ninja : install to local bin folder after building with ninja file"
 	@echo "install_make : install to local bin folder after building with make file"
+	@echo "uninstall : deletes the liquid binary from file"
 
 configure_dir:
 	@rm -rf $(BUILD_DIR)
