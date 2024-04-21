@@ -2,6 +2,8 @@
 **  Includes
 */
 
+#include <memory>
+
 #include "liquid.hpp"
 #include "ui.hpp"
 #include "Stream.hpp"
@@ -63,6 +65,6 @@ void Liquid::run()
 
 int main(int argc, char *argv[])
 {
-    Liquid *liquid = new Liquid(argc,argv);
-    liquid->run();
+  std::unique_ptr<Liquid> liquid(new Liquid(argc, argv));
+  liquid->run();
 }

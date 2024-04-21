@@ -46,14 +46,14 @@ void init_imgui(SDL_Window* window, SDL_Renderer* renderer)
     // window is the SDL_Window*
     // context is the SDL_GLContext
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer_Init(renderer);
+    ImGui_ImplSDLRenderer2_Init(renderer);
 }
 
 void update_imgui(SDL_Renderer* renderer, int width, int height)
 { 
     if(draw_ui){
         // Start the Dear ImGui frame
-        ImGui_ImplSDLRenderer_NewFrame();
+        ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
@@ -220,7 +220,7 @@ void update_imgui(SDL_Renderer* renderer, int width, int height)
 
         ImGui::End();
         ImGui::Render();
-        ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     }
 }
 
@@ -231,7 +231,7 @@ void imgui_event_handler(SDL_Event& event){
 void destroy_imgui_data()
 {
     // Cleanup
-    ImGui_ImplSDLRenderer_Shutdown();
+    ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
