@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "liquid.hpp"
-#include "ui.hpp"
+#include "Liquid.hpp"
+#include "UI.hpp"
 #include "Stream.hpp"
 #include "Window.hpp"
 #include "Event.hpp"
