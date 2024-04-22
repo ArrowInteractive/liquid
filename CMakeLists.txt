@@ -15,7 +15,7 @@ endif (WIN32)
 
 include_directories(include)
 
-FILE(GLOB SOURCES src/*.cpp)
+FILE(GLOB_RECURSE SOURCES src/*.cpp)
 
 add_executable(liquid ${SOURCES})
 # add dependencies

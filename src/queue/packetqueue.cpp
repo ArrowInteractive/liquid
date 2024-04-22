@@ -2,7 +2,7 @@
 **  Includes
 */
 
-#include "packetqueue.hpp"
+#include "queue/packetqueue.hpp"
 
 /*
 **  Functions

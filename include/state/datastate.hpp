@@ -5,8 +5,8 @@
 */
 
 #include "UI.hpp"
-#include "packetqueue.hpp"
-#include "framequeue.hpp"
+#include "queue/packetqueue.hpp"
+#include "queue/framequeue.hpp"
 
 /*
 **  Macros
