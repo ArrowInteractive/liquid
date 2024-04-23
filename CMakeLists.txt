@@ -10,7 +10,7 @@ set(imgui_platform "SDL2")
 
 if (WIN32)
     message(STATUS ">>> Not Linux")
-    set(CMAKE_EXE_LINKER_FLAGS "-static")
+    set(CMAKE_EXE_LINKER_FLAGS "-static -mwindows")
 endif (WIN32)
 
 include_directories(include)
