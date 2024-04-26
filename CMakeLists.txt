@@ -8,10 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(imgui_renderer "SDL_Renderer2")
 set(imgui_platform "SDL2")
 
-if (WIN32)
-    message(STATUS ">>> Not Linux")
-    set(CMAKE_EXE_LINKER_FLAGS "-static -mwindows")
-endif (WIN32)
+if(WIN32)
+  message(STATUS ">>> Not Linux")
+  set(CMAKE_EXE_LINKER_FLAGS "-static -mwindows")
+endif()
 
 include_directories(include)
 
