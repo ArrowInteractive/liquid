@@ -78,7 +78,7 @@ pacman -Syu
 Then install the necessary packages through Pacman by using:
 
 ```
-pacman -S --needed mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-make mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
+pacman -Syu --needed make mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
 ```
 Add the MSYS2 paths to your system environment variables.
 
