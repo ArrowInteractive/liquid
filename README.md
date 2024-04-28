@@ -67,17 +67,22 @@ make install_make
 
 ## Windows
 
-Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform for Windows, Then install the necessary packages through Pacman by using:
+Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform for Windows,
+
+First update the msys with pacman using:
 
 ```
-pacman -S --needed base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
+pacman -Syu
+```
+
+Then install the necessary packages through Pacman by using:
+
+```
+pacman -Syu --needed make mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
 ```
 Add the MSYS2 paths to your system environment variables.
 
 They may look like this:
 <b>C:\msys64\usr\bin and C:\msys64\mingw64\bin</b>
 
-Open a PowerShell prompt as administrator and execute ```Set-ExecutionPolicy Unrestricted -Force``` to enable execution of PowerShell scripts.
-
-Then execute ```.\build.ps1```
-
+Then execute ```make build_ninja```

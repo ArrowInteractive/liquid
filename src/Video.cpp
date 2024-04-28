@@ -1,6 +1,6 @@
 #include "Video.hpp"
 #include "Decode.hpp"
-#include "Clock.hpp"
+#include "utils/Clock.hpp"
 #include "Window.hpp"
 #include "SeekPause.hpp"
 

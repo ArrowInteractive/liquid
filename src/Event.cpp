@@ -1,7 +1,7 @@
 #include "Event.hpp"
 #include "SeekPause.hpp"
 #include "Video.hpp"
-#include "Clock.hpp"
+#include "utils/Clock.hpp"
 #include "Stream.hpp"
 
 int step;

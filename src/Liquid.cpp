@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "liquid.hpp"
-#include "ui.hpp"
+#include "Liquid.hpp"
+#include "UI.hpp"
 #include "Stream.hpp"
 #include "Window.hpp"
 #include "Event.hpp"
@@ -63,8 +63,3 @@ void Liquid::run()
     return;
 }
 
-int main(int argc, char *argv[])
-{
-  std::unique_ptr<Liquid> liquid(new Liquid(argc, argv));
-  liquid->run();
-}
