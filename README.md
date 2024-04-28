@@ -79,5 +79,5 @@ They may look like this:
 
 Open a PowerShell prompt as administrator and execute ```Set-ExecutionPolicy Unrestricted -Force``` to enable execution of PowerShell scripts.
 
-Then execute ```.\build.ps1```
+Then execute ```make build_ninja```
 
