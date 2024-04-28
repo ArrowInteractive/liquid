@@ -1,9 +1,9 @@
 
 #include "Stream.hpp"
-#include "Clock.hpp"
+#include "utils/Clock.hpp"
+#include "utils/Thread.hpp"
+#include "utils/Audio.hpp"
 #include "Decoder.hpp"
-#include "Thread.hpp"
-#include "Audio.hpp"
 
 
 

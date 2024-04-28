@@ -1,6 +1,6 @@
-#include "Thread.hpp"
+#include "utils/Thread.hpp"
+#include "utils/Clock.hpp"
 #include "Stream.hpp"
-#include "Clock.hpp"
 #include "Decode.hpp"
 #include "Window.hpp"
 #include "Video.hpp"

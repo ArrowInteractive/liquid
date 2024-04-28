@@ -1,5 +1,5 @@
 #include "SeekPause.hpp"
-#include "Clock.hpp"
+#include "utils/Clock.hpp"
 
 void SeekPause::step_to_next_frame(VideoState *videostate)
 {
