@@ -67,7 +67,15 @@ make install_make
 
 ## Windows
 
-Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform for Windows, Then install the necessary packages through Pacman by using:
+Install the [MSYS2](https://www.msys2.org/ "MSYS2 Homepage") Building Platform for Windows,
+
+First update the msys with pacman using:
+
+```
+pacman -Syu
+```
+
+Then install the necessary packages through Pacman by using:
 
 ```
 pacman -S --needed base-devel mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-make mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-toolchain
