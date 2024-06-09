@@ -22,7 +22,11 @@ add_executable(liquid ${SOURCES})
 include(cmake/CPM.cmake)
 include(cmake/FFMPEG.cmake)
 
-CPMAddPackage("gh:Curve/imgui-cmake#c35523c")
+CPMAddPackage(
+  NAME imgui_cmake
+  GITHUB_REPOSITORY Curve/imgui-cmake
+  GIT_TAG c35523cf4ab6cae03d48672d8a9922016a8a816f
+)
 
 target_link_libraries(liquid
     ffmpeg
