@@ -4,7 +4,6 @@
 **  Includes
 */
 
-#include "UI.hpp"
 #include "queue/packetqueue.hpp"
 #include "queue/framequeue.hpp"
 
@@ -57,8 +56,7 @@ static unsigned sws_flags = SWS_LANCZOS;
 
 struct AudioParams{
     int freq;
-    int channels;
-    int64_t channel_layout;
+    AVChannelLayout ch_layout;
     enum AVSampleFormat fmt;
     int frame_size;
     int bytes_per_sec;
@@ -168,13 +166,8 @@ struct VideoState {
     int16_t sample_array[SAMPLE_ARRAY_SIZE];
     int sample_array_index;
     int last_i_start;
-    RDFTContext *rdft;
-    int rdft_bits;
-    FFTSample *rdft_data;
     int xpos;
     double last_vis_time;
-    SDL_Texture *sub_texture;
-    SDL_Texture *vid_texture;
 
     int subtitle_stream;
     AVStream *subtitle_st;
@@ -193,6 +186,7 @@ struct VideoState {
 
     char *filename;
     int width, height, xleft, ytop;
+    int window_opened;
     int step;
 
     int last_video_stream, last_audio_stream, last_subtitle_stream;
@@ -241,42 +235,13 @@ extern int64_t cursor_last_shown;
 extern int display_disable;
 extern int screen_left;
 extern int screen_top;
-extern int is_ui_init;
 extern double pos;
 extern double incr;
 extern double frac;
 extern AVFormatContext* avformat_ctx;
-extern SDL_RendererFlip need_flip;
 
 extern SDL_Window *window;
-extern SDL_Renderer *renderer;
 extern SDL_GLContext context;
-
-static const struct TextureFormatEntry {
-    enum AVPixelFormat format;
-    int texture_fmt;
-} sdl_texture_format_map[] = {
-    { AV_PIX_FMT_RGB8,           SDL_PIXELFORMAT_RGB332 },
-    { AV_PIX_FMT_RGB444,         SDL_PIXELFORMAT_RGB444 },
-    { AV_PIX_FMT_RGB555,         SDL_PIXELFORMAT_RGB555 },
-    { AV_PIX_FMT_BGR555,         SDL_PIXELFORMAT_BGR555 },
-    { AV_PIX_FMT_RGB565,         SDL_PIXELFORMAT_RGB565 },
-    { AV_PIX_FMT_BGR565,         SDL_PIXELFORMAT_BGR565 },
-    { AV_PIX_FMT_RGB24,          SDL_PIXELFORMAT_RGB24 },
-    { AV_PIX_FMT_BGR24,          SDL_PIXELFORMAT_BGR24 },
-    { AV_PIX_FMT_0RGB32,         SDL_PIXELFORMAT_RGB888 },
-    { AV_PIX_FMT_0BGR32,         SDL_PIXELFORMAT_BGR888 },
-    { AV_PIX_FMT_NE(RGB0, 0BGR), SDL_PIXELFORMAT_RGBX8888 },
-    { AV_PIX_FMT_NE(BGR0, 0RGB), SDL_PIXELFORMAT_BGRX8888 },
-    { AV_PIX_FMT_RGB32,          SDL_PIXELFORMAT_ARGB8888 },
-    { AV_PIX_FMT_RGB32_1,        SDL_PIXELFORMAT_RGBA8888 },
-    { AV_PIX_FMT_BGR32,          SDL_PIXELFORMAT_ABGR8888 },
-    { AV_PIX_FMT_BGR32_1,        SDL_PIXELFORMAT_BGRA8888 },
-    { AV_PIX_FMT_YUV420P,        SDL_PIXELFORMAT_IYUV },
-    { AV_PIX_FMT_YUYV422,        SDL_PIXELFORMAT_YUY2 },
-    { AV_PIX_FMT_UYVY422,        SDL_PIXELFORMAT_UYVY },
-    { AV_PIX_FMT_NONE,           SDL_PIXELFORMAT_UNKNOWN },
-};
 
 /*
 **  Functions

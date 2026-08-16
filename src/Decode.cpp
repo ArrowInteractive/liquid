@@ -1,4 +1,5 @@
 #include "Decode.hpp"
+#include "utils/Log.hpp"
 
 int Decode::decode_interrupt_cb(void *ctx)
 {
@@ -86,7 +87,7 @@ int Decode::decoder_decode_frame(DecoderBase *d, AVFrame *frame, AVSubtitle *sub
             av_packet_unref(d->pkt);
         } else {
             if (avcodec_send_packet(d->avctx, d->pkt) == AVERROR(EAGAIN)) {
-                std::cout<<"ERROR: Receive_frame and send_packet both returned EAGAIN, which is an API violation."<<std::endl;
+                Log::error() << "Receive_frame and send_packet both returned EAGAIN, which is an API violation.";
                 d->packet_pending = 1;
             } else {
                 av_packet_unref(d->pkt);

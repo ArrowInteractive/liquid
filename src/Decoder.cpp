@@ -1,4 +1,5 @@
 #include "Decoder.hpp"
+#include "utils/Log.hpp"
 
 int Decoder::decoder_init(DecoderBase *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond)
 {
@@ -19,7 +20,7 @@ int Decoder::decoder_start(DecoderBase *d, int (*fn)(void *), const char *thread
     packet_queue_start(d->queue);
     d->decoder_tid = SDL_CreateThread(fn, thread_name, arg);
     if (!d->decoder_tid) {
-        std::cout<<"FATAL ERROR: SDL_CreateThread() failed!"<<SDL_GetError()<<std::endl;
+        Log::error() << "SDL_CreateThread() failed: " << SDL_GetError();
         return AVERROR(ENOMEM);
     }
     return 0;

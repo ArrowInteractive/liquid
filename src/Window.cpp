@@ -1,28 +1,42 @@
 #include "Window.hpp"
+#include "gl/GLLoader.hpp"
+#include "gl/VideoRenderer.hpp"
+#include "utils/Log.hpp"
 
 int Window::create_window(){
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+
     window = SDL_CreateWindow(
-        "Liquid Media Player", 
-        SDL_WINDOWPOS_UNDEFINED, 
-        SDL_WINDOWPOS_UNDEFINED, 
+        "Liquid Media Player",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
         default_width, default_height,
-         SDL_WINDOW_OPENGL | 
+         SDL_WINDOW_OPENGL |
          SDL_WINDOW_ALLOW_HIGHDPI |
          SDL_WINDOW_RESIZABLE
     );
+    if (!window)
+        return -1;
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-    renderer = SDL_CreateRenderer(
-        window, 
-        -1, 
-        SDL_RENDERER_ACCELERATED | 
-        SDL_RENDERER_PRESENTVSYNC
-    );
-    if (!window || !renderer){
-        return -1; 
+    context = SDL_GL_CreateContext(window);
+    if (!context){
+        Log::error() << "Could not create an OpenGL 3.3 core context: " << SDL_GetError();
+        return -1;
     }
-    init_imgui(window,renderer);
-    
+
+    if (!gl::load())
+        return -1;
+
+    SDL_GL_SetSwapInterval(1);
+
+    if (!VideoRenderer::init())
+        return -1;
+
     return 0;
 }
 

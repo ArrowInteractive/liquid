@@ -3,6 +3,7 @@
 #include "utils/Clock.hpp"
 #include "Window.hpp"
 #include "SeekPause.hpp"
+#include "gl/VideoRenderer.hpp"
 
 
 int Video::get_video_frame(VideoState *videostate, AVFrame *frame)
@@ -77,9 +78,8 @@ void Video::video_refresh(void *arg, double *remaining_time)
 retry:
         if (frame_queue_nb_remaining(&videostate->pictq) == 0) {
             // nothing to do, no picture to display in the queue
-            update_imgui(renderer, videostate->width, videostate->height);
-            SDL_RenderPresent(renderer);
-        } 
+            Video::present();
+        }
         else {
             double last_duration, duration, delay;
             Frame *vp, *lastvp;
@@ -138,20 +138,6 @@ retry:
                             || (videostate->vidclk.pts > (sp->pts + ((float) sp->sub.end_display_time / 1000)))
                             || (sp2 && videostate->vidclk.pts > (sp2->pts + ((float) sp2->sub.start_display_time / 1000))))
                     {
-                        if (sp->uploaded) {
-                            int i;
-                            for (i = 0; i < sp->sub.num_rects; i++) {
-                                AVSubtitleRect *sub_rect = sp->sub.rects[i];
-                                uint8_t *pixels;
-                                int pitch, j;
-
-                                if (!SDL_LockTexture(videostate->sub_texture, (SDL_Rect *)sub_rect, (void **)&pixels, &pitch)) {
-                                    for (j = 0; j < sub_rect->h; j++, pixels += pitch)
-                                        memset(pixels, 0, sub_rect->w << 2);
-                                    SDL_UnlockTexture(videostate->sub_texture);
-                                }
-                            }
-                        }
                         frame_queue_next(&videostate->subpq);
                     } else {
                         break;
@@ -214,14 +200,17 @@ void Video::update_video_pts(VideoState *videostate, double pts, int64_t pos, in
 
 void Video::video_display(VideoState *videostate)
 {
-    if (!videostate->width)
+    if (!videostate->window_opened)
         video_open(videostate);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
+    VideoRenderer::clear();
     if (videostate->video_st)
         video_image_display(videostate);
-    update_imgui(renderer, videostate->width, videostate->height);
-    SDL_RenderPresent(renderer);
+    present();
+}
+
+void Video::present()
+{
+    VideoRenderer::present();
 }
 
 int Video::video_open(VideoState *videostate)
@@ -245,19 +234,9 @@ int Video::video_open(VideoState *videostate)
 
     videostate->width  = w;
     videostate->height = h;
+    videostate->window_opened = 1;
 
     return 0;
-}
-
-void Video::fill_rectangle(int x, int y, int w, int h)
-{
-    SDL_Rect rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = w;
-    rect.h = h;
-    if (w && h)
-        SDL_RenderFillRect(renderer, &rect);
 }
 
 int Video::compute_mod(int a, int b)
@@ -265,182 +244,25 @@ int Video::compute_mod(int a, int b)
     return a < 0 ? a%b + b : a%b;
 }
 
-int Video::realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, int new_height, SDL_BlendMode blendmode, int init_texture)
-{
-    Uint32 format;
-    int access, w, h;
-    if (!*texture || SDL_QueryTexture(*texture, &format, &access, &w, &h) < 0 || new_width != w || new_height != h || new_format != format) {
-        void *pixels;
-        int pitch;
-        if (*texture)
-            SDL_DestroyTexture(*texture);
-        if (!(*texture = SDL_CreateTexture(renderer, new_format, SDL_TEXTUREACCESS_STREAMING, new_width, new_height)))
-            return -1;
-        if (SDL_SetTextureBlendMode(*texture, blendmode) < 0)
-            return -1;
-        if (init_texture) {
-            if (SDL_LockTexture(*texture, NULL, &pixels, &pitch) < 0)
-                return -1;
-            memset(pixels, 0, pitch * new_height);
-            SDL_UnlockTexture(*texture);
-        }
-    }
-    return 0;
-}
-
 void Video::video_image_display(VideoState *videostate)
 {
     Frame *vp;
-    Frame *sp = NULL;
     SDL_Rect rect;
 
+    // Subtitle compositing is not wired into the GL path yet - it needs its
+    // own (non-upscaled) pass so FSR doesn't run over subtitle text.
     vp = frame_queue_peek_last(&videostate->pictq);
-    if (videostate->subtitle_st) {
-        if (frame_queue_nb_remaining(&videostate->subpq) > 0) {
-            sp = frame_queue_peek(&videostate->subpq);
 
-            if (vp->pts >= sp->pts + ((float) sp->sub.start_display_time / 1000)) {
-                if (!sp->uploaded) {
-                    uint8_t* pixels[4];
-                    int pitch[4];
-                    int i;
-                    if (!sp->width || !sp->height) {
-                        sp->width = vp->width;
-                        sp->height = vp->height;
-                    }
-                    if (realloc_texture(&videostate->sub_texture, SDL_PIXELFORMAT_ARGB8888, sp->width, sp->height, SDL_BLENDMODE_BLEND, 1) < 0)
-                        return;
-
-                    for (i = 0; i < sp->sub.num_rects; i++) {
-                        AVSubtitleRect *sub_rect = sp->sub.rects[i];
-
-                        sub_rect->x = av_clip(sub_rect->x, 0, sp->width );
-                        sub_rect->y = av_clip(sub_rect->y, 0, sp->height);
-                        sub_rect->w = av_clip(sub_rect->w, 0, sp->width  - sub_rect->x);
-                        sub_rect->h = av_clip(sub_rect->h, 0, sp->height - sub_rect->y);
-
-                        videostate->sub_convert_ctx = sws_getCachedContext(videostate->sub_convert_ctx,
-                            sub_rect->w, sub_rect->h, AV_PIX_FMT_PAL8,
-                            sub_rect->w, sub_rect->h, AV_PIX_FMT_BGRA,
-                            0, NULL, NULL, NULL);
-                        if (!videostate->sub_convert_ctx) {
-                            std::cout<<"FATAL ERROR: Could not initialize convertion context!"<<std::endl;
-                            return;
-                        }
-                        if (!SDL_LockTexture(videostate->sub_texture, (SDL_Rect *)sub_rect, (void **)pixels, pitch)) {
-                            sws_scale(videostate->sub_convert_ctx, (const uint8_t * const *)sub_rect->data, sub_rect->linesize,
-                                      0, sub_rect->h, pixels, pitch);
-                            SDL_UnlockTexture(videostate->sub_texture);
-                        }
-                    }
-                    sp->uploaded = 1;
-                }
-            } else
-                sp = NULL;
-        }
-    }
-
-    Window::calculate_display_rect(&rect, videostate->xleft, videostate->ytop, videostate->width, videostate->height, vp->width, vp->height, vp->sar);
+    int out_w, out_h;
+    SDL_GL_GetDrawableSize(window, &out_w, &out_h);
+    Window::calculate_display_rect(&rect, videostate->xleft, videostate->ytop, out_w, out_h, vp->width, vp->height, vp->sar);
 
     if (!vp->uploaded) {
-        if (upload_texture(&videostate->vid_texture, vp->frame, &videostate->img_convert_ctx) < 0)
+        if (!VideoRenderer::upload_frame(vp->frame, &videostate->img_convert_ctx))
             return;
         vp->uploaded = 1;
         vp->flip_v = vp->frame->linesize[0] < 0;
     }
 
-    set_sdl_yuv_conversion_mode(vp->frame);
-
-    need_flip = static_cast<SDL_RendererFlip>((vp->flip_v ? SDL_FLIP_VERTICAL : 0));
-
-    SDL_RenderCopyEx(renderer, videostate->vid_texture, NULL, &rect, 0, NULL, need_flip);
-    set_sdl_yuv_conversion_mode(NULL);
-    if (sp) {
-        SDL_RenderCopy(renderer, videostate->sub_texture, NULL, &rect);
-    }
-}
-
-int Video::upload_texture(SDL_Texture **tex, AVFrame *frame, struct SwsContext **img_convert_ctx) {
-    int ret = 0;
-    Uint32 sdl_pix_fmt;
-    SDL_BlendMode sdl_blendmode;
-    get_sdl_pix_fmt_and_blendmode(frame->format, &sdl_pix_fmt, &sdl_blendmode);
-    if (realloc_texture(tex, sdl_pix_fmt == SDL_PIXELFORMAT_UNKNOWN ? SDL_PIXELFORMAT_ARGB8888 : sdl_pix_fmt, frame->width, frame->height, sdl_blendmode, 0) < 0)
-        return -1;
-    switch (sdl_pix_fmt) {
-        case SDL_PIXELFORMAT_UNKNOWN:
-            /* This should only happen if we are not using avfilter... */
-            *img_convert_ctx = sws_getCachedContext(*img_convert_ctx,
-                frame->width, frame->height, static_cast<AVPixelFormat>(frame->format), frame->width, frame->height,
-                AV_PIX_FMT_BGRA, sws_flags, NULL, NULL, NULL);
-            if (*img_convert_ctx != NULL) {
-                uint8_t *pixels[4];
-                int pitch[4];
-                if (!SDL_LockTexture(*tex, NULL, (void **)pixels, pitch)) {
-                    sws_scale(*img_convert_ctx, (const uint8_t * const *)frame->data, frame->linesize,
-                              0, frame->height, pixels, pitch);
-                    SDL_UnlockTexture(*tex);
-                }
-            } else {
-                std::cout<<"FATAL ERROR: Could not initialize convertion context!"<<std::endl;
-                ret = -1;
-            }
-            break;
-        case SDL_PIXELFORMAT_IYUV:
-            if (frame->linesize[0] > 0 && frame->linesize[1] > 0 && frame->linesize[2] > 0) {
-                ret = SDL_UpdateYUVTexture(*tex, NULL, frame->data[0], frame->linesize[0],
-                                                       frame->data[1], frame->linesize[1],
-                                                       frame->data[2], frame->linesize[2]);
-            } else if (frame->linesize[0] < 0 && frame->linesize[1] < 0 && frame->linesize[2] < 0) {
-                ret = SDL_UpdateYUVTexture(*tex, NULL, frame->data[0] + frame->linesize[0] * (frame->height                    - 1), -frame->linesize[0],
-                                                       frame->data[1] + frame->linesize[1] * (AV_CEIL_RSHIFT(frame->height, 1) - 1), -frame->linesize[1],
-                                                       frame->data[2] + frame->linesize[2] * (AV_CEIL_RSHIFT(frame->height, 1) - 1), -frame->linesize[2]);
-            } else {
-                std::cout<<"FATAL ERROR: Mixed negative and positive linesizes are not supported."<<std::endl;
-                return -1;
-            }
-            break;
-        default:
-            if (frame->linesize[0] < 0) {
-                ret = SDL_UpdateTexture(*tex, NULL, frame->data[0] + frame->linesize[0] * (frame->height - 1), -frame->linesize[0]);
-            } else {
-                ret = SDL_UpdateTexture(*tex, NULL, frame->data[0], frame->linesize[0]);
-            }
-            break;
-    }
-    return ret;
-}
-
-void Video::set_sdl_yuv_conversion_mode(AVFrame *frame)
-{
-#if SDL_VERSION_ATLEAST(2,0,8)
-    SDL_YUV_CONVERSION_MODE mode = SDL_YUV_CONVERSION_AUTOMATIC;
-    if (frame && (frame->format == AV_PIX_FMT_YUV420P || frame->format == AV_PIX_FMT_YUYV422 || frame->format == AV_PIX_FMT_UYVY422)) {
-        if (frame->color_range == AVCOL_RANGE_JPEG)
-            mode = SDL_YUV_CONVERSION_JPEG;
-        else if (frame->colorspace == AVCOL_SPC_BT709)
-            mode = SDL_YUV_CONVERSION_BT709;
-        else if (frame->colorspace == AVCOL_SPC_BT470BG || frame->colorspace == AVCOL_SPC_SMPTE170M)
-            mode = SDL_YUV_CONVERSION_BT601;
-    }
-    SDL_SetYUVConversionMode(mode); /* FIXME: no support for linear transfer */
-#endif
-}
-
-void Video::get_sdl_pix_fmt_and_blendmode(int format, Uint32 *sdl_pix_fmt, SDL_BlendMode *sdl_blendmode)
-{
-    int i;
-    *sdl_blendmode = SDL_BLENDMODE_NONE;
-    *sdl_pix_fmt = SDL_PIXELFORMAT_UNKNOWN;
-    if (format == AV_PIX_FMT_RGB32   ||
-        format == AV_PIX_FMT_RGB32_1 ||
-        format == AV_PIX_FMT_BGR32   ||
-        format == AV_PIX_FMT_BGR32_1)
-        *sdl_blendmode = SDL_BLENDMODE_BLEND;
-    for (i = 0; i < FF_ARRAY_ELEMS(sdl_texture_format_map) - 1; i++){
-        if (format == sdl_texture_format_map[i].format) {
-            *sdl_pix_fmt = sdl_texture_format_map[i].texture_fmt;
-            return;
-        }
-    }
+    VideoRenderer::draw(rect, out_w, out_h, vp->flip_v != 0);
 }

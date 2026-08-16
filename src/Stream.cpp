@@ -4,15 +4,12 @@
 #include "utils/Thread.hpp"
 #include "utils/Audio.hpp"
 #include "Decoder.hpp"
+#include "utils/Log.hpp"
 
 
 
 VideoState *Stream::stream_open(char *filename)
 {
-    std::string hour;
-    std::string min;
-    std::string sec;
-
     VideoState *videostate;
 
     videostate = (VideoState *)av_mallocz(sizeof(VideoState));
@@ -33,38 +30,6 @@ VideoState *Stream::stream_open(char *filename)
     videostate->ytop    = 0;
     videostate->xleft   = 0;
 
-    int hours, mins, secs, us;
-
-    if (avformat_ctx->duration != AV_NOPTS_VALUE) {
-        
-        int64_t duration = avformat_ctx->duration + 5000;
-        secs  = duration / AV_TIME_BASE;
-        us    = duration % AV_TIME_BASE;
-        mins  = secs / 60;   
-        secs %= 60;          
-        hours = mins / 60;   
-        mins %= 60;
-    }
-
-
-    if(hours < 10)
-        hour = "0"+std::to_string(hours);
-    else
-        hour = std::to_string(hours);
-
-    if(mins < 10)
-        min = "0"+std::to_string(mins);
-    else
-        min = std::to_string(mins);
-
-    if(secs < 10)
-        sec = "0"+std::to_string(secs);
-    else
-        sec = std::to_string(secs);
-
-    max_video_duration = hour+":"+min+":"+sec;
-
-
     /* start video display */
     if (frame_queue_init(&videostate->pictq, &videostate->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0)
         goto fail;
@@ -79,7 +44,7 @@ VideoState *Stream::stream_open(char *filename)
         goto fail;
 
     if (!(videostate->continue_read_thread = SDL_CreateCond())) {
-        std::cout<<"FATAL ERROR: SDL_CreateCond() failed!"<<SDL_GetError()<<std::endl;
+        Log::error() << "SDL_CreateCond() failed: " << SDL_GetError();
         goto fail;
     }
 
@@ -88,9 +53,9 @@ VideoState *Stream::stream_open(char *filename)
     Clock::init_clock(&videostate->extclk, &videostate->extclk.serial);
     videostate->audio_clock_serial = -1;
     if (startup_volume < 0)
-        std::cout<<"Setting volume to 0."<<std::endl;
+        Log::warn() << "Requested volume is below 0, setting volume to 0.";
     if (startup_volume > 100)
-        std::cout<<"Setting volume to 100."<<std::endl;
+        Log::warn() << "Requested volume is above 100, setting volume to 100.";
     startup_volume = av_clip(startup_volume, 0, 100);
     startup_volume = av_clip(SDL_MIX_MAXVOLUME * startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
     videostate->audio_volume = startup_volume;
@@ -98,7 +63,7 @@ VideoState *Stream::stream_open(char *filename)
     videostate->av_sync_type = av_sync_type;
     videostate->read_tid     = SDL_CreateThread(Thread::read_thread, "read_thread", videostate);
     if (!videostate->read_tid) {
-        std::cout<<"FATAL ERROR: SDL_CreateThread() failed!"<<SDL_GetError()<<std::endl;
+        Log::error() << "SDL_CreateThread() failed: " << SDL_GetError();
 fail:
         Stream::stream_close(videostate);
         return NULL;
@@ -134,10 +99,6 @@ void Stream::stream_close(VideoState *videostate)
     sws_freeContext(videostate->img_convert_ctx);
     sws_freeContext(videostate->sub_convert_ctx);
     av_free(videostate->filename);
-    if (videostate->vid_texture)
-        SDL_DestroyTexture(videostate->vid_texture);
-    if (videostate->sub_texture)
-        SDL_DestroyTexture(videostate->sub_texture);
     av_free(videostate);
 }
 
@@ -149,8 +110,8 @@ int Stream::stream_component_open(VideoState *videostate, int stream_index)
     const char *forced_codec_name = NULL;
     AVDictionary *opts = NULL;
     const AVDictionaryEntry *t = NULL;
-    int sample_rate, nb_channels;
-    int64_t channel_layout;
+    int sample_rate;
+    AVChannelLayout ch_layout = { };
     int ret = 0;
     int stream_lowres = lowres;
 
@@ -177,16 +138,16 @@ int Stream::stream_component_open(VideoState *videostate, int stream_index)
         codec = avcodec_find_decoder_by_name(forced_codec_name);
     if (!codec) {
         if (forced_codec_name)
-            std::cout<<"ERROR: No codec found: "<<forced_codec_name<<std::endl;
-        else                   
-            std::cout<<"ERROR: No decoder could be found for codec: "<<avcodec_get_name(avctx->codec_id)<<std::endl;
+            Log::error() << "No codec found: " << forced_codec_name;
+        else
+            Log::error() << "No decoder could be found for codec: " << avcodec_get_name(avctx->codec_id);
         ret = AVERROR(EINVAL);
         goto fail;
     }
 
     avctx->codec_id = codec->id;
     if (stream_lowres > codec->max_lowres) {
-        std::cout<<"ERROR: The maximum value for lowres supported by the decoder is "<<codec->max_lowres<<std::endl;
+        Log::warn() << "The maximum value for lowres supported by the decoder is " << codec->max_lowres;
         stream_lowres = codec->max_lowres;
     }
     avctx->lowres = stream_lowres;
@@ -202,7 +163,7 @@ int Stream::stream_component_open(VideoState *videostate, int stream_index)
         goto fail;
     }
     if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
-        std::cout<<"ERROR: Option for found "<<t->key<<std::endl;
+        Log::error() << "Option not found: " << t->key;
         ret =  AVERROR_OPTION_NOT_FOUND;
         goto fail;
     }
@@ -211,11 +172,13 @@ int Stream::stream_component_open(VideoState *videostate, int stream_index)
     ic->streams[stream_index]->discard = AVDISCARD_DEFAULT;
     switch (avctx->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
-        sample_rate    = avctx->sample_rate;
-        nb_channels    = avctx->channels;
-        channel_layout = avctx->channel_layout;
+        sample_rate = avctx->sample_rate;
+        if ((ret = av_channel_layout_copy(&ch_layout, &avctx->ch_layout)) < 0)
+            goto fail;
         /* prepare audio output */
-        if ((ret = Audio::audio_open(videostate, channel_layout, nb_channels, sample_rate, &videostate->audio_tgt)) < 0)
+        ret = Audio::audio_open(videostate, &ch_layout, sample_rate, &videostate->audio_tgt);
+        av_channel_layout_uninit(&ch_layout);
+        if (ret < 0)
             goto fail;
         videostate->audio_hw_buf_size = ret;
         videostate->audio_src = videostate->audio_tgt;
@@ -234,7 +197,9 @@ int Stream::stream_component_open(VideoState *videostate, int stream_index)
 
         if ((ret = Decoder::decoder_init(&videostate->auddec, avctx, &videostate->audioq, videostate->continue_read_thread)) < 0)
             goto fail;
-        if ((videostate->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !videostate->ic->iformat->read_seek) {
+        /* AVInputFormat::read_seek is no longer exposed by the public API
+           (FFmpeg 7.0+ made AVInputFormat opaque), so this can only check flags. */
+        if (videostate->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) {
             videostate->auddec.start_pts = videostate->audio_st->start_time;
             videostate->auddec.start_pts_tb = videostate->audio_st->time_base;
         }
@@ -294,13 +259,6 @@ void Stream::stream_component_close(VideoState *videostate, int stream_index)
         av_freep(&videostate->audio_buf1);
         videostate->audio_buf1_size = 0;
         videostate->audio_buf = NULL;
-
-        if (videostate->rdft) {
-            av_rdft_end(videostate->rdft);
-            av_freep(&videostate->rdft_data);
-            videostate->rdft = NULL;
-            videostate->rdft_bits = 0;
-        }
         break;
     case AVMEDIA_TYPE_VIDEO:
         Decoder::decoder_abort(&videostate->viddec, &videostate->pictq);

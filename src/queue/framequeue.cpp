@@ -3,6 +3,7 @@
 */
 
 #include "queue/framequeue.hpp"
+#include "utils/Log.hpp"
 
 /*
 **  Functions
@@ -13,11 +14,11 @@ int frame_queue_init(FrameQueue *f, PacketQueue *pktq, int max_size, int keep_la
     int i;
     memset(f, 0, sizeof(FrameQueue));
     if (!(f->mutex = SDL_CreateMutex())) {
-        std::cout<<"FATAL ERROR: SDL_CreateMutex() failed!"<<SDL_GetError()<<std::endl;
+        Log::error() << "SDL_CreateMutex() failed: " << SDL_GetError();
         return AVERROR(ENOMEM);
     }
     if (!(f->cond = SDL_CreateCond())) {
-        std::cout<<"FATAL ERROR: SDL_CreateCond() failed!"<<SDL_GetError()<<std::endl;
+        Log::error() << "SDL_CreateCond() failed: " << SDL_GetError();
         return AVERROR(ENOMEM);
     }
     f->pktq = pktq;
